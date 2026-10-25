@@ -2,8 +2,6 @@
 
 Server-rendered queueing system for the CSPC CCIT 106 midterm. Node.js 22, Express 4, EJS, and SQLite through better-sqlite3.
 
-This is the P2 backend walking skeleton: app factory, database, seed data, sessions, CSRF, auth, and test seams. The views and CSS live in a parallel lane.
-
 ## Requirements
 
 - Node.js 22 (see `.nvmrc`)
@@ -12,13 +10,13 @@ This is the P2 backend walking skeleton: app factory, database, seed data, sessi
 ## Setup
 
 ```bash
-npm install
-copy .env.example .env
-npm run db:reset
+npm ci
 npm start
 ```
 
-The app listens on `http://localhost:3000`. Open `/health` for a database check.
+On the first start the app creates `data/cspc_queue.sqlite`, applies the schema, and seeds the demo data, because the server seeds whenever the services table is empty. It listens on `http://localhost:3000`, and `/health` returns `{"status":"ok","db":"ok"}`.
+
+A `.env` file is optional in development. Copy `.env.example` to `.env` when you need a different port, a real `SESSION_SECRET`, or the hours flag below.
 
 ## Environment
 
@@ -31,29 +29,28 @@ The app listens on `http://localhost:3000`. Open `/health` for a database check.
 | `COOKIE_NAME` | `cspc_queue.sid` | Session cookie name |
 | `SESSION_MAX_AGE_MS` | `28800000` | 8 hours |
 | `COOKIE_SECURE` | `false` | Forced on in production |
+| `QUEUE_ENFORCE_HOURS` | `true` | Joining respects Mon to Fri and 08:00 to 17:00 Manila. Set `false` for demos outside office hours |
 | `LOG_LEVEL` | `info` | pino level, `silent` in tests |
 
 ## Scripts
 
 | Command | Purpose |
 | --- | --- |
-| `npm run lint` | ESLint over the repository |
-| `npm test` | Full Vitest run |
+| `npm start` | Start the server |
+| `npm run dev` | Start with `node --watch` |
+| `npm test` | Full Vitest and Supertest run |
 | `npm run test:watch` | Vitest in watch mode |
+| `npm run lint` | ESLint over the app source, tests, and scripts |
+| `npm run demo:reset` | Rebuild the deterministic demo database |
+| `npm run demo:verify` | Check the demo counts and password hash |
 | `npm run db:migrate` | Apply schema migrations |
 | `npm run db:seed` | Seed an existing database |
 | `npm run db:reset` | Delete the database file, migrate, and seed |
-| `npm run demo:reset` | Rebuild the deterministic demo database |
-| `npm run demo:verify` | Check the demo counts and password hash |
 | `npm run load` | Fetch `/health` repeatedly with Node 22 fetch |
-| `npm start` | Start the server |
-| `npm run dev` | Start with `node --watch` |
-
-`node scripts/db.js retention --dry-run` reports expired sessions and audit rows older than 90 days. Run it without `--dry-run` to delete them.
 
 ## Demo accounts
 
-All demo accounts use the password `QueueDemo2026!`.
+Every demo account uses the password `QueueDemo2026!`.
 
 | Role | Email |
 | --- | --- |
@@ -61,7 +58,34 @@ All demo accounts use the password `QueueDemo2026!`.
 | Office head | `admin@cspc.edu.ph` |
 | Student | `student1@cspc.edu.ph` to `student6@cspc.edu.ph` |
 
-The seed creates 4 services (REG 8 min, CSH 5 min, SCH 10 min, LIB 4 min), one counter per service, 1 staff, 1 admin, 6 students, and 6 waiting tickets.
+The seed creates 4 services (REG 8 min, CSH 5 min, SCH 10 min, LIB 4 min), one counter per service, 1 staff, 1 office head, 6 students, and 6 waiting tickets. The password is a hardcoded demo constant, so change it before any deployment that is not a class demo.
+
+## Demo walkthrough
+
+1. Run `npm run demo:reset` on demo day. Seeded tickets carry the service date of the day the database was created, so an old file leaves the board empty on a later day.
+2. Outside Mon to Fri 08:00 to 17:00 Manila, start with `QUEUE_ENFORCE_HOURS=false npm start` in bash, or `$env:QUEUE_ENFORCE_HOURS='false'; npm start` in PowerShell, or the join buttons refuse.
+3. Sign in as `student1@cspc.edu.ph` and open `/queue`. The seed already gives this student ticket `REG-001`, so open that ticket; joining Registrar again reports that you already hold one.
+4. In a private window or another browser, sign in as `staff@cspc.edu.ph`, open `/staff/queue`, and press Call next for that window.
+5. The student ticket page updates within 10 seconds, shows "Your turn", and plays the two chime call alert. Tap the page once before the call, because browsers block audio until a gesture; the `Sound on` toggle above the ticket shows and saves the choice, and turns into `Turn on sound` if the browser blocks playback.
+6. Sign in as `admin@cspc.edu.ph` to manage windows and staff accounts at `/admin/services` and `/admin/staff`.
+
+## Tests
+
+```bash
+npm test
+npm run lint
+npm run demo:verify
+```
+
+Unit tests pin the pure rules (codes, position, ETA, transitions, schemas, time). Integration tests run Supertest against a real SQLite file per worker and cover routing, sessions, CSRF, authorization, rate limits, and database constraints. There is no browser end-to-end suite; the call alert sound needs a real browser and a listener, which is manual test M04 in the project test plan.
+
+## Troubleshooting
+
+- The board is empty: run `npm run demo:reset` on the day of the demo and reload.
+- Joining is refused: the window is closed by day or time. Start with `QUEUE_ENFORCE_HOURS=false` for a demo.
+- No alert sound: browsers block audio until the visitor interacts. Tap the page or the `Sound on` toggle, and check the tab is not muted.
+- The port is taken: `PORT=3001 npm start`.
+- You want a clean database: `npm run demo:reset`, or delete `data/cspc_queue.sqlite*` and restart.
 
 ## Layout
 
@@ -73,57 +97,27 @@ src/
   config.js       env parsing and production guards
   core/           db, schema, errors, logger, security, sessions, validation, audit, context, time, seed
   modules/auth/   register, login, logout
-  modules/queue/  service listing and the /queue placeholder
-  modules/staff/  /staff/queue role-guarded placeholder
-  modules/tickets/ ownership and active status predicates
+  modules/queue/  student queue routes, dashboard, join and leave
+  modules/tickets/ ownership, position, ETA, transitions, audit
+  modules/staff/  call, recall, start, serve, no-show
+  modules/admin/  service windows and staff accounts
+  modules/display/ public board and JSON
+public/           css, js, icons, images, audio
+views/            layouts, pages, partials
 scripts/          db, demo, load
 tests/            unit, integration, helpers, fixtures
 ```
 
-## Requests and security
+The full design, test plan, and traceability documents live in the repository `docs/` folder and are not part of this test bundle.
+
+## Security notes
 
 - Every POST requires a `_csrf` field that matches the session token with a timing-safe compare.
 - Helmet sets a self-only CSP, `X-Frame-Options: DENY`, and `nosniff`.
-- Login is limited to 10 attempts per 15 minutes per IP. Register is limited to 5 per hour per IP.
+- Login is limited to 10 attempts per 15 minutes per IP; register to 5 per hour per IP.
 - Sessions live in SQLite. The cookie is HttpOnly, SameSite=Lax, and Secure in production. Login regenerates the session and logout destroys it.
-- Only the owner can leave a waiting ticket. Role checks run on the server.
-- Register, login, logout, and CSRF failures write an audit row.
-
-## View contract
-
-The backend renders these EJS templates with the `layouts/app` layout. The designer owns the files.
-
-| Template | Locals |
-| --- | --- |
-| `pages/home` | `services` |
-| `pages/register` | `errors`, `values` |
-| `pages/login` | `errors`, `values`, `nextPath` |
-| `pages/queue-dashboard` | `tickets`, `services` |
-| `pages/staff-queue` | `tickets`, `services` |
-| `pages/404` | `message` |
-| `pages/error` | `status`, `message`, `requestId` |
-
-Shared locals from `core/context.js`: `appName`, `user`, `csrfToken`, `flash`, `currentPath`, `requestId`, `icons`. Every form that submits with POST must include `<input type="hidden" name="_csrf" value="<%= csrfToken %>">`.
-
-## Tests
-
-Unit tests cover bcrypt cost 12, hashing and verification, auth schemas, and the Asia/Manila day boundary:
-
-```bash
-npx vitest run tests/unit
-```
-
-Integration tests use Supertest against a real SQLite file per worker. They exercise auth and security, including CSRF, rate limits, and database constraints. Integration tests that render a page need the matching view from the contract above.
-
-```bash
-npx vitest run tests/integration
-```
-
-## Notes
-
-- Time is Asia/Manila for service dates and display, stored as UTC ISO strings.
-- The partial unique index `one_active_ticket` prevents two active tickets for one student, service, and day.
-- No Bootstrap, no emoji, no inline script or style, and no client-side router.
+- Role checks and ticket ownership run on the server. Another student's ticket returns 404, not 403.
+- Every state change writes an audit row. Time is Asia/Manila for service dates, stored as UTC ISO strings.
 
 ## License
 
