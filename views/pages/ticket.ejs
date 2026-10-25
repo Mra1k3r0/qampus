@@ -1,0 +1,150 @@
+<%
+  const statusLabels = {
+    waiting: 'Waiting',
+    called: 'Called',
+    serving: 'Serving',
+    served: 'Completed',
+    no_show: 'No-show',
+    left: 'Left',
+  };
+  const statusClasses = {
+    waiting: 'waiting',
+    called: 'called',
+    serving: 'serving',
+    served: 'completed',
+    no_show: 'noshow',
+    left: 'left',
+  };
+  const isAtDesk = ticket.status === 'called' || ticket.status === 'serving';
+  const isWaiting = ticket.status === 'waiting';
+  const counterLabel = ticket.counterName || (isAtDesk ? 'Assigned at the desk' : 'Not called');
+  let positionLabel = '-';
+  let waitLabel = '-';
+  if (isWaiting) {
+    positionLabel = ticket.position || '-';
+    waitLabel = ticket.waitMinutes + ' min';
+  } else if (isAtDesk) {
+    positionLabel = 'At the window';
+    waitLabel = 'Now';
+  }
+
+  function timeLabel(iso) {
+    if (!iso) {
+      return '';
+    }
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('en-PH', {
+      timeZone: 'Asia/Manila',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
+  }
+
+  function dateTimeLabel(iso) {
+    if (!iso) {
+      return '';
+    }
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('en-PH', {
+      timeZone: 'Asia/Manila',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
+  }
+%>
+<div class="shell page page--tight ticket-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/queue">My queue</a>
+    <span class="breadcrumb__sep" aria-hidden="true">/</span>
+    <span aria-current="page">Ticket <%= ticket.code %></span>
+  </nav>
+
+  <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
+
+  <div data-live-region>
+    <article class="ticket-sheet" aria-labelledby="ticket-heading">
+      <div class="ticket-sheet__top">
+        <div>
+          <p class="ticket-sheet__label">Your ticket</p>
+          <h1 class="ticket-sheet__code" id="ticket-heading"><span class="visually-hidden">Ticket </span><%= ticket.code %></h1>
+        </div>
+        <p class="pill pill--<%= statusClasses[ticket.status] || 'waiting' %>">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <%= statusLabels[ticket.status] || ticket.status %>
+        </p>
+      </div>
+
+      <p class="ticket-sheet__service"><%= ticket.serviceName %></p>
+
+      <% if (isAtDesk) { %>
+      <p class="turn-banner" role="status">
+        <%= ticket.status === 'serving' ? 'You are being served.' : 'Your turn.' %>
+        Go to <strong><%= ticket.counterName || 'the service window' %></strong>.
+      </p>
+      <% } %>
+
+      <dl class="ticket-sheet__facts">
+        <div>
+          <dt class="fact__label">Position</dt>
+          <dd class="fact__value"><%= positionLabel %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Est. wait</dt>
+          <dd class="fact__value"><%= waitLabel %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Counter</dt>
+          <dd class="fact__value"><%= counterLabel %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Times called</dt>
+          <dd class="fact__value"><%= ticket.callCount %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Issued</dt>
+          <dd class="fact__value"><time datetime="<%= ticket.createdAt %>"><%= dateTimeLabel(ticket.createdAt) %></time></dd>
+        </div>
+        <% if (ticket.calledAt) { %>
+        <div>
+          <dt class="fact__label">Called</dt>
+          <dd class="fact__value"><time datetime="<%= ticket.calledAt %>"><%= timeLabel(ticket.calledAt) %></time></dd>
+        </div>
+        <% } %>
+        <% if (ticket.startedAt) { %>
+        <div>
+          <dt class="fact__label">Service started</dt>
+          <dd class="fact__value"><time datetime="<%= ticket.startedAt %>"><%= timeLabel(ticket.startedAt) %></time></dd>
+        </div>
+        <% } %>
+        <% if (ticket.endedAt) { %>
+        <div>
+          <dt class="fact__label"><%= ticket.status === 'served' ? 'Completed' : 'Closed' %></dt>
+          <dd class="fact__value"><time datetime="<%= ticket.endedAt %>"><%= timeLabel(ticket.endedAt) %></time></dd>
+        </div>
+        <% } %>
+      </dl>
+
+      <p class="ticket-sheet__instruction">Show this code at the counter when your turn comes.</p>
+
+      <div class="ticket-sheet__actions">
+        <a class="btn btn--secondary btn--small" href="/queue">Back to my queue</a>
+        <% if (isWaiting) { %>
+        <form class="inline-form" method="post" action="/queue/tickets/<%= ticket.id %>/leave">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--quiet btn--small btn--danger" type="submit">Leave queue</button>
+        </form>
+        <% } else if (!isAtDesk) { %>
+        <a class="btn btn--quiet btn--small" href="/queue/<%= ticket.serviceId %>">View this window</a>
+        <% } %>
+      </div>
+    </article>
+  </div>
+</div>

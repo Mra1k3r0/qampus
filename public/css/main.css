@@ -1,0 +1,75 @@
+@import url("tokens.css");
+@import url("base.css");
+@import url("layout.css");
+@import url("components.css");
+@import url("display.css");
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: var(--color-navy);
+  color: var(--color-paper);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.site-header {
+  animation: fade-in var(--duration-page) var(--ease-exit) both;
+}
+
+.site-main {
+  animation: rise-in var(--duration-page) var(--ease-enter) both;
+  animation-delay: 40ms;
+}
+
+/* Hero settles in piece by piece, once, on first paint */
+.site-main--home .hero__content > * {
+  animation: rise-in 320ms var(--ease-enter) both;
+}
+
+.site-main--home .hero__content > :nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.site-main--home .hero__content > :nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.site-main--home .hero__content > :nth-child(4) {
+  animation-delay: 210ms;
+}
+
+.site-main--home .hero__strip {
+  animation: rise-in 320ms var(--ease-enter) 160ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-main,
+  .site-main--home .hero__content > *,
+  .site-main--home .hero__strip {
+    animation-name: fade-in;
+    animation-duration: var(--duration-hover);
+    animation-delay: 0ms;
+  }
+}

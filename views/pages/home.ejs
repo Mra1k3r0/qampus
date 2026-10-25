@@ -1,0 +1,198 @@
+<%
+  const serviceList = Array.isArray(services) ? services : [];
+  const hasServices = serviceList.length > 0;
+  const isStaffViewer = Boolean(user && (user.role === 'staff' || user.role === 'admin'));
+  const isStudentViewer = Boolean(user && user.role === 'student');
+  const isAdminViewer = Boolean(user && user.role === 'admin');
+
+  let openCount = 0;
+  serviceList.forEach(function (service) {
+    if (service.isOpen) {
+      openCount += 1;
+    }
+  });
+
+  let openDaysLabel = 'Monday to Friday';
+  let opensAt = '08:00';
+  let closesAt = '17:00';
+  if (hasServices) {
+    opensAt = serviceList[0].opensAt;
+    closesAt = serviceList[0].closesAt;
+    try {
+      const days = JSON.parse(serviceList[0].openDays);
+      if (Array.isArray(days) && days.length > 0) {
+        const isWeekdays = days.length === 5
+          && ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].every(function (day, index) {
+            return days[index] === day;
+          });
+        openDaysLabel = isWeekdays ? 'Monday to Friday' : days.join(', ');
+      }
+    } catch (error) {
+      openDaysLabel = 'Monday to Friday';
+    }
+  }
+
+  const hasOpenService = openCount > 0;
+  const deskTitle = hasOpenService ? 'The desk is open.' : 'The desk is closed for now.';
+%>
+<section class="hero shell">
+  <div class="hero__content">
+    <p class="eyebrow hero__kicker">CSPC CCIT service desk</p>
+    <h1 class="hero__title">Wait for your turn, not in line.</h1>
+    <p class="hero__lede">Take a ticket for a campus office, follow your place from your phone, and show the code at the counter. The display in the lobby shows the same numbers.</p>
+
+    <div class="hero__actions">
+      <% if (!user) { %>
+      <a class="btn btn--primary" href="/register">
+        Create an account
+        <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+      </a>
+      <a class="btn btn--secondary" href="/login">Sign in</a>
+      <% } else if (isStaffViewer) { %>
+      <a class="btn btn--primary" href="/staff/queue">
+        Open staff queue
+        <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+      </a>
+      <% if (isAdminViewer) { %>
+      <a class="btn btn--secondary" href="/admin/services">Service windows</a>
+      <% } %>
+      <% } else { %>
+      <a class="btn btn--primary" href="/queue">
+        Go to my queue
+        <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+      </a>
+      <a class="btn btn--secondary" href="#services">Service windows</a>
+      <% } %>
+    </div>
+  </div>
+
+  <aside class="desk-note hero__strip" aria-labelledby="desk-note-title">
+    <div class="desk-note__top">
+      <img class="desk-note__seal" src="/images/cspc/seal.png" alt="" width="120" height="125">
+      <p class="desk-note__label">Today at the desk</p>
+    </div>
+    <h2 class="desk-note__title" id="desk-note-title"><%= deskTitle %></h2>
+    <dl class="desk-note__facts">
+      <div>
+        <dt>Open windows</dt>
+        <dd><%= openCount %> of <%= serviceList.length %></dd>
+      </div>
+      <div>
+        <dt>Office hours</dt>
+        <dd><%= opensAt %> to <%= closesAt %> PHT</dd>
+      </div>
+      <div>
+        <dt>Service days</dt>
+        <dd><%= openDaysLabel %></dd>
+      </div>
+    </dl>
+    <a class="desk-note__link" href="/display">
+      See the now-serving display
+      <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+    </a>
+  </aside>
+</section>
+
+<section class="section shell" id="services" aria-labelledby="services-title">
+  <div class="section__head">
+    <p class="eyebrow">Service windows</p>
+    <h2 id="services-title">Where do you need to go?</h2>
+    <p class="section__lede">Each window keeps its own line. Your ticket code starts with the window code, for example <span class="nowrap">REG-014</span>.</p>
+    <% if (isStaffViewer) { %>
+    <p class="section__aside"><a href="/staff/queue">Open the staff queue</a> to call the next student.</p>
+    <% } %>
+  </div>
+
+  <% if (!hasServices) { %>
+  <div class="empty-state">
+    <p class="empty-state__numeral" aria-hidden="true">0</p>
+    <h3>No service windows yet</h3>
+    <p>The office has not opened any windows for today. Check back during office hours.</p>
+  </div>
+  <% } else { %>
+  <ul class="service-list">
+    <% serviceList.forEach(function (service) { %>
+    <%
+      let serviceHref = '/staff/queue';
+      let serviceLinkLabel = 'Staff console';
+      if (!user) {
+        serviceHref = '/login?next=/queue/' + service.id;
+        serviceLinkLabel = 'Sign in to join';
+      } else if (isStudentViewer) {
+        serviceHref = '/queue/' + service.id;
+        serviceLinkLabel = 'View window';
+      }
+    %>
+    <li class="service-row">
+      <div class="service-row__id">
+        <span class="service-row__code"><%= service.code %></span>
+        <p class="pill <%= service.isOpen ? 'pill--open' : 'pill--closed' %>">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <%= service.isOpen ? 'Open' : 'Closed' %>
+        </p>
+      </div>
+      <div>
+        <h3 class="service-row__name"><%= service.name %></h3>
+        <p class="service-row__desc"><%= service.description %></p>
+      </div>
+      <dl class="service-row__meta">
+        <div>
+          <dt>Average wait</dt>
+          <dd><%= service.avgMinutes %> min</dd>
+        </div>
+        <div>
+          <dt>Hours</dt>
+          <dd><%= service.opensAt %> to <%= service.closesAt %></dd>
+        </div>
+      </dl>
+      <a class="service-row__link" href="<%= serviceHref %>">
+        <%= serviceLinkLabel %>
+        <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+      </a>
+    </li>
+    <% }); %>
+  </ul>
+  <% } %>
+</section>
+
+<section class="section shell" id="how-it-works" aria-labelledby="steps-title">
+  <div class="section__head">
+    <p class="eyebrow">How it works</p>
+    <h2 id="steps-title">Three steps, one code.</h2>
+  </div>
+  <ol class="steps">
+    <li class="step">
+      <p class="step__number">01</p>
+      <h3 class="step__title">Take a ticket</h3>
+      <p class="step__text">Sign in, choose a service window, and get a ticket code for today.</p>
+    </li>
+    <li class="step">
+      <p class="step__number">02</p>
+      <h3 class="step__title">Watch your place</h3>
+      <p class="step__text">Check your position and estimated wait from any page, or look at the lobby display.</p>
+    </li>
+    <li class="step">
+      <p class="step__number">03</p>
+      <h3 class="step__title">Show your code</h3>
+      <p class="step__text">When your code is called, go to the window and show your ticket. Staff mark your turn from the queue.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="closing-band">
+  <div class="shell closing-band__inner">
+    <div>
+      <p class="eyebrow">At the counter</p>
+      <h2>Staff call your code. You keep your seat.</h2>
+    </div>
+    <div class="closing-band__actions">
+      <% if (!user) { %>
+      <a class="btn btn--primary" href="/register">Create an account</a>
+      <% } else if (isStaffViewer) { %>
+      <a class="btn btn--primary" href="/staff/queue">Open staff queue</a>
+      <% } else { %>
+      <a class="btn btn--primary" href="/queue">Go to my queue</a>
+      <% } %>
+    </div>
+  </div>
+</section>

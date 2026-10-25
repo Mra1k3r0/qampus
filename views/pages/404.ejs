@@ -1,0 +1,15 @@
+<div class="error-page shell">
+  <p class="eyebrow">Page not found</p>
+  <p class="error-page__numeral" aria-hidden="true">404</p>
+  <h1 class="error-page__title">We could not find that page.</h1>
+  <p class="error-page__message"><%= message %></p>
+  <p class="error-page__note">Check the address, or go back to the home page and start again.</p>
+  <div class="error-page__actions">
+    <a class="btn btn--primary" href="/">Back to home</a>
+    <% if (user) { %>
+    <a class="btn btn--secondary" href="/queue">My queue</a>
+    <% } else { %>
+    <a class="btn btn--secondary" href="/login">Sign in</a>
+    <% } %>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<% if (flash && flash.message) { %>
+<%
+  let flashType = 'notice';
+  if (flash.type === 'success') {
+    flashType = 'success';
+  } else if (flash.type === 'danger' || flash.type === 'error') {
+    flashType = 'danger';
+  }
+  const flashRole = flashType === 'success' ? 'status' : 'alert';
+  const flashIcon = flashType === 'success' ? 'check' : 'circle-alert';
+%>
+<div class="flash flash--<%= flashType %>" role="<%= flashRole %>" data-flash>
+  <span class="flash__icon"><%- include('./icon', { name: flashIcon, size: 20, title: null }) %></span>
+  <p class="flash__message"><%= flash.message %></p>
+  <button type="button" class="flash__dismiss" data-dismiss-flash>Dismiss</button>
+</div>
+<% } %>

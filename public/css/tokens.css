@@ -1,0 +1,170 @@
+:root {
+  /* Campus service desk palette: navy, paper, ink, seal gold */
+  --color-paper: #F7F4EC;
+  --color-paper-raised: #FDFBF4;
+  --color-ink: #172033;
+  --color-ink-muted: #5B6472;
+  --color-rule: #DDD5C4;
+  --color-rule-strong: #8C8574;
+  --color-navy: #002A7A;
+  --color-navy-deep: #001F5C;
+  --color-gold: #B7791F;
+  --color-gold-ink: #7A4E00;
+  --color-signal: var(--color-navy);
+  --color-signal-hover: #00215F;
+  --color-signal-active: #001949;
+  --color-signal-bright: #F1D9A6;
+  --color-calm: #0B4A8F;
+  --color-success: #2F6B3E;
+  --color-warning: #7A4E00;
+  --color-danger: #A4261C;
+
+  /* Translucent layers, kept here so no sheet invents a raw colour */
+  --color-overlay: rgb(23 32 51 / 46%);
+
+  /* Public board: deep navy, cream numerals, gold hairline */
+  --color-board: #002A7A;
+  --color-board-deep: #001F5C;
+  --color-board-ink: #F7F4EC;
+  --color-board-muted: #CBD5E8;
+  --color-board-rule: #B7791F;
+  --color-board-rule-soft: rgb(183 121 31 / 48%);
+
+  /* Status is always paired with a word, never color alone */
+  --status-open: var(--color-success);
+  --status-closed: var(--color-ink-muted);
+  --status-waiting: var(--color-ink-muted);
+  --status-called: var(--color-gold);
+  --status-serving: var(--color-navy);
+  --status-completed: var(--color-success);
+  --status-noshow: var(--color-danger);
+  --status-left: var(--color-ink-muted);
+
+  /* Type: serif page titles, sans UI, mono for ticket codes only */
+  --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", Times, serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  /* Floor: 12px meta, 14px small and control, 17px body */
+  --text-meta: 0.75rem;
+  --text-eyebrow: 0.8125rem;
+  --text-small: 0.875rem;
+  --text-button: 0.9375rem;
+  --text-control: 1rem;
+  --text-body: 1.0625rem;
+  --text-h3: 1.125rem;
+  --text-subhead: 1.25rem;
+  --text-card: 1.375rem;
+  --text-h2: clamp(1.5rem, 2.2vw, 2.125rem);
+  --text-page-title: clamp(2.25rem, 1.4rem + 2.8vw, 3.75rem);
+  --text-display: clamp(2.75rem, 1.5rem + 4vw, 5.25rem);
+  --text-numeral: clamp(3.5rem, 10vw, 9rem);
+  --text-ticket: clamp(3.25rem, 10vw, 6.5rem);
+  --text-ticket-inline: clamp(2.75rem, 7vw, 4.5rem);
+  --text-stat: clamp(2rem, 4vw, 3rem);
+  --text-step: clamp(2.25rem, 4vw, 3rem);
+  --text-form-title: clamp(1.75rem, 3vw, 2.4rem);
+  --text-panel-title: clamp(1.5rem, 2.4vw, 2rem);
+  --text-auth-panel: clamp(1.75rem, 2.6vw, 2.5rem);
+  --text-empty: clamp(3rem, 7vw, 4.5rem);
+  --text-empty-heading: 1.375rem;
+  --text-error-title: clamp(1.75rem, 4vw, 2.5rem);
+  --text-error-numeral: clamp(6rem, 30vw, 12rem);
+  --text-error-numeral-wide: clamp(6rem, 18vw, 12rem);
+
+  --leading-tight: 0.98;
+  --leading-numeral: 0.86;
+  --leading-heading: 1.08;
+  --leading-body: 1.6;
+  --leading-small: 1.45;
+
+  --tracking-tight: -0.02em;
+  --tracking-numeral: -0.04em;
+  --tracking-eyebrow: 0.02em;
+  --tracking-label: 0.08em;
+
+  /* Space: 4px scale plus the half steps the specs call for */
+  --space-half: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  --page-margin: clamp(20px, 5vw, 64px);
+  --section-rhythm: clamp(48px, 8vw, 96px);
+  --component-pad: clamp(16px, 2vw, 24px);
+  --ticket-pad: clamp(20px, 4vw, 40px);
+  --stack-gap: clamp(12px, 1.5vw, 24px);
+  --gutter: 16px;
+
+  --space-fluid-xs: clamp(28px, 4vw, 48px);
+  --space-fluid-sm: clamp(24px, 3vw, 40px);
+  --space-fluid-md: clamp(32px, 5vw, 64px);
+  --space-fluid-lg: clamp(40px, 5vw, 64px);
+  --space-fluid-xl: clamp(32px, 5vw, 72px);
+
+  --content-max: 1200px;
+  --shell-max: 1440px;
+  --measure: 34rem;
+  --measure-empty: 34rem;
+  --measure-empty-wide: 38rem;
+  --auth-width: 420px;
+  --header-height: 56px;
+
+  /* Shape: 0 structural and data surfaces, 4px controls, 8px isolated panels, pills */
+  --radius-none: 0;
+  --radius-control: 0.25rem;
+  --radius-panel: 0.5rem;
+  --radius-pill: 999px;
+
+  /* Controls and targets */
+  --control-height: 48px;
+  --tap-min: 44px;
+  --pill-height: 28px;
+
+  --shadow-ticket: 0 18px 40px rgba(23, 32, 51, 0.1);
+
+  /* Focus: one ring, 3px navy at 2px offset; cream on the ink board */
+  --focus-color: var(--color-navy);
+  --focus-width: 3px;
+  --focus-offset: 2px;
+  --focus-on-ink: var(--color-board-ink);
+
+  /* Motion */
+  --ease-enter: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-exit: ease-out;
+  --duration-hover: 120ms;
+  --duration-panel: 180ms;
+  --duration-page: 240ms;
+
+  /* Display board rhythm */
+  --board-gap: clamp(14px, 2.4vh, 32px);
+  --board-pad-block: clamp(18px, 3vw, 48px);
+  --board-pad-inline: clamp(18px, 4vw, 64px);
+  --board-pad-bottom: clamp(16px, 2.4vw, 36px);
+  --board-row-gap: clamp(16px, 3vw, 48px);
+  --board-row-pad: clamp(12px, 2.2vh, 28px);
+  --text-board-code: clamp(3.5rem, min(13vw, 16vh), 13rem);
+  --text-board-code-mobile: clamp(3.5rem, 16vw, 5rem);
+  --text-board-service: clamp(1.125rem, 1.7vw, 1.75rem);
+  --text-board-name: clamp(1rem, 1.4vw, 2rem);
+  --text-board-small: clamp(0.75rem, 1vw, 0.9375rem);
+  --text-board-waiting: clamp(0.8125rem, 1vw, 1.0625rem);
+  --text-board-counter: clamp(1rem, 1.3vw, 1.3125rem);
+  --text-board-empty: clamp(2rem, 4vw, 4rem);
+
+  /* Layers */
+  --z-header: 20;
+  --z-menu: 30;
+  --z-skip: 100;
+}

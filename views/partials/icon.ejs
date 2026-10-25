@@ -1,0 +1,21 @@
+<%#
+  Icon partial contract.
+  Include with: include('../partials/icon', { name: 'ticket', size: 20, title: null })
+  - name: a key in public/icons/lucide.json.
+  - size: 16, 20, or 24. Defaults to 24.
+  - title: a short accessible name for a meaningful icon, or null when the icon is decorative.
+  - className: optional extra class names.
+  The JSON shape is:
+  { viewBox, strokeWidth, icons: { <name>: { label, elements: [{ tag, attrs }] } } }
+  The partial only renders keys that exist in that trusted file.
+%>
+<%
+  const iconName = typeof name === 'string' ? name : '';
+  const iconSize = size === 16 || size === 20 || size === 24 ? size : 24;
+  const iconTitle = typeof title === 'string' && title.length > 0 ? title : null;
+  const extraClass = typeof className === 'string' && className.length > 0 ? className : '';
+  const iconSet = icons && icons.icons ? icons.icons[iconName] : null;
+%>
+<% if (iconSet) { %>
+<svg xmlns="http://www.w3.org/2000/svg" width="<%= iconSize %>" height="<%= iconSize %>" viewBox="<%= icons.viewBox %>" fill="none" stroke="currentColor" stroke-width="<%= icons.strokeWidth %>" stroke-linecap="round" stroke-linejoin="round" class="icon<%= extraClass ? ' ' + extraClass : '' %>"<% if (iconTitle) { %> role="img"<% } else { %> aria-hidden="true" focusable="false"<% } %>><% if (iconTitle) { %><title><%= iconTitle %></title><% } %><% iconSet.elements.forEach(function (node) { %><<%= node.tag %><% Object.keys(node.attrs).forEach(function (key) { %> <%= key %>="<%= node.attrs[key] %>"<% }); %> /><% }); %></svg>
+<% } %>

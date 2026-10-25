@@ -1,0 +1,226 @@
+<%
+  const serviceList = Array.isArray(services) ? services : [];
+  const hasServices = serviceList.length > 0;
+  const openCount = serviceList.filter(function (service) { return service.isOpen; }).length;
+%>
+<div class="shell page page--console">
+  <header class="page-head">
+    <p class="eyebrow">Office head</p>
+    <h1 class="page-head__title">Service windows.</h1>
+    <p class="page-head__lede">Set the name, description, average wait, and hours for each window. Changes apply to today's queue as soon as you save them.</p>
+    <p class="page-head__meta">
+      <span><strong><%= serviceList.length %></strong> windows</span>
+      <span><strong><%= openCount %></strong> open now</span>
+    </p>
+  </header>
+
+  <% if (!hasServices) { %>
+  <div class="empty-state">
+    <p class="empty-state__numeral" aria-hidden="true">0</p>
+    <h2>No service windows</h2>
+    <p>No windows are published for this office yet.</p>
+  </div>
+  <% } else { %>
+  <div class="admin-list">
+    <% serviceList.forEach(function (service) { %>
+    <%
+      const isEditing = editingServiceId !== null && editingServiceId !== undefined
+        && String(editingServiceId) === String(service.id);
+      const raw = isEditing && values ? values : null;
+      const errorBag = isEditing && errors && typeof errors === 'object' ? errors : {};
+
+      function formValue(key, fallback) {
+        if (raw && raw[key] !== undefined && raw[key] !== null) {
+          return raw[key];
+        }
+        return fallback;
+      }
+
+      const nameValue = formValue('name', service.name);
+      const descriptionValue = formValue('description', service.description);
+      const avgValue = formValue('avgMinutes', service.avgMinutes);
+      const opensValue = formValue('opensAt', service.opensAt);
+      const closesValue = formValue('closesAt', service.closesAt);
+      const isOpenChecked = raw
+        ? raw.isOpen === '1' || raw.isOpen === 'on' || raw.isOpen === true
+        : service.isOpen;
+
+      const nameError = errorBag.name;
+      const descriptionError = errorBag.description;
+      const avgError = errorBag.avgMinutes;
+      const opensError = errorBag.opensAt;
+      const closesError = errorBag.closesAt;
+      const fieldIds = {
+        name: 'name-' + service.id,
+        description: 'description-' + service.id,
+        avgMinutes: 'avgMinutes-' + service.id,
+        opensAt: 'opensAt-' + service.id,
+        closesAt: 'closesAt-' + service.id,
+      };
+    %>
+    <form class="admin-form" method="post" action="/admin/services/<%= service.id %>" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="admin-form__head">
+        <div>
+          <p class="admin-form__code"><%= service.code %></p>
+          <h2 class="admin-form__title"><%= service.name %></h2>
+        </div>
+        <p class="pill <%= service.isOpen ? 'pill--open' : 'pill--closed' %>">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <%= service.isOpen ? 'Open' : 'Closed' %>
+        </p>
+      </div>
+
+      <% if (isEditing) { %>
+      <%- include('../partials/error-summary', {
+        errors: errorBag,
+        fields: [
+          { name: 'name', id: fieldIds.name, label: 'Window name' },
+          { name: 'description', id: fieldIds.description, label: 'Description' },
+          { name: 'avgMinutes', id: fieldIds.avgMinutes, label: 'Average wait' },
+          { name: 'opensAt', id: fieldIds.opensAt, label: 'Opens at' },
+          { name: 'closesAt', id: fieldIds.closesAt, label: 'Closes at' },
+        ],
+      }) %>
+      <% } %>
+
+      <div class="admin-form__grid">
+        <div class="field field--short">
+          <label class="field__label" for="code-<%= service.id %>">Window code</label>
+          <input class="input input--readonly" id="code-<%= service.id %>" type="text" value="<%= service.code %>" readonly aria-describedby="code-hint-<%= service.id %>">
+          <p class="field__hint" id="code-hint-<%= service.id %>">Set when the window is created. It cannot be changed here.</p>
+        </div>
+
+        <div class="field<%= nameError ? ' field--error' : '' %>">
+          <label class="field__label" for="<%= fieldIds.name %>">Window name</label>
+          <input
+            class="input"
+            id="<%= fieldIds.name %>"
+            name="name"
+            type="text"
+            value="<%= nameValue %>"
+            maxlength="80"
+            required
+            <% if (nameError) { %>aria-describedby="name-error-<%= service.id %>" aria-invalid="true"<% } %>
+          >
+          <% if (nameError) { %>
+          <p class="field__error" id="name-error-<%= service.id %>">
+            <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+            <%= nameError %>
+          </p>
+          <% } %>
+        </div>
+
+        <div class="field field--wide<%= descriptionError ? ' field--error' : '' %>">
+          <label class="field__label" for="<%= fieldIds.description %>">Description</label>
+          <textarea
+            class="textarea"
+            id="<%= fieldIds.description %>"
+            name="description"
+            maxlength="240"
+            rows="3"
+            <% if (descriptionError) { %>aria-describedby="description-error-<%= service.id %>" aria-invalid="true"<% } %>
+          ><%= descriptionValue %></textarea>
+          <% if (descriptionError) { %>
+          <p class="field__error" id="description-error-<%= service.id %>">
+            <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+            <%= descriptionError %>
+          </p>
+          <% } else { %>
+          <p class="field__hint">Up to 240 characters. Shown on the queue pages.</p>
+          <% } %>
+        </div>
+
+        <div class="field field--short<%= avgError ? ' field--error' : '' %>">
+          <label class="field__label" for="<%= fieldIds.avgMinutes %>">Average wait in minutes</label>
+          <input
+            class="input"
+            id="<%= fieldIds.avgMinutes %>"
+            name="avgMinutes"
+            type="number"
+            value="<%= avgValue %>"
+            min="1"
+            max="120"
+            step="1"
+            inputmode="numeric"
+            required
+            <% if (avgError) { %>aria-describedby="avg-error-<%= service.id %>" aria-invalid="true"<% } else { %>aria-describedby="avg-hint-<%= service.id %>"<% } %>
+          >
+          <% if (avgError) { %>
+          <p class="field__error" id="avg-error-<%= service.id %>">
+            <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+            <%= avgError %>
+          </p>
+          <% } else { %>
+          <p class="field__hint" id="avg-hint-<%= service.id %>">Used to estimate the wait for each student in line.</p>
+          <% } %>
+        </div>
+
+        <div class="field">
+          <span class="field__label">Accepting tickets</span>
+          <label class="checkbox" for="isOpen-<%= service.id %>">
+            <input class="checkbox__input" id="isOpen-<%= service.id %>" name="isOpen" type="checkbox" value="1"<%= isOpenChecked ? ' checked' : '' %>>
+            <span class="checkbox__label">
+              Window is open
+              <span class="checkbox__hint">When unchecked, students cannot take a new ticket for this window.</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="field field--short<%= opensError ? ' field--error' : '' %>">
+          <label class="field__label" for="<%= fieldIds.opensAt %>">Opens at</label>
+          <input
+            class="input"
+            id="<%= fieldIds.opensAt %>"
+            name="opensAt"
+            type="time"
+            value="<%= opensValue %>"
+            required
+            <% if (opensError) { %>aria-describedby="opens-error-<%= service.id %>" aria-invalid="true"<% } else { %>aria-describedby="opens-hint-<%= service.id %>"<% } %>
+          >
+          <% if (opensError) { %>
+          <p class="field__error" id="opens-error-<%= service.id %>">
+            <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+            <%= opensError %>
+          </p>
+          <% } else { %>
+          <p class="field__hint" id="opens-hint-<%= service.id %>">Philippine Standard Time.</p>
+          <% } %>
+        </div>
+
+        <div class="field field--short<%= closesError ? ' field--error' : '' %>">
+          <label class="field__label" for="<%= fieldIds.closesAt %>">Closes at</label>
+          <input
+            class="input"
+            id="<%= fieldIds.closesAt %>"
+            name="closesAt"
+            type="time"
+            value="<%= closesValue %>"
+            required
+            <% if (closesError) { %>aria-describedby="closes-error-<%= service.id %>" aria-invalid="true"<% } else { %>aria-describedby="closes-hint-<%= service.id %>"<% } %>
+          >
+          <% if (closesError) { %>
+          <p class="field__error" id="closes-error-<%= service.id %>">
+            <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+            <%= closesError %>
+          </p>
+          <% } %>
+          <% if (!closesError) { %>
+          <p class="field__hint" id="closes-hint-<%= service.id %>">Philippine Standard Time.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="admin-form__foot">
+        <p class="admin-form__note">Changes apply to today's queue immediately.</p>
+        <button class="btn btn--primary" type="submit">
+          <%- include('../partials/icon', { name: 'check', size: 16, title: null }) %>
+          Save changes
+        </button>
+      </div>
+    </form>
+    <% }); %>
+  </div>
+  <% } %>
+</div>

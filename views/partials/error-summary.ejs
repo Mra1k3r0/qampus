@@ -1,0 +1,29 @@
+<%#
+  Error summary contract.
+  Include with: include('../partials/error-summary', { errors: errors, fields: [{ name: 'email', label: 'Email' }] })
+  Renders when errors.form exists or any listed field has an error.
+%>
+<%
+  const errorBag = errors && typeof errors === 'object' ? errors : {};
+  const fieldList = Array.isArray(fields) ? fields : [];
+  const fieldHits = fieldList.filter(function (field) {
+    return Boolean(errorBag[field.name]);
+  });
+  const hasSummary = Boolean(errorBag.form) || fieldHits.length > 0;
+%>
+<% if (hasSummary) { %>
+<div class="error-summary" role="alert" tabindex="-1" data-error-summary>
+  <h2 class="error-summary__title">
+    <%- include('./icon', { name: 'circle-alert', size: 20, title: null }) %>
+    There is a problem
+  </h2>
+  <ul class="error-summary__list">
+    <% if (errorBag.form) { %>
+    <li><%= errorBag.form %></li>
+    <% } %>
+    <% fieldHits.forEach(function (field) { %>
+    <li><a href="#<%= field.id || field.name %>"><%= field.label %>: <%= errorBag[field.name] %></a></li>
+    <% }); %>
+  </ul>
+</div>
+<% } %>

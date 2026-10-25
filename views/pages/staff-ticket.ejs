@@ -1,0 +1,193 @@
+<%
+  const statusLabels = {
+    waiting: 'Waiting',
+    called: 'Called',
+    serving: 'Serving',
+    served: 'Completed',
+    no_show: 'No-show',
+    left: 'Left',
+  };
+  const statusClasses = {
+    waiting: 'waiting',
+    called: 'called',
+    serving: 'serving',
+    served: 'completed',
+    no_show: 'noshow',
+    left: 'left',
+  };
+  const isAtDesk = ticket.status === 'called' || ticket.status === 'serving';
+  const counterLabel = ticket.counterName || (isAtDesk ? 'Assigned at the desk' : 'Not called');
+  let positionLabel = '-';
+  let waitLabel = '-';
+  if (ticket.status === 'waiting') {
+    positionLabel = ticket.position || '-';
+    waitLabel = ticket.waitMinutes + ' min';
+  } else if (isAtDesk) {
+    positionLabel = 'At the window';
+    waitLabel = 'Now';
+  }
+
+  function timeLabel(iso) {
+    if (!iso) {
+      return '';
+    }
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('en-PH', {
+      timeZone: 'Asia/Manila',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
+  }
+
+  function dateTimeLabel(iso) {
+    if (!iso) {
+      return '';
+    }
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('en-PH', {
+      timeZone: 'Asia/Manila',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
+  }
+
+  let actionNote = 'This ticket is still waiting. Call the next student from the staff queue for this window.';
+  if (ticket.status === 'called') {
+    actionNote = 'The student has been called. Start when they arrive, or recall the code if they miss it.';
+  } else if (ticket.status === 'serving') {
+    actionNote = 'Service is in progress. Complete the ticket when the student leaves the window.';
+  } else if (ticket.status === 'served') {
+    actionNote = 'This ticket is complete. No further action is needed.';
+  } else if (ticket.status === 'left') {
+    actionNote = 'The student left this queue before being called.';
+  } else if (ticket.status === 'no_show') {
+    actionNote = 'This ticket was marked no-show.';
+  }
+%>
+<div class="shell page page--tight">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/staff/queue">Staff queue</a>
+    <span class="breadcrumb__sep" aria-hidden="true">/</span>
+    <span aria-current="page">Ticket <%= ticket.code %></span>
+  </nav>
+
+  <div class="staff-ticket-layout">
+    <article class="ticket-sheet" aria-labelledby="ticket-heading">
+      <div class="ticket-sheet__top">
+        <div>
+          <p class="ticket-sheet__label">Staff ticket</p>
+          <h1 class="ticket-sheet__code" id="ticket-heading"><span class="visually-hidden">Ticket </span><%= ticket.code %></h1>
+        </div>
+        <p class="pill pill--<%= statusClasses[ticket.status] || 'waiting' %>">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <%= statusLabels[ticket.status] || ticket.status %>
+        </p>
+      </div>
+
+      <p class="ticket-sheet__service"><%= ticket.serviceName %></p>
+
+      <% if (isAtDesk) { %>
+      <p class="turn-banner" role="status">
+        <%= ticket.status === 'serving' ? 'Being served now.' : 'Called and waiting at the window.' %>
+        <span><%= ticket.counterName || 'Counter assigned at the desk' %></span>
+      </p>
+      <% } %>
+
+      <dl class="ticket-sheet__facts">
+        <div>
+          <dt class="fact__label">Student</dt>
+          <dd class="fact__value"><%= ticket.studentName %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Position</dt>
+          <dd class="fact__value"><%= positionLabel %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Est. wait</dt>
+          <dd class="fact__value"><%= waitLabel %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Window</dt>
+          <dd class="fact__value"><%= counterLabel %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Times called</dt>
+          <dd class="fact__value"><%= ticket.callCount %></dd>
+        </div>
+        <div>
+          <dt class="fact__label">Issued</dt>
+          <dd class="fact__value"><time datetime="<%= ticket.createdAt %>"><%= dateTimeLabel(ticket.createdAt) %></time></dd>
+        </div>
+        <% if (ticket.calledAt) { %>
+        <div>
+          <dt class="fact__label">Called</dt>
+          <dd class="fact__value"><time datetime="<%= ticket.calledAt %>"><%= timeLabel(ticket.calledAt) %></time></dd>
+        </div>
+        <% } %>
+        <% if (ticket.startedAt) { %>
+        <div>
+          <dt class="fact__label">Service started</dt>
+          <dd class="fact__value"><time datetime="<%= ticket.startedAt %>"><%= timeLabel(ticket.startedAt) %></time></dd>
+        </div>
+        <% } %>
+        <% if (ticket.endedAt) { %>
+        <div>
+          <dt class="fact__label"><%= ticket.status === 'served' ? 'Completed' : 'Closed' %></dt>
+          <dd class="fact__value"><time datetime="<%= ticket.endedAt %>"><%= timeLabel(ticket.endedAt) %></time></dd>
+        </div>
+        <% } %>
+      </dl>
+
+      <p class="ticket-sheet__instruction">Ask the student to show this code before you start service.</p>
+    </article>
+
+    <aside class="action-panel" aria-labelledby="actions-title">
+      <h2 id="actions-title">Actions</h2>
+      <p class="action-panel__note"><%= actionNote %></p>
+
+      <% if (ticket.status === 'called') { %>
+      <form method="post" action="/staff/tickets/<%= ticket.id %>/start">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--primary btn--block" type="submit">
+          Start
+          <span class="visually-hidden">for ticket <%= ticket.code %></span>
+        </button>
+      </form>
+      <form method="post" action="/staff/tickets/<%= ticket.id %>/recall">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--secondary btn--block" type="submit">
+          Recall
+          <span class="visually-hidden">for ticket <%= ticket.code %></span>
+        </button>
+      </form>
+      <div class="action-panel__danger">
+        <form method="post" action="/staff/tickets/<%= ticket.id %>/no-show">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--quiet btn--block btn--danger" type="submit">
+            No-show
+            <span class="visually-hidden">for ticket <%= ticket.code %></span>
+          </button>
+        </form>
+      </div>
+      <% } else if (ticket.status === 'serving') { %>
+      <form method="post" action="/staff/tickets/<%= ticket.id %>/serve">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--primary btn--block" type="submit">
+          Serve
+          <span class="visually-hidden">for ticket <%= ticket.code %></span>
+        </button>
+      </form>
+      <% } %>
+
+      <a class="btn btn--quiet btn--block" href="/staff/queue">Back to staff queue</a>
+    </aside>
+  </div>
+</div>

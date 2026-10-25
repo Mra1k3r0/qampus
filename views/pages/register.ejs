@@ -1,0 +1,151 @@
+<%
+  const errorBag = errors && typeof errors === 'object' ? errors : {};
+  const fullNameValue = values && values.fullName ? values.fullName : '';
+  const studentNoValue = values && values.studentNo ? values.studentNo : '';
+  const emailValue = values && values.email ? values.email : '';
+%>
+<div class="auth shell">
+  <aside class="auth-panel">
+    <p class="eyebrow">New student</p>
+    <p class="auth-panel__display">One account, every window.</p>
+    <p class="auth-panel__note">Use your real name and student number so staff can match your ticket to you at the counter.</p>
+    <dl class="auth-panel__list">
+      <div>
+        <dt>Student number</dt>
+        <dd>Find it on your school ID card.</dd>
+      </div>
+      <div>
+        <dt>Privacy</dt>
+        <dd>The public display never shows your name or student number.</dd>
+      </div>
+    </dl>
+  </aside>
+
+  <div class="auth-form">
+    <form class="form" method="post" action="/register" novalidate>
+      <p class="eyebrow">Create account</p>
+      <h1 class="auth-form__title">Create your student account</h1>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <%- include('../partials/error-summary', {
+        errors: errorBag,
+        fields: [
+          { name: 'fullName', label: 'Full name' },
+          { name: 'studentNo', label: 'Student number' },
+          { name: 'email', label: 'Email' },
+          { name: 'password', label: 'Password' },
+          { name: 'confirmPassword', label: 'Confirm password' },
+        ],
+      }) %>
+
+      <div class="field<%= errorBag.fullName ? ' field--error' : '' %>">
+        <label class="field__label" for="fullName">Full name</label>
+        <input
+          class="input"
+          id="fullName"
+          name="fullName"
+          type="text"
+          value="<%= fullNameValue %>"
+          autocomplete="name"
+          maxlength="80"
+          <% if (errorBag.fullName) { %>aria-describedby="fullName-error" aria-invalid="true"<% } %>
+        >
+        <% if (errorBag.fullName) { %>
+        <p class="field__error" id="fullName-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.fullName %>
+        </p>
+        <% } %>
+      </div>
+
+      <div class="field<%= errorBag.studentNo ? ' field--error' : '' %>">
+        <label class="field__label" for="studentNo">Student number</label>
+        <input
+          class="input"
+          id="studentNo"
+          name="studentNo"
+          type="text"
+          value="<%= studentNoValue %>"
+          autocomplete="off"
+          maxlength="20"
+          aria-describedby="studentNo-hint<%= errorBag.studentNo ? ' studentNo-error' : '' %>"
+          <% if (errorBag.studentNo) { %>aria-invalid="true"<% } %>
+        >
+        <p class="field__hint" id="studentNo-hint">Find it on your ID card. Example: 2026-0001.</p>
+        <% if (errorBag.studentNo) { %>
+        <p class="field__error" id="studentNo-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.studentNo %>
+        </p>
+        <% } %>
+      </div>
+
+      <div class="field<%= errorBag.email ? ' field--error' : '' %>">
+        <label class="field__label" for="email">Email</label>
+        <input
+          class="input"
+          id="email"
+          name="email"
+          type="email"
+          value="<%= emailValue %>"
+          autocomplete="email"
+          inputmode="email"
+          maxlength="160"
+          <% if (errorBag.email) { %>aria-describedby="email-error" aria-invalid="true"<% } %>
+        >
+        <% if (errorBag.email) { %>
+        <p class="field__error" id="email-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.email %>
+        </p>
+        <% } %>
+      </div>
+
+      <div class="field<%= errorBag.password ? ' field--error' : '' %>">
+        <label class="field__label" for="password">Password</label>
+        <input
+          class="input"
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="200"
+          aria-describedby="password-hint<%= errorBag.password ? ' password-error' : '' %>"
+          <% if (errorBag.password) { %>aria-invalid="true"<% } %>
+        >
+        <p class="field__hint" id="password-hint">At least 8 characters. You can paste a password.</p>
+        <% if (errorBag.password) { %>
+        <p class="field__error" id="password-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.password %>
+        </p>
+        <% } %>
+      </div>
+
+      <div class="field<%= errorBag.confirmPassword ? ' field--error' : '' %>">
+        <label class="field__label" for="confirmPassword">Confirm password</label>
+        <input
+          class="input"
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="200"
+          <% if (errorBag.confirmPassword) { %>aria-describedby="confirmPassword-error" aria-invalid="true"<% } %>
+        >
+        <% if (errorBag.confirmPassword) { %>
+        <p class="field__error" id="confirmPassword-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.confirmPassword %>
+        </p>
+        <% } %>
+      </div>
+
+      <button class="btn btn--primary btn--block" type="submit">Create account</button>
+
+      <p class="form__foot">Already have an account? <a href="/login">Sign in</a></p>
+    </form>
+  </div>
+</div>

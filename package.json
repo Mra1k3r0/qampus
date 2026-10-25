@@ -1,0 +1,50 @@
+{
+  "name": "cspc-student-queue",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Student Queueing System for CSPC CCIT 106",
+  "license": "MIT",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "node scripts/db.js migrate",
+    "db:seed": "node scripts/db.js seed",
+    "db:reset": "node scripts/db.js reset",
+    "demo:reset": "node scripts/demo.js reset",
+    "demo:verify": "node scripts/demo.js verify",
+    "load": "node scripts/load.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^12.4.1",
+    "connect-flash": "^0.1.1",
+    "csrf-sync": "^4.2.1",
+    "dayjs": "^1.11.23",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-rate-limit": "^8.1.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "http-errors": "^2.0.1",
+    "pino": "^9.13.1",
+    "pino-http": "^10.5.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "eslint": "^9.38.0",
+    "globals": "^16.4.0",
+    "supertest": "^7.1.4",
+    "vitest": "^3.2.4"
+  }
+}

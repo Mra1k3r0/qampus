@@ -1,0 +1,198 @@
+<%
+  const ticketList = Array.isArray(tickets) ? tickets : [];
+  const serviceList = Array.isArray(services) ? services : [];
+  const hasTickets = ticketList.length > 0;
+  const hasServices = serviceList.length > 0;
+  const displayName = user && user.fullName ? user.fullName : 'Student';
+  const openCount = serviceList.filter(function (service) { return service.isOpen; }).length;
+  const todayLabel = new Intl.DateTimeFormat('en-PH', {
+    timeZone: 'Asia/Manila',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date());
+
+  const statusLabels = {
+    waiting: 'Waiting',
+    called: 'Called',
+    serving: 'Serving',
+    served: 'Completed',
+    no_show: 'No-show',
+    left: 'Left',
+  };
+  const statusClasses = {
+    waiting: 'waiting',
+    called: 'called',
+    serving: 'serving',
+    served: 'completed',
+    no_show: 'noshow',
+    left: 'left',
+  };
+  function statusLabel(status) {
+    return statusLabels[status] || status;
+  }
+  function statusClass(status) {
+    return statusClasses[status] || 'waiting';
+  }
+%>
+<div class="shell page page--console">
+  <header class="page-head">
+    <p class="eyebrow">My queue</p>
+    <h1 class="page-head__title">Your place in line.</h1>
+    <p class="page-head__lede">Signed in as <strong><%= displayName %></strong>. One ticket per service window each day.</p>
+    <p class="page-head__meta">
+      <span>Today, <%= todayLabel %></span>
+      <span><strong><%= openCount %></strong> of <%= serviceList.length %> windows open</span>
+    </p>
+  </header>
+
+  <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
+
+  <div data-live-region>
+    <section aria-labelledby="tickets-title">
+      <div class="section__head">
+        <p class="eyebrow">Tickets</p>
+        <h2 id="tickets-title">Your tickets for today</h2>
+        <p class="section__lede">When your code is called, go to the window and show it.</p>
+      </div>
+
+      <% if (!hasTickets) { %>
+      <div class="empty-state empty-state--wide">
+        <p class="empty-state__numeral" aria-hidden="true">0</p>
+        <h3>No active ticket</h3>
+        <p>You are not holding a place in any line right now. Choose an open window below to take a ticket.</p>
+        <% if (hasServices) { %>
+        <p><a class="btn btn--secondary" href="#windows">See service windows</a></p>
+        <% } %>
+      </div>
+      <% } else { %>
+      <ul class="ticket-stack">
+        <% ticketList.forEach(function (ticket) { %>
+        <%
+          const isAtDesk = ticket.status === 'called' || ticket.status === 'serving';
+          const counterLabel = ticket.counterName || (isAtDesk ? 'Assigned at the desk' : 'Not called');
+        %>
+        <li class="queue-ticket<%= isAtDesk ? ' is-live' : '' %>">
+          <div class="queue-ticket__head">
+            <div>
+              <p class="queue-ticket__service"><%= ticket.serviceName %></p>
+              <p class="queue-ticket__code"><%= ticket.code %></p>
+            </div>
+            <p class="pill pill--<%= statusClass(ticket.status) %>">
+              <span class="pill__dot" aria-hidden="true"></span>
+              <%= statusLabel(ticket.status) %>
+            </p>
+          </div>
+
+          <% if (isAtDesk) { %>
+          <p class="turn-banner" role="status">
+            <%= ticket.status === 'serving' ? 'You are being served.' : 'Your turn.' %>
+            Go to <strong><%= ticket.counterName || 'the service window' %></strong>.
+          </p>
+          <% } %>
+
+          <dl class="queue-ticket__facts">
+            <div>
+              <dt class="fact__label">Position</dt>
+              <dd class="fact__value"><%= ticket.status === 'waiting' ? ticket.position || '-' : 'At the window' %></dd>
+            </div>
+            <div>
+              <dt class="fact__label">Est. wait</dt>
+              <dd class="fact__value"><%= ticket.status === 'waiting' ? ticket.waitMinutes + ' min' : 'Now' %></dd>
+            </div>
+            <div>
+              <dt class="fact__label">Counter</dt>
+              <dd class="fact__value"><%= counterLabel %></dd>
+            </div>
+            <div>
+              <dt class="fact__label">Service</dt>
+              <dd class="fact__value"><%= ticket.serviceCode %></dd>
+            </div>
+          </dl>
+
+          <div class="queue-ticket__actions">
+            <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= ticket.id %>">View ticket</a>
+            <% if (ticket.status === 'waiting') { %>
+            <form class="inline-form" method="post" action="/queue/tickets/<%= ticket.id %>/leave">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--quiet btn--small btn--danger" type="submit">Leave queue</button>
+            </form>
+            <% } %>
+          </div>
+        </li>
+        <% }); %>
+      </ul>
+      <% } %>
+    </section>
+
+    <section class="section" id="windows" aria-labelledby="windows-title">
+      <div class="section__head">
+        <p class="eyebrow">Service windows</p>
+        <h2 id="windows-title">Open windows today</h2>
+      </div>
+
+      <% if (!hasServices) { %>
+      <div class="empty-state">
+        <p class="empty-state__numeral" aria-hidden="true">0</p>
+        <h3>No windows listed</h3>
+        <p>The office has not published any service windows for today. Check back during office hours.</p>
+      </div>
+      <% } else { %>
+      <ul class="window-list">
+        <% serviceList.forEach(function (service) { %>
+        <li class="window-row">
+          <div class="window-row__head">
+            <span class="window-row__code"><%= service.code %></span>
+            <p class="pill <%= service.isOpen ? 'pill--open' : 'pill--closed' %>">
+              <span class="pill__dot" aria-hidden="true"></span>
+              <%= service.isOpen ? 'Open' : 'Closed' %>
+            </p>
+          </div>
+          <h3 class="window-row__name"><%= service.name %></h3>
+          <p class="window-row__desc"><%= service.description %></p>
+          <dl class="window-row__meta">
+            <div>
+              <dt>Waiting</dt>
+              <dd><%= service.waitingCount %> waiting</dd>
+            </div>
+            <div>
+              <dt>Now serving</dt>
+              <dd>
+                <% if (service.currentCode) { %>
+                <span class="mono"><%= service.currentCode %></span><% if (service.currentCounter) { %> at <%= service.currentCounter %><% } %>
+                <% } else { %>
+                No ticket called
+                <% } %>
+              </dd>
+            </div>
+            <div>
+              <dt>Average wait</dt>
+              <dd><%= service.avgMinutes %> min</dd>
+            </div>
+            <div>
+              <dt>Hours</dt>
+              <dd><%= service.opensAt %> to <%= service.closesAt %></dd>
+            </div>
+          </dl>
+          <div class="window-row__actions">
+            <% if (service.canJoin) { %>
+            <form class="inline-form" method="post" action="/queue/<%= service.id %>/join">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--primary btn--small" type="submit">
+                Take a ticket
+                <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+              </button>
+            </form>
+            <% } else if (service.activeTicketId) { %>
+            <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= service.activeTicketId %>">View your ticket</a>
+            <% } else { %>
+            <span class="window-row__closed">Closed for now. Opens at <%= service.opensAt %>.</span>
+            <% } %>
+          </div>
+        </li>
+        <% }); %>
+      </ul>
+      <% } %>
+    </section>
+  </div>
+</div>

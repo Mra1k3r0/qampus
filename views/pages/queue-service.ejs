@@ -1,0 +1,165 @@
+<%
+  const statusLabels = {
+    waiting: 'Waiting',
+    called: 'Called',
+    serving: 'Serving',
+    served: 'Completed',
+    no_show: 'No-show',
+    left: 'Left',
+  };
+  const statusClasses = {
+    waiting: 'waiting',
+    called: 'called',
+    serving: 'serving',
+    served: 'completed',
+    no_show: 'noshow',
+    left: 'left',
+  };
+  const active = activeTicket || null;
+  const activeIsLive = Boolean(active && (active.status === 'called' || active.status === 'serving'));
+  let counterLabel = 'Not called';
+  if (active && active.counterName) {
+    counterLabel = active.counterName;
+  } else if (activeIsLive) {
+    counterLabel = 'Assigned at the desk';
+  }
+%>
+<div class="shell page">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/queue">My queue</a>
+    <span class="breadcrumb__sep" aria-hidden="true">/</span>
+    <span aria-current="page"><%= service.name %></span>
+  </nav>
+
+  <header class="page-head">
+    <p class="eyebrow">Service window <span><%= service.code %></span></p>
+    <h1 class="page-head__title"><%= service.name %></h1>
+    <p class="page-head__lede"><%= service.description %></p>
+    <p class="page-head__meta">
+      <span class="pill <%= service.isOpen ? 'pill--open' : 'pill--closed' %>">
+        <span class="pill__dot" aria-hidden="true"></span>
+        <%= service.isOpen ? 'Open' : 'Closed' %>
+      </span>
+      <span><strong><%= service.waitingCount %></strong> waiting</span>
+      <span>Average wait <strong><%= service.avgMinutes %> min</strong></span>
+    </p>
+  </header>
+
+  <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
+
+  <div data-live-region>
+    <section class="service-ledger" aria-labelledby="window-facts-title">
+      <h2 class="visually-hidden" id="window-facts-title">Window status</h2>
+      <dl class="ledger">
+        <div>
+          <dt>Waiting</dt>
+          <dd><%= service.waitingCount %> waiting</dd>
+        </div>
+        <div>
+          <dt>Now serving</dt>
+          <dd>
+            <% if (service.currentCode) { %>
+            <span class="mono"><%= service.currentCode %></span><% if (service.currentCounter) { %> at <%= service.currentCounter %><% } %>
+            <% } else { %>
+            No ticket called
+            <% } %>
+          </dd>
+        </div>
+        <div>
+          <dt>Average wait</dt>
+          <dd><%= service.avgMinutes %> min</dd>
+        </div>
+        <div>
+          <dt>Hours</dt>
+          <dd><%= service.opensAt %> to <%= service.closesAt %> PHT</dd>
+        </div>
+      </dl>
+    </section>
+
+    <% if (active) { %>
+    <section class="section" aria-labelledby="active-ticket-title">
+      <div class="section__head">
+        <p class="eyebrow">Your ticket</p>
+        <h2 id="active-ticket-title">You already hold a place here.</h2>
+        <p class="section__lede">One ticket per window each day. Keep this code ready when your turn comes.</p>
+      </div>
+
+      <div class="queue-ticket<%= activeIsLive ? ' is-live' : '' %>">
+        <div class="queue-ticket__head">
+          <div>
+            <p class="queue-ticket__service"><%= service.name %></p>
+            <p class="queue-ticket__code"><%= active.code %></p>
+          </div>
+          <p class="pill pill--<%= statusClasses[active.status] || 'waiting' %>">
+            <span class="pill__dot" aria-hidden="true"></span>
+            <%= statusLabels[active.status] || active.status %>
+          </p>
+        </div>
+
+        <% if (activeIsLive) { %>
+        <p class="turn-banner" role="status">
+          <%= active.status === 'serving' ? 'You are being served.' : 'Your turn.' %>
+          Go to <strong><%= active.counterName || 'the service window' %></strong>.
+        </p>
+        <% } %>
+
+        <dl class="queue-ticket__facts">
+          <div>
+            <dt class="fact__label">Position</dt>
+            <dd class="fact__value"><%= active.status === 'waiting' ? active.position || '-' : 'At the window' %></dd>
+          </div>
+          <div>
+            <dt class="fact__label">Est. wait</dt>
+            <dd class="fact__value"><%= active.status === 'waiting' ? active.waitMinutes + ' min' : 'Now' %></dd>
+          </div>
+          <div>
+            <dt class="fact__label">Counter</dt>
+            <dd class="fact__value"><%= counterLabel %></dd>
+          </div>
+          <div>
+            <dt class="fact__label">Ticket code</dt>
+            <dd class="fact__value"><span class="mono"><%= active.code %></span></dd>
+          </div>
+        </dl>
+
+        <div class="queue-ticket__actions">
+          <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= active.id %>">Open ticket detail</a>
+          <% if (active.status === 'waiting') { %>
+          <form class="inline-form" method="post" action="/queue/tickets/<%= active.id %>/leave">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--quiet btn--small btn--danger" type="submit">Leave queue</button>
+          </form>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } else if (canJoin) { %>
+    <section class="section" aria-labelledby="join-title">
+      <div class="section__head">
+        <p class="eyebrow">Take a ticket</p>
+        <h2 id="join-title">Join this window.</h2>
+        <p class="section__lede">Your ticket is for today only. You can leave the queue from your ticket page before your turn.</p>
+      </div>
+      <div class="join-panel">
+        <p>One ticket per window each day. Your code will appear on the lobby display when you are called.</p>
+        <form class="form" method="post" action="/queue/<%= service.id %>/join">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--primary" type="submit">
+            Take a ticket
+            <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+          </button>
+        </form>
+      </div>
+    </section>
+    <% } else { %>
+    <section class="section" aria-labelledby="closed-title">
+      <div class="empty-state">
+        <p class="empty-state__numeral" aria-hidden="true">0</p>
+        <h2 id="closed-title">This window is closed.</h2>
+        <p>The window is not accepting tickets right now. It opens at <%= service.opensAt %> and closes at <%= service.closesAt %> PHT.</p>
+        <a class="btn btn--secondary" href="/queue">Back to my queue</a>
+      </div>
+    </section>
+    <% } %>
+  </div>
+</div>

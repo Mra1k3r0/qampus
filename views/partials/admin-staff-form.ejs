@@ -1,0 +1,99 @@
+<%
+  const formErrorBag = errors && typeof errors === 'object' ? errors : {};
+  const isEditingAny = editingStaffId !== null && editingStaffId !== undefined;
+  const createValues = !isEditingAny && values ? values : null;
+  const createNameValue = createValues && createValues.full_name ? createValues.full_name : '';
+  const createEmailValue = createValues && createValues.email ? createValues.email : '';
+  const createErrorBag = createValues ? formErrorBag : {};
+%>
+<form class="admin-form" method="post" action="/admin/staff" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="admin-form__head">
+    <div>
+      <p class="eyebrow">New account</p>
+      <h2 class="admin-form__title">Add a staff account</h2>
+    </div>
+  </div>
+
+  <%- include('./error-summary', {
+    errors: createErrorBag,
+    fields: [
+      { name: 'full_name', id: 'staff-full-name', label: 'Full name' },
+      { name: 'email', id: 'staff-email', label: 'Email' },
+      { name: 'password', id: 'staff-password', label: 'Temporary password' },
+    ],
+  }) %>
+
+  <div class="admin-form__grid">
+    <div class="field<%= createErrorBag.full_name ? ' field--error' : '' %>">
+      <label class="field__label" for="staff-full-name">Full name</label>
+      <input
+        class="input"
+        id="staff-full-name"
+        name="full_name"
+        type="text"
+        value="<%= createNameValue %>"
+        autocomplete="name"
+        required
+        <% if (createErrorBag.full_name) { %>aria-describedby="staff-full-name-error" aria-invalid="true"<% } %>
+      >
+      <% if (createErrorBag.full_name) { %>
+      <p class="field__error" id="staff-full-name-error">
+        <%- include('./icon', { name: 'circle-alert', size: 16, title: null }) %>
+        <%= createErrorBag.full_name %>
+      </p>
+      <% } %>
+    </div>
+
+    <div class="field<%= createErrorBag.email ? ' field--error' : '' %>">
+      <label class="field__label" for="staff-email">Email</label>
+      <input
+        class="input"
+        id="staff-email"
+        name="email"
+        type="email"
+        value="<%= createEmailValue %>"
+        autocomplete="email"
+        inputmode="email"
+        required
+        <% if (createErrorBag.email) { %>aria-describedby="staff-email-error" aria-invalid="true"<% } %>
+      >
+      <% if (createErrorBag.email) { %>
+      <p class="field__error" id="staff-email-error">
+        <%- include('./icon', { name: 'circle-alert', size: 16, title: null }) %>
+        <%= createErrorBag.email %>
+      </p>
+      <% } %>
+    </div>
+
+    <div class="field field--wide<%= createErrorBag.password ? ' field--error' : '' %>">
+      <label class="field__label" for="staff-password">Temporary password</label>
+      <input
+        class="input"
+        id="staff-password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        required
+        aria-describedby="staff-password-hint<%= createErrorBag.password ? ' staff-password-error' : '' %>"
+        <% if (createErrorBag.password) { %>aria-invalid="true"<% } %>
+      >
+      <p class="field__hint" id="staff-password-hint">Give this password to the staff member directly. It is not shown again after you save.</p>
+      <% if (createErrorBag.password) { %>
+      <p class="field__error" id="staff-password-error">
+        <%- include('./icon', { name: 'circle-alert', size: 16, title: null }) %>
+        <%= createErrorBag.password %>
+      </p>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="admin-form__foot">
+    <p class="admin-form__note">Staff choose the Staff role when they sign in.</p>
+    <button class="btn btn--primary" type="submit">
+      <%- include('./icon', { name: 'user-plus', size: 16, title: null }) %>
+      Add account
+    </button>
+  </div>
+</form>

@@ -1,0 +1,125 @@
+<%
+  const rowValues = isEditing && values ? values : null;
+  const rowErrorBag = isEditing && errors && typeof errors === 'object' ? errors : {};
+  const nameValue = rowValues && rowValues.full_name !== undefined ? rowValues.full_name : member.fullName;
+  const emailValue = rowValues && rowValues.email !== undefined ? rowValues.email : member.email;
+  const nameError = rowErrorBag.full_name;
+  const emailError = rowErrorBag.email;
+  const passwordError = rowErrorBag.password;
+  const nameFieldId = 'staff-name-' + member.id;
+  const emailFieldId = 'staff-email-' + member.id;
+  const passwordFieldId = 'staff-password-' + member.id;
+%>
+<div class="window-row staff-row">
+  <div class="window-row__head">
+    <div>
+      <h2 class="window-row__name"><%= member.fullName %></h2>
+      <p class="window-row__desc staff-row__email"><%= member.email %></p>
+    </div>
+    <p class="pill <%= member.isActive ? 'pill--open' : 'pill--closed' %>">
+      <span class="pill__dot" aria-hidden="true"></span>
+      <%= member.isActive ? 'Active' : 'Inactive' %>
+    </p>
+  </div>
+
+  <div class="staff-tools">
+    <details class="staff-tools__item"<%= isEditing && (nameError || emailError) ? ' open' : '' %>>
+      <summary class="staff-tools__summary btn btn--secondary btn--small">Edit</summary>
+      <div class="staff-tools__body">
+        <form class="staff-tools__form" method="post" action="/admin/staff/<%= member.id %>" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <%- include('./error-summary', {
+            errors: rowErrorBag,
+            fields: [
+              { name: 'full_name', id: nameFieldId, label: 'Full name' },
+              { name: 'email', id: emailFieldId, label: 'Email' },
+            ],
+          }) %>
+          <div class="admin-form__grid">
+            <div class="field<%= nameError ? ' field--error' : '' %>">
+              <label class="field__label" for="<%= nameFieldId %>">Full name</label>
+              <input
+                class="input"
+                id="<%= nameFieldId %>"
+                name="full_name"
+                type="text"
+                value="<%= nameValue %>"
+                autocomplete="name"
+                required
+                <% if (nameError) { %>aria-describedby="<%= nameFieldId %>-error" aria-invalid="true"<% } %>
+              >
+              <% if (nameError) { %>
+              <p class="field__error" id="<%= nameFieldId %>-error">
+                <%- include('./icon', { name: 'circle-alert', size: 16, title: null }) %>
+                <%= nameError %>
+              </p>
+              <% } %>
+            </div>
+            <div class="field<%= emailError ? ' field--error' : '' %>">
+              <label class="field__label" for="<%= emailFieldId %>">Email</label>
+              <input
+                class="input"
+                id="<%= emailFieldId %>"
+                name="email"
+                type="email"
+                value="<%= emailValue %>"
+                autocomplete="email"
+                inputmode="email"
+                required
+                <% if (emailError) { %>aria-describedby="<%= emailFieldId %>-error" aria-invalid="true"<% } %>
+              >
+              <% if (emailError) { %>
+              <p class="field__error" id="<%= emailFieldId %>-error">
+                <%- include('./icon', { name: 'circle-alert', size: 16, title: null }) %>
+                <%= emailError %>
+              </p>
+              <% } %>
+            </div>
+          </div>
+          <div class="staff-tools__actions">
+            <button class="btn btn--primary btn--small" type="submit">Save changes</button>
+            <a class="btn btn--quiet btn--small" href="/admin/staff">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </details>
+
+    <details class="staff-tools__item"<%= isEditing && passwordError ? ' open' : '' %>>
+      <summary class="staff-tools__summary btn btn--secondary btn--small">Reset password</summary>
+      <div class="staff-tools__body">
+        <form class="staff-tools__form" method="post" action="/admin/staff/<%= member.id %>/password" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field<%= passwordError ? ' field--error' : '' %>">
+            <label class="field__label" for="<%= passwordFieldId %>">New password</label>
+            <input
+              class="input"
+              id="<%= passwordFieldId %>"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              required
+              aria-describedby="<%= passwordFieldId %>-hint<%= passwordError ? ' ' + passwordFieldId + '-error' : '' %>"
+              <% if (passwordError) { %>aria-invalid="true"<% } %>
+            >
+            <p class="field__hint" id="<%= passwordFieldId %>-hint">Give this password to the staff member directly.</p>
+            <% if (passwordError) { %>
+            <p class="field__error" id="<%= passwordFieldId %>-error">
+              <%- include('./icon', { name: 'circle-alert', size: 16, title: null }) %>
+              <%= passwordError %>
+            </p>
+            <% } %>
+          </div>
+          <div class="staff-tools__actions">
+            <button class="btn btn--secondary btn--small" type="submit">Reset password</button>
+          </div>
+        </form>
+      </div>
+    </details>
+
+    <form class="inline-form" method="post" action="/admin/staff/<%= member.id %>/status">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="isActive" value="<%= member.isActive ? '0' : '1' %>">
+      <button class="btn btn--secondary btn--small<%= member.isActive ? ' btn--danger' : '' %>" type="submit"><%= member.isActive ? 'Deactivate' : 'Reactivate' %></button>
+    </form>
+  </div>
+</div>

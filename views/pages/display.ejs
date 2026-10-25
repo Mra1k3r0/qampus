@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en-PH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#002A7A">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Now serving at the CSPC CCIT service desk. Ticket codes, windows, and waiting counts only.">
+  <title><%= title %> - <%= appName %></title>
+  <link rel="icon" href="/images/cspc/seal.png" type="image/png">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/js/display.js" defer></script>
+</head>
+<%
+  const boardServices = board && Array.isArray(board.services) ? board.services : [];
+  const boardUpdatedAt = board && board.updatedAt ? board.updatedAt : '';
+  const lastUpdated = typeof updatedLabel === 'string' && updatedLabel.length > 0
+    ? updatedLabel
+    : 'just now';
+%>
+<body class="board-page">
+  <h1 class="visually-hidden">Now serving</h1>
+  <div class="board">
+    <div class="board__inner">
+      <header class="board__top">
+        <div class="board__brand">
+          <img class="board__seal" src="/images/cspc/seal.png" alt="" width="120" height="125">
+          <div>
+            <p class="board__name">CSPC Student Queue</p>
+            <p class="board__sub">CCIT Office service windows</p>
+          </div>
+        </div>
+        <p class="board__state">
+          <span class="board__live">Live</span><br>
+          Monday to Friday, 08:00 to 17:00 PHT
+        </p>
+      </header>
+
+      <main class="board__rows" data-live-region aria-label="Now serving by window">
+        <% if (boardServices.length === 0) { %>
+        <p class="board__empty">No service windows are published today.</p>
+        <% } else { %>
+        <% boardServices.forEach(function (service) { %>
+        <article class="board__row" data-display-service data-service-code="<%= service.code %>">
+          <div class="board__service">
+            <h2 class="board__service-name"><%= service.name %></h2>
+            <p class="board__waiting"><strong data-display-waiting><%= service.waitingCount %></strong> waiting</p>
+          </div>
+          <p class="board__code<%= service.ticketCode ? '' : ' is-idle' %>" data-display-code><%= service.ticketCode || 'No ticket called' %></p>
+          <p class="board__counter">
+            <span class="board__counter-label">Counter</span>
+            <span data-display-counter-value><%= service.counter || 'At the window' %></span>
+          </p>
+        </article>
+        <% }); %>
+        <% } %>
+      </main>
+
+      <footer class="board__foot">
+        <p class="board__updated">Last queue change <time datetime="<%= boardUpdatedAt %>" data-display-updated-label><%= lastUpdated %></time></p>
+        <p class="board__refresh">Refreshes every 5 seconds</p>
+      </footer>
+      <p class="visually-hidden" role="status" aria-live="polite" data-board-status></p>
+    </div>
+  </div>
+</body>
+</html>

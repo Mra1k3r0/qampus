@@ -1,0 +1,193 @@
+<%
+  const ticketList = Array.isArray(tickets) ? tickets : [];
+  const serviceList = Array.isArray(services) ? services : [];
+  const hasTickets = ticketList.length > 0;
+  const hasServices = serviceList.length > 0;
+  const summary = counts || { waiting: 0, serving: 0, servedToday: 0 };
+  const displayName = user && user.fullName ? user.fullName : 'Staff';
+  const todayLabel = new Intl.DateTimeFormat('en-PH', {
+    timeZone: 'Asia/Manila',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date());
+
+  const statusLabels = {
+    waiting: 'Waiting',
+    called: 'Called',
+    serving: 'Serving',
+    served: 'Completed',
+    no_show: 'No-show',
+    left: 'Left',
+  };
+  const statusClasses = {
+    waiting: 'waiting',
+    called: 'called',
+    serving: 'serving',
+    served: 'completed',
+    no_show: 'noshow',
+    left: 'left',
+  };
+%>
+<div class="shell page page--console">
+  <header class="page-head">
+    <p class="eyebrow">Staff desk</p>
+    <h1 class="page-head__title">Today at the desk.</h1>
+    <p class="page-head__lede">Signed in as <strong><%= displayName %></strong>. Call the next student, start service, or complete a ticket.</p>
+    <p class="page-head__meta">
+      <span>Today, <%= todayLabel %></span>
+      <span><strong><%= summary.waiting %></strong> waiting now</span>
+    </p>
+  </header>
+
+  <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
+
+  <div data-live-region data-live-url="/staff/queue">
+    <dl class="stat-band" aria-label="Queue totals">
+      <div class="stat-band__cell">
+        <dt class="stat-band__label">Waiting</dt>
+        <dd class="stat-band__value"><%= summary.waiting %></dd>
+      </div>
+      <div class="stat-band__cell">
+        <dt class="stat-band__label">Being served</dt>
+        <dd class="stat-band__value"><%= summary.serving %></dd>
+      </div>
+      <div class="stat-band__cell">
+        <dt class="stat-band__label">Completed today</dt>
+        <dd class="stat-band__value"><%= summary.servedToday %></dd>
+      </div>
+    </dl>
+
+    <section class="section" aria-labelledby="call-title">
+      <div class="section__head">
+        <p class="eyebrow">Call next</p>
+        <h2 id="call-title">One button per window.</h2>
+        <p class="section__lede">Calling the next student moves the oldest waiting ticket to that window. Start, recall, or mark a no-show from the queue below.</p>
+      </div>
+
+      <% if (!hasServices) { %>
+      <p class="panel__empty">No service windows are loaded for this session.</p>
+      <% } else { %>
+      <ul class="call-list">
+        <% serviceList.forEach(function (service) { %>
+        <li class="call-row">
+          <div>
+            <p class="call-row__code"><%= service.code %></p>
+            <h3 class="call-row__name"><%= service.name %></h3>
+          </div>
+          <p class="call-row__now">
+            <% if (service.currentCode) { %>
+            Now serving <span class="mono"><%= service.currentCode %></span><% if (service.currentCounter) { %> at <%= service.currentCounter %><% } %>
+            <% } else { %>
+            No ticket called
+            <% } %>
+          </p>
+          <p class="call-row__wait"><strong><%= service.waitingCount %></strong> waiting</p>
+          <% if (service.waitingCount > 0) { %>
+          <form method="post" action="/staff/queue/<%= service.id %>/call-next">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--primary btn--small" type="submit">
+              Call next
+              <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+              <span class="visually-hidden">for <%= service.name %></span>
+            </button>
+          </form>
+          <% } else { %>
+          <span class="call-row__idle">No one waiting</span>
+          <% } %>
+        </li>
+        <% }); %>
+      </ul>
+      <% } %>
+    </section>
+
+    <section class="section" aria-labelledby="queue-title">
+      <div class="section__head">
+        <p class="eyebrow">Live queue</p>
+        <h2 id="queue-title">Who is in line</h2>
+        <p class="section__lede">Tickets are grouped by window, with called and serving tickets first. Open a ticket to see its full history.</p>
+      </div>
+
+      <% if (!hasTickets) { %>
+      <div class="empty-state empty-state--inline">
+        <p class="empty-state__numeral" aria-hidden="true">0</p>
+        <h3>Queue is clear</h3>
+        <p>No tickets are waiting or being served right now. The list updates when a student takes a ticket.</p>
+      </div>
+      <% } else { %>
+      <p class="queue-table__caption" id="live-queue-caption">Today's live queue</p>
+      <table class="queue-table" aria-labelledby="live-queue-caption">
+        <thead>
+          <tr>
+            <th scope="col">Ticket</th>
+            <th scope="col">Student</th>
+            <th scope="col">Service</th>
+            <th scope="col">Status</th>
+            <th scope="col">Wait</th>
+            <th scope="col">Counter</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% ticketList.forEach(function (ticket) { %>
+          <tr>
+            <th scope="row" data-label="Ticket">
+              <a class="queue-table__code" href="/staff/tickets/<%= ticket.id %>"><%= ticket.code %></a>
+            </th>
+            <td data-label="Student"><%= ticket.studentName %></td>
+            <td data-label="Service"><%= ticket.serviceName %></td>
+            <td data-label="Status">
+              <p class="pill pill--<%= statusClasses[ticket.status] || 'waiting' %>">
+                <span class="pill__dot" aria-hidden="true"></span>
+                <%= statusLabels[ticket.status] || ticket.status %>
+              </p>
+            </td>
+            <td data-label="Wait"><%= ticket.status === 'waiting' ? ticket.waitMinutes + ' min' : '-' %></td>
+            <td data-label="Counter"><%= ticket.counterName || 'Not called' %></td>
+            <td data-label="Actions">
+              <div class="table-actions">
+                <% if (ticket.status === 'called') { %>
+                <form method="post" action="/staff/tickets/<%= ticket.id %>/start">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn--primary btn--small" type="submit">
+                    Start
+                    <span class="visually-hidden">serving ticket <%= ticket.code %></span>
+                  </button>
+                </form>
+                <form method="post" action="/staff/tickets/<%= ticket.id %>/no-show">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn--quiet btn--small btn--danger" type="submit">
+                    No-show
+                    <span class="visually-hidden">ticket <%= ticket.code %></span>
+                  </button>
+                </form>
+                <form method="post" action="/staff/tickets/<%= ticket.id %>/recall">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn--secondary btn--small" type="submit">
+                    Recall
+                    <span class="visually-hidden">ticket <%= ticket.code %></span>
+                  </button>
+                </form>
+                <% } else if (ticket.status === 'serving') { %>
+                <form method="post" action="/staff/tickets/<%= ticket.id %>/serve">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn--primary btn--small" type="submit">
+                    Serve
+                    <span class="visually-hidden">ticket <%= ticket.code %></span>
+                  </button>
+                </form>
+                <% } %>
+                <a class="btn btn--quiet btn--small" href="/staff/tickets/<%= ticket.id %>">
+                  Details
+                  <span class="visually-hidden">for ticket <%= ticket.code %></span>
+                </a>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <% } %>
+    </section>
+  </div>
+</div>

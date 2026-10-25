@@ -1,0 +1,98 @@
+{
+  "license": "Lucide icons, ISC licence",
+  "source": "https://lucide.dev",
+  "version": "1.60.0",
+  "viewBox": "0 0 24 24",
+  "strokeWidth": 2,
+  "icons": {
+    "ticket": {
+      "label": "Ticket",
+      "elements": [
+        {
+          "tag": "path",
+          "attrs": {
+            "d": "M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"
+          }
+        },
+        { "tag": "path", "attrs": { "d": "M13 5v2" } },
+        { "tag": "path", "attrs": { "d": "M13 17v2" } },
+        { "tag": "path", "attrs": { "d": "M13 11v2" } }
+      ]
+    },
+    "clock": {
+      "label": "Clock",
+      "elements": [
+        { "tag": "circle", "attrs": { "cx": "12", "cy": "12", "r": "10" } },
+        { "tag": "path", "attrs": { "d": "M12 6v6l4 2" } }
+      ]
+    },
+    "users": {
+      "label": "Users",
+      "elements": [
+        {
+          "tag": "path",
+          "attrs": { "d": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" }
+        },
+        { "tag": "path", "attrs": { "d": "M16 3.128a4 4 0 0 1 0 7.744" } },
+        { "tag": "path", "attrs": { "d": "M22 21v-2a4 4 0 0 0-3-3.87" } },
+        { "tag": "circle", "attrs": { "cx": "9", "cy": "7", "r": "4" } }
+      ]
+    },
+    "arrow-right": {
+      "label": "Arrow right",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "M5 12h14" } },
+        { "tag": "path", "attrs": { "d": "m12 5 7 7-7 7" } }
+      ]
+    },
+    "check": {
+      "label": "Check",
+      "elements": [{ "tag": "path", "attrs": { "d": "M20 6 9 17l-5-5" } }]
+    },
+    "circle-alert": {
+      "label": "Alert",
+      "elements": [
+        { "tag": "circle", "attrs": { "cx": "12", "cy": "12", "r": "10" } },
+        { "tag": "line", "attrs": { "x1": "12", "x2": "12", "y1": "8", "y2": "12" } },
+        { "tag": "line", "attrs": { "x1": "12", "x2": "12.01", "y1": "16", "y2": "16" } }
+      ]
+    },
+    "log-in": {
+      "label": "Sign in",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "m10 17 5-5-5-5" } },
+        { "tag": "path", "attrs": { "d": "M15 12H3" } },
+        {
+          "tag": "path",
+          "attrs": { "d": "M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" }
+        }
+      ]
+    },
+    "log-out": {
+      "label": "Sign out",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "m16 17 5-5-5-5" } },
+        { "tag": "path", "attrs": { "d": "M21 12H9" } },
+        {
+          "tag": "path",
+          "attrs": { "d": "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" }
+        }
+      ]
+    },
+    "menu": {
+      "label": "Menu",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "M4 6h16" } },
+        { "tag": "path", "attrs": { "d": "M4 12h16" } },
+        { "tag": "path", "attrs": { "d": "M4 18h16" } }
+      ]
+    },
+    "x": {
+      "label": "Close",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "M18 6 6 18" } },
+        { "tag": "path", "attrs": { "d": "m6 6 12 12" } }
+      ]
+    }
+  }
+}

@@ -1,0 +1,159 @@
+<%
+  const errorBag = errors && typeof errors === 'object' ? errors : {};
+  const emailValue = values && values.email ? values.email : '';
+  const portalOptions = [
+    {
+      value: 'student',
+      label: 'Student',
+      eyebrow: 'Student access',
+      display: 'Your place, held.',
+      note: 'Sign in to hold one ticket at a window today.',
+      heading: 'Student sign in',
+      sub: 'Use your CSPC email.',
+    },
+    {
+      value: 'staff',
+      label: 'Staff',
+      eyebrow: 'Staff access',
+      display: 'Your window, ready.',
+      note: 'Sign in to call the next student and close tickets.',
+      heading: 'Staff sign in',
+      sub: 'Use the account the office head gave you.',
+    },
+    {
+      value: 'admin',
+      label: 'Office head',
+      eyebrow: 'Office head access',
+      display: 'Your office, in view.',
+      note: 'Sign in to manage service windows and staff accounts.',
+      heading: 'Office head sign in',
+      sub: 'Use the account the office head gave you.',
+    },
+  ];
+  const portalValues = portalOptions.map(function (option) { return option.value; });
+  const requestedPortal = values && values.portal ? values.portal : '';
+  const selectedPortal = portalValues.includes(requestedPortal) ? requestedPortal : 'student';
+%>
+<div class="auth shell">
+  <aside class="auth-panel">
+    <% portalOptions.forEach(function (option) { %>
+    <div class="auth-panel__variant<%= selectedPortal === option.value ? ' is-selected' : '' %>" data-portal="<%= option.value %>">
+      <p class="eyebrow"><%= option.eyebrow %></p>
+      <p class="auth-panel__display"><%= option.display %></p>
+      <p class="auth-panel__note"><%= option.note %></p>
+    </div>
+    <% }); %>
+    <dl class="auth-panel__list">
+      <div>
+        <dt>One per window</dt>
+        <dd>One active ticket per student, per window, per day.</dd>
+      </div>
+      <div>
+        <dt>Two windows</dt>
+        <dd>A student can hold at most two active tickets at once.</dd>
+      </div>
+      <div>
+        <dt>Clear window</dt>
+        <dd>Joining closes 30 minutes before the window closes.</dd>
+      </div>
+    </dl>
+  </aside>
+
+  <div class="auth-form">
+    <form class="form" method="post" action="/login" novalidate>
+      <div class="auth-form__intro">
+        <p class="eyebrow">Sign in</p>
+        <h1 class="auth-form__title">
+          <% portalOptions.forEach(function (option) { %><span class="auth-swap<%= selectedPortal === option.value ? ' is-selected' : '' %>" data-portal="<%= option.value %>"><%= option.heading %></span><% }); %>
+        </h1>
+        <p class="auth-form__sub">
+          <% portalOptions.forEach(function (option) { %><span class="auth-swap<%= selectedPortal === option.value ? ' is-selected' : '' %>" data-portal="<%= option.value %>"><%= option.sub %></span><% }); %>
+        </p>
+      </div>
+
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (nextPath) { %>
+      <input type="hidden" name="next" value="<%= nextPath %>">
+      <% } %>
+
+      <%- include('../partials/error-summary', {
+        errors: errorBag,
+        fields: [
+          { name: 'portal', id: 'portal', label: 'Sign-in role' },
+          { name: 'email', label: 'Email' },
+          { name: 'password', label: 'Password' },
+        ],
+      }) %>
+
+      <fieldset class="role-picker<%= errorBag.portal ? ' field--error' : '' %>" id="portal" tabindex="-1">
+        <legend class="role-picker__legend">Sign in as</legend>
+        <div class="role-picker__grid">
+          <% portalOptions.forEach(function (option) { %>
+          <label class="role-card">
+            <input
+              class="role-card__input"
+              id="portal-<%= option.value %>"
+              type="radio"
+              name="portal"
+              value="<%= option.value %>"
+              <%= selectedPortal === option.value ? 'checked' : '' %>
+            >
+            <span class="role-card__label"><%= option.label %></span>
+          </label>
+          <% }); %>
+        </div>
+        <% if (errorBag.portal) { %>
+        <p class="field__error" id="portal-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.portal %>
+        </p>
+        <% } %>
+      </fieldset>
+
+      <div class="field<%= errorBag.email ? ' field--error' : '' %>">
+        <label class="field__label" for="email">Email</label>
+        <input
+          class="input"
+          id="email"
+          name="email"
+          type="email"
+          value="<%= emailValue %>"
+          autocomplete="email"
+          inputmode="email"
+          <% if (errorBag.email) { %>aria-describedby="email-error" aria-invalid="true"<% } %>
+        >
+        <% if (errorBag.email) { %>
+        <p class="field__error" id="email-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.email %>
+        </p>
+        <% } %>
+      </div>
+
+      <div class="field<%= errorBag.password ? ' field--error' : '' %>">
+        <label class="field__label" for="password">Password</label>
+        <input
+          class="input"
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          <% if (errorBag.password) { %>aria-describedby="password-error" aria-invalid="true"<% } %>
+        >
+        <% if (errorBag.password) { %>
+        <p class="field__error" id="password-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.password %>
+        </p>
+        <% } %>
+      </div>
+
+      <button class="btn btn--primary btn--block" type="submit">
+        <%- include('../partials/icon', { name: 'log-in', size: 16, title: null }) %>
+        Sign in
+      </button>
+
+      <p class="form__foot">New here? <a href="/register">Create an account</a></p>
+    </form>
+  </div>
+</div>

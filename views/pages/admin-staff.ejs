@@ -1,0 +1,53 @@
+<%
+  const errorBag = errors && typeof errors === 'object' ? errors : {};
+  const staffList = Array.isArray(staff) ? staff : [];
+  const hasStaff = staffList.length > 0;
+  const totalCount = typeof staffCount === 'number' ? staffCount : staffList.length;
+  const activeCount = staffList.filter(function (member) { return member.isActive; }).length;
+  const isEditingAny = editingStaffId !== null && editingStaffId !== undefined;
+  const accountNoun = totalCount === 1 ? 'account' : 'accounts';
+  const activeNoun = activeCount === 1 ? 'active account' : 'active accounts';
+%>
+<div class="shell page page--console">
+  <header class="page-head">
+    <p class="eyebrow">Office head</p>
+    <h1 class="page-head__title">Staff accounts.</h1>
+    <p class="page-head__lede">Staff sign in with these accounts. Deactivating blocks sign-in but keeps their ticket history.</p>
+    <p class="page-head__meta">
+      <span><strong><%= totalCount %></strong> <%= accountNoun %></span>
+      <span><strong><%= activeCount %></strong> <%= activeNoun %></span>
+    </p>
+  </header>
+
+  <div class="admin-list">
+    <%- include('../partials/admin-staff-form', {
+      csrfToken: csrfToken,
+      errors: errorBag,
+      values: values,
+      editingStaffId: editingStaffId,
+    }) %>
+
+    <% if (!hasStaff) { %>
+    <div class="empty-state">
+      <p class="empty-state__numeral" aria-hidden="true">0</p>
+      <h2>No staff accounts</h2>
+      <p>Add a staff account above so someone can call tickets at a window.</p>
+    </div>
+    <% } else { %>
+    <div class="staff-list">
+      <% staffList.forEach(function (member) { %>
+      <%
+        const isEditing = isEditingAny && String(editingStaffId) === String(member.id);
+      %>
+      <%- include('../partials/staff-account-row', {
+        member: member,
+        isEditing: isEditing,
+        values: values,
+        errors: errorBag,
+        csrfToken: csrfToken,
+      }) %>
+      <% }); %>
+    </div>
+    <% } %>
+  </div>
+</div>
