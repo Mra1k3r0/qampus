@@ -115,7 +115,7 @@ AI-Verified: <test plus manual check and reviewer>
 The PR must name the tool/model, summarize the prompt and generated files, list human edits, state verification, and confirm no restricted data was shared. Never paste passwords, API keys, `.env` values, real student records, database dumps, private URLs, or another team's code without permission.
 | Date | Task | Tool | What changed | Verified by |
 |---|---|---|---|---|
-| <date> | 01: <task> | <tool> | <files and human edits> | <member, check> |
+| 2026-10-25 | 01: call alert sound on the student ticket page | Codebuff (DeepSeek V4.1 Flash) | `public/js/queue.js`, `views/pages/ticket.ejs`, `public/css/components.css`, `public/audio/called.mp3`, `tests/integration/queue.test.js`, docs 03, 05, 09, 10; the chime is CC0 from BigSoundBank, edited with ffmpeg | mra1k3r0, `npm test` and live HTTP check; audio playback and peer review pending |
 | <date> | 02: <task> | <tool> | <files and human edits> | <member, check> |
 | <date> | 03: <task> | <tool> | <files and human edits> | <member, check> |
 | <date> | 04: <task> | <tool> | <files and human edits> | <member, check> |

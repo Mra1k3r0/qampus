@@ -1,7 +1,6 @@
 # Test and Verification Plan: Student Queueing System
 
-Stack: Express 4, EJS, better-sqlite3, express-session, bcryptjs, zod, Vitest, Supertest.
-Scope: FR-01 to FR-14, routes under /register, /login, /queue, /staff/queue, /admin/services, /api/display, plus SQLite constraints. Test IDs: U unit, I integration, M manual, D failure drill.
+Stack: Express 4, EJS, better-sqlite3, express-session, bcryptjs, zod, Vitest, Supertest. Scope: FR-01 to FR-14, routes under /register, /login, /queue, /staff/queue, /admin/services, /api/display, plus SQLite constraints. Test IDs: U unit, I integration, M manual, D failure drill.
 ## 1. Test Strategy
 
 Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests pin pure rules (codes, position, ETA, transitions, schemas) in milliseconds. Integration tests prove routing, sessions, CSRF, authorization, and database constraints through Supertest against the real app and a real SQLite file. Manual tests cover keyboard, screen reader, zoom, mobile width, projector, and judgment calls a DOM assertion cannot make. No browser E2E suite in this phase; Supertest plus manual covers the demo risk.
@@ -91,6 +90,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | I48 | `tests/integration/policy.test.js` | Anonymous and signed-in `GET /policy` | 200 with the window, cap, cooldown, and no-show rules; no student PII; no session minted for anonymous readers; signed-in layout keeps the sign-out control |
 | I49 | `auth.test.js` | Each portal with a matching role, and a portal that does not match | Matching portal lands on the role home; mismatch returns the same 401 as a bad password |
 | I50 | `tests/integration/admin-staff.test.js` | Office head lists, creates, edits, resets a password, deactivates, and reactivates staff; staff and students try every route; a deactivated account signs in | 303 and an audit row per mutation, 403 for non-admins, 400 on duplicate email, 404 on admin ids, generic 401 and dead session after deactivation, password never rendered |
+| I51 | `queue.test.js` | Ticket page sound markup and the alert asset | `GET /queue/tickets/1` contains the sound control, `src="/audio/called.mp3"`, and the current `data-call-count`; `GET /audio/called.mp3` returns 200 with `audio/mpeg` |
 
 ## 5. Manual Test Matrix
 
@@ -99,7 +99,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | M01 | Keyboard-only register and join | Tab reaches every field and button in order; Enter submits; no mouse needed |
 | M02 | Visible focus | Focus ring visible on all controls against both light surfaces |
 | M03 | Screen reader labels | Join, Leave, Call next, Serve, No-show announce name, service, and state |
-| M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll |
+| M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll; a call rings the alert once, and the sound toggle keeps its choice after a reload |
 | M05 | Validation focus | Submit invalid register form; focus lands on error summary, errors linked by `aria-describedby` |
 | M06 | Contrast | Body text at least 4.5:1, large display text at least 3:1, focus indicator 3:1 |
 | M07 | 200 percent zoom | No clipped controls or horizontal scroll at 1280px with 200 percent zoom |

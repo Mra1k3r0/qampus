@@ -44,6 +44,26 @@ describe('queue read model', () => {
     expect(response.text).toContain('Est. wait');
   });
 
+  it('renders the called-ticket sound control with the current call count', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student1@cspc.edu.ph');
+    const row = db.prepare('SELECT call_count FROM tickets WHERE id = 1').get();
+
+    const response = await agent.get('/queue/tickets/1');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('data-called-sound');
+    expect(response.text).toContain('src="/audio/called.mp3"');
+    expect(response.text).toContain(`data-call-count="${row.call_count}"`);
+  });
+
+  it('serves the called-ticket sound as a self-hosted mp3', async () => {
+    const response = await request(app).get('/audio/called.mp3');
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toContain('audio/mpeg');
+  });
+
   it('sends staff to the staff queue after login', async () => {
     const agent = request.agent(app);
     const response = await login(agent, 'staff@cspc.edu.ph');

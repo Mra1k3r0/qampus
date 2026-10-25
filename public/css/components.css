@@ -1030,6 +1030,16 @@
   max-width: 54rem;
 }
 
+.ticket-sound {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+.ticket-sound[hidden] {
+  display: none;
+}
+
 .ticket-sheet {
   display: grid;
   gap: var(--space-6);

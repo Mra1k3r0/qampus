@@ -69,7 +69,14 @@
 
   <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
 
-  <div data-live-region>
+  <div class="ticket-sound" data-sound-panel hidden>
+    <button class="btn btn--quiet btn--small" type="button" data-sound-toggle aria-pressed="true">
+      <span data-sound-label>Sound on</span>
+    </button>
+    <audio data-called-sound src="/audio/called.mp3" preload="auto"></audio>
+  </div>
+
+  <div data-live-region data-call-count="<%= ticket.callCount %>">
     <article class="ticket-sheet" aria-labelledby="ticket-heading">
       <div class="ticket-sheet__top">
         <div>
