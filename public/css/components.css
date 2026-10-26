@@ -297,6 +297,17 @@
   white-space: nowrap;
 }
 
+@media (max-width: 359px) {
+  .auth-options {
+    justify-content: flex-start;
+    gap: 0;
+  }
+
+  .auth-options__link {
+    margin-left: 0;
+  }
+}
+
 /* Office-assisted reset: a short procedure, not a form */
 .reset-steps {
   display: grid;
