@@ -7,6 +7,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
   scroll-padding-top: calc(var(--header-height) + var(--space-6));
   scroll-padding-bottom: var(--space-24);
 }
@@ -84,10 +85,51 @@ legend {
 
 a {
   color: var(--color-navy);
-  text-decoration-line: underline;
-  text-decoration-thickness: 1px;
+  text-decoration-line: none;
   text-underline-offset: 3px;
   transition: color var(--duration-hover) var(--ease-exit);
+}
+
+/* Link policy: standalone actions rest without a rule and underline on hover or focus. Inline prose keeps the rule so a link never rests on colour alone. */
+.desk-note__link,
+.service-row__link,
+.auth-options__link,
+.form__foot a,
+.footer__col a,
+.breadcrumb a,
+.queue-table__code {
+  text-decoration-line: none;
+}
+
+.checkbox__label a,
+.error-summary__list a,
+.section__aside a,
+.step__text a,
+.turn-banner a {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+}
+
+.desk-note__link:focus-visible,
+.service-row__link:focus-visible,
+.auth-options__link:focus-visible,
+.form__foot a:focus-visible,
+.footer__col a:focus-visible,
+.breadcrumb a:focus-visible,
+.queue-table__code:focus-visible {
+  text-decoration-line: underline;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .desk-note__link:hover,
+  .service-row__link:hover,
+  .auth-options__link:hover,
+  .form__foot a:hover,
+  .footer__col a:hover,
+  .breadcrumb a:hover,
+  .queue-table__code:hover {
+    text-decoration-line: underline;
+  }
 }
 
 strong {
