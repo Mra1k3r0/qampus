@@ -45,7 +45,10 @@ function createApp({ db, config: appConfig = config }) {
   const app = express();
   const logger = createLogger(appConfig);
   const security = createSecurity();
-  const sessionStore = new SQLiteStore(db, { ttlMs: appConfig.sessionMaxAgeMs });
+  const sessionStore = new SQLiteStore(db, {
+    ttlMs: appConfig.sessionMaxAgeMs,
+    rememberMaxAgeMs: appConfig.sessionRememberMaxAgeMs,
+  });
   const { csrfSynchronisedProtection } = csrfSync({
     getTokenFromRequest: (req) => (req.body && req.body._csrf) || req.get('x-csrf-token'),
   });

@@ -1,14 +1,19 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import request from 'supertest';
+import { createHash } from 'node:crypto';
 import dbHelper from '../helpers/db.js';
 import appHelper from '../helpers/app.js';
 import csrfHelper from '../helpers/csrf.js';
 import seedModule from '../../src/core/seed.js';
+import configModule from '../../src/config.js';
 
 const { createTestDatabase } = dbHelper;
 const { createTestApp } = appHelper;
 const { getCsrf } = csrfHelper;
 const { DEMO_PASSWORD } = seedModule;
+const { sessionMaxAgeMs, sessionRememberMaxAgeMs } = configModule;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 describe('auth routes', () => {
   let db;
@@ -26,11 +31,14 @@ describe('auth routes', () => {
     cleanup();
   });
 
-  async function login(agent, email = 'student1@my.cspc.edu.ph', password = DEMO_PASSWORD, portal) {
+  async function login(agent, email = 'student1@my.cspc.edu.ph', password = DEMO_PASSWORD, portal, remember) {
     const token = await getCsrf(agent, '/login');
     const payload = { email, password, _csrf: token };
     if (portal) {
       payload.portal = portal;
+    }
+    if (remember) {
+      payload.remember = remember;
     }
     return agent.post('/login').type('form').send(payload);
   }
@@ -242,6 +250,205 @@ describe('auth routes', () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/login?next=/staff/queue');
+  });
+});
+
+describe('remember me and password help', () => {
+  let db;
+  let app;
+  let cleanup;
+
+  beforeAll(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db;
+    cleanup = testDb.cleanup;
+    app = createTestApp(db).app;
+  });
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  async function login(agent, email = 'student1@my.cspc.edu.ph', password = DEMO_PASSWORD, portal, remember) {
+    const token = await getCsrf(agent, '/login');
+    const payload = { email, password, _csrf: token };
+    if (portal) {
+      payload.portal = portal;
+    }
+    if (remember) {
+      payload.remember = remember;
+    }
+    return agent.post('/login').type('form').send(payload);
+  }
+
+  function sessionCookie(response) {
+    const cookies = response.headers['set-cookie'] || [];
+    return cookies.find((cookie) => cookie.startsWith('cspc_queue.sid='));
+  }
+
+  function latestSessionExpiry() {
+    return db.prepare('SELECT expires_at FROM sessions ORDER BY rowid DESC LIMIT 1').get();
+  }
+
+  function cookieRemainingMs(cookie) {
+    const match = /Expires=([^;]+)/i.exec(cookie);
+    if (!match) {
+      return null;
+    }
+    return new Date(match[1]).getTime() - Date.now();
+  }
+
+  it('keeps a checked remember login for 30 days in the cookie and the session store', async () => {
+    const agent = request.agent(app);
+    const response = await login(agent, 'student1@my.cspc.edu.ph', DEMO_PASSWORD, undefined, 'on');
+
+    expect(response.status).toBe(303);
+    const cookie = sessionCookie(response);
+    expect(cookie).toBeDefined();
+
+    const cookieRemaining = cookieRemainingMs(cookie);
+    expect(cookieRemaining).not.toBeNull();
+    expect(cookieRemaining).toBeGreaterThan(29 * DAY_MS);
+    expect(cookieRemaining).toBeLessThanOrEqual(sessionRememberMaxAgeMs + 5000);
+
+    const row = latestSessionExpiry();
+    const sessionRemaining = new Date(row.expires_at).getTime() - Date.now();
+    expect(sessionRemaining).toBeGreaterThan(29 * DAY_MS);
+    expect(sessionRemaining).toBeLessThanOrEqual(sessionRememberMaxAgeMs + 5000);
+  });
+
+  it('sets a browser-session cookie and the 8h fallback when remember is unchecked', async () => {
+    const agent = request.agent(app);
+    const response = await login(agent);
+
+    expect(response.status).toBe(303);
+    const cookie = sessionCookie(response);
+    expect(cookie).toBeDefined();
+    expect(cookie).not.toMatch(/Max-Age=/i);
+    expect(cookie).not.toMatch(/Expires=/i);
+
+    const row = latestSessionExpiry();
+    const sessionRemaining = new Date(row.expires_at).getTime() - Date.now();
+    expect(sessionRemaining).toBeGreaterThan(sessionMaxAgeMs - 60 * 1000);
+    expect(sessionRemaining).toBeLessThanOrEqual(sessionMaxAgeMs + 5000);
+  });
+
+  it('does not widen the session cookie for a remember value other than on', async () => {
+    const agent = request.agent(app);
+    const response = await login(agent, 'student1@my.cspc.edu.ph', DEMO_PASSWORD, undefined, 'yes');
+
+    expect(response.status).toBe(400);
+    const cookies = response.headers['set-cookie'] || [];
+    for (const cookie of cookies) {
+      const remaining = cookieRemainingMs(cookie);
+      if (remaining !== null) {
+        expect(remaining).toBeLessThan(29 * DAY_MS);
+      }
+    }
+  });
+
+  it('renders the office-assisted forgot password page for a guest', async () => {
+    const agent = request.agent(app);
+    const response = await agent.get('/forgot-password');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toMatch(/office/i);
+    expect(response.text).toMatch(/password/i);
+  });
+
+  it('redirects a signed-in user from forgot password to their home path', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'staff@my.cspc.edu.ph', DEMO_PASSWORD, 'staff');
+
+    const response = await agent.get('/forgot-password');
+
+    expect(response.status).toBe(303);
+    expect(response.headers.location).toBe('/staff/queue');
+  });
+});
+
+describe('password strength rules', () => {
+  let db;
+  let app;
+  let cleanup;
+
+  beforeAll(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db;
+    cleanup = testDb.cleanup;
+    app = createTestApp(db).app;
+  });
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  it('rejects an 8 character or longer password without a digit or without a letter', async () => {
+    const message = 'Password must have at least 8 characters, including a letter and a number.';
+    const cases = [
+      { password: 'abcdefgh', email: 'no.digit@my.cspc.edu.ph', studentNo: '2026-9201' },
+      { password: '12345678', email: 'no.letter@my.cspc.edu.ph', studentNo: '2026-9202' },
+    ];
+
+    for (const testCase of cases) {
+      const agent = request.agent(app);
+      const token = await getCsrf(agent, '/register');
+      const response = await agent.post('/register').type('form').send({
+        fullName: 'Weak Password',
+        studentNo: testCase.studentNo,
+        email: testCase.email,
+        password: testCase.password,
+        confirmPassword: testCase.password,
+        policy: 'agreed',
+        _csrf: token,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.text).toContain(message);
+      const row = db.prepare('SELECT id FROM users WHERE email = ?').get(testCase.email);
+      expect(row).toBeUndefined();
+    }
+  });
+
+  it('rejects a leaked password when the breach check is enabled', async () => {
+    const testDb = createTestDatabase();
+    const password = 'LeakedPass2026!';
+    const digest = createHash('sha1').update(password).digest('hex').toUpperCase();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => `${digest.slice(5)}:7`,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    try {
+      const leakApp = createTestApp(testDb.db, { passwordLeakCheck: true }).app;
+      const agent = request.agent(leakApp);
+      const token = await getCsrf(agent, '/register');
+      const email = 'leaked@my.cspc.edu.ph';
+
+      const response = await agent.post('/register').type('form').send({
+        fullName: 'Leaked Password',
+        studentNo: '2026-9301',
+        email,
+        password,
+        confirmPassword: password,
+        policy: 'agreed',
+        _csrf: token,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.text).toContain('This password has appeared in a data breach. Choose a different one.');
+      const row = testDb.db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+      expect(row).toBeUndefined();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0][0]).toBe(
+        `https://api.pwnedpasswords.com/range/${digest.slice(0, 5)}`,
+      );
+    } finally {
+      vi.unstubAllGlobals();
+      testDb.cleanup();
+    }
   });
 });
 

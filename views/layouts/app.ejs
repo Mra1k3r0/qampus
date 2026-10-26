@@ -66,7 +66,7 @@
     const accountInitials = user
       ? (user.initials || String(user.fullName || '').trim().split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() || '?')
       : '';
-    const isAuthPage = currentPath === '/login' || currentPath === '/register';
+    const isAuthPage = currentPath === '/login' || currentPath === '/register' || currentPath === '/forgot-password';
     let activePageScript = typeof pageScript === 'string' && pageScript.length > 0
       ? pageScript
       : null;
@@ -75,6 +75,8 @@
         activePageScript = '/js/queue.js';
       } else if (currentPath.indexOf('/staff/') === 0) {
         activePageScript = '/js/staff.js';
+      } else if (currentPath === '/login' || currentPath === '/register') {
+        activePageScript = '/js/auth.js';
       } else if (currentPath === '/profile') {
         activePageScript = '/js/profile.js';
       }

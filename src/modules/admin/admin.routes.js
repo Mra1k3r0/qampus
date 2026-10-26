@@ -8,7 +8,7 @@ const {
   updateServiceSchema,
 } = require('./admin.schemas');
 
-function createAdminRouter({ db, security }) {
+function createAdminRouter({ db, security, config }) {
   const router = express.Router();
 
   function renderServices(res, { status = 200, errors = {}, values = null, editingServiceId = null } = {}) {
@@ -63,7 +63,7 @@ function createAdminRouter({ db, security }) {
     },
   );
 
-  router.use(createAdminStaffRouter({ db, security }));
+  router.use(createAdminStaffRouter({ db, security, config }));
 
   return router;
 }

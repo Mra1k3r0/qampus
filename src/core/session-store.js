@@ -2,10 +2,11 @@ const session = require('express-session');
 const { nowIso } = require('./time');
 
 class SQLiteStore extends session.Store {
-  constructor(db, { ttlMs }) {
+  constructor(db, { ttlMs, rememberMaxAgeMs = ttlMs }) {
     super();
     this.db = db;
     this.ttlMs = ttlMs;
+    this.rememberMaxAgeMs = rememberMaxAgeMs;
     this.getStatement = db.prepare('SELECT sess, expires_at FROM sessions WHERE sid = ?');
     this.setStatement = db.prepare(
       `INSERT INTO sessions (sid, sess, expires_at)
@@ -17,8 +18,28 @@ class SQLiteStore extends session.Store {
     this.clearStatement = db.prepare('DELETE FROM sessions WHERE expires_at <= ?');
   }
 
-  expiryIso() {
-    return new Date(Date.now() + this.ttlMs).toISOString();
+  expiryIso(sessionData) {
+    const now = Date.now();
+    const cookie = sessionData && sessionData.cookie;
+    let requestedExpiry = null;
+
+    if (cookie) {
+      if (cookie.expires) {
+        const expiresAt = new Date(cookie.expires).getTime();
+        if (Number.isFinite(expiresAt)) {
+          requestedExpiry = expiresAt;
+        }
+      } else if (typeof cookie.maxAge === 'number' && Number.isFinite(cookie.maxAge)) {
+        requestedExpiry = now + cookie.maxAge;
+      }
+    }
+
+    if (requestedExpiry === null) {
+      return new Date(now + this.ttlMs).toISOString();
+    }
+
+    const ceiling = now + this.rememberMaxAgeMs;
+    return new Date(Math.min(requestedExpiry, ceiling)).toISOString();
   }
 
   get(sid, callback) {
@@ -41,7 +62,7 @@ class SQLiteStore extends session.Store {
 
   set(sid, sess, callback) {
     try {
-      this.setStatement.run(sid, JSON.stringify(sess), this.expiryIso());
+      this.setStatement.run(sid, JSON.stringify(sess), this.expiryIso(sess));
       if (callback) {
         callback(null);
       }
@@ -65,9 +86,9 @@ class SQLiteStore extends session.Store {
     }
   }
 
-  touch(sid, _sess, callback) {
+  touch(sid, sess, callback) {
     try {
-      this.touchStatement.run(this.expiryIso(), sid);
+      this.touchStatement.run(this.expiryIso(sess), sid);
       if (callback) {
         callback(null);
       }

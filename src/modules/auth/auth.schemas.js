@@ -23,8 +23,12 @@ const emailSchema = z
 
 const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters.')
-  .max(200, 'Password must be 200 characters or fewer.');
+  .min(8, 'Password must have at least 8 characters, including a letter and a number.')
+  .max(200, 'Password must be 200 characters or fewer.')
+  .refine(
+    (value) => /[A-Za-z]/.test(value) && /[0-9]/.test(value),
+    'Password must have at least 8 characters, including a letter and a number.',
+  );
 
 const policySchema = z.literal('agreed', {
   errorMap: () => ({ message: 'Agree to the Terms of Use and Privacy Policy to continue.' }),
@@ -48,6 +52,7 @@ const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, 'Enter your password.').max(200, 'Password is too long.'),
   portal: z.enum(['student', 'staff', 'admin']).optional(),
+  remember: z.literal('on').optional(),
   next: z.string().optional(),
 });
 

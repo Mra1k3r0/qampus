@@ -100,7 +100,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | M02 | Visible focus | Focus ring visible on all controls against both light surfaces |
 | M03 | Screen reader labels | Join, Leave, Call next, Serve, No-show announce name, service, and state |
 | M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll; a call rings the alert once, opens the called-ticket dialog once, and the sound toggle keeps its choice after a reload; `Got it`, Escape, and a backdrop click close the dialog |
-| M05 | Validation focus | Submit invalid register form; focus lands on error summary, errors linked by `aria-describedby`; login and register show only the top-left brand mark, with no header bar or footer |
+| M05 | Validation focus | Submit invalid register form; focus lands on error summary, errors linked by `aria-describedby`; a password without a letter or number is blocked in the browser and on the server; login and register show only the top-left brand mark, with no header bar or footer |
 | M06 | Contrast | Body text at least 4.5:1, large display text at least 3:1, focus indicator 3:1 |
 | M07 | 200 percent zoom | No clipped controls or horizontal scroll at 1280px with 200 percent zoom |
 | M08 | Mobile 360px | Join flow completes without horizontal scroll; tap targets at least 44px |
@@ -108,7 +108,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | M10 | Empty queue | Student and staff empty states explain what happens next, no blank table |
 | M11 | Projector readability | 1920x1080 display board: ticket code at least 72px, readable at 5 meters |
 | M12 | Display polling | Board refreshes within 5 seconds, no flicker, stale data marked after 15 seconds |
-| M13 | Session expiry | Expired session on join redirects to login with return path and clear message |
+| M13 | Session expiry | Expired session on join redirects to login with return path and clear message; Keep me signed in unchecked ends with the browser, checked lasts 30 days |
 | M14 | Staff filters | Filter by service and status combines correctly and survives refresh |
 | M15 | Error recovery | 500 page offers safe back link; no raw SQL or stack visible |
 | M16 | Double click join | Rapid double click creates one ticket and one confirmation |

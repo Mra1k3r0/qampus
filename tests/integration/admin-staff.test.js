@@ -210,6 +210,29 @@ describe('admin staff accounts', () => {
     expect(JSON.stringify(lastRender())).not.toContain(password);
   });
 
+  it('rejects a weak password on a staff reset', async () => {
+    const agent = await adminAgent();
+    const token = await getCsrf(agent, '/admin/services');
+    const staff = seededStaff();
+    const originalHash = staff.password_hash;
+    const message = 'Password must have at least 8 characters, including a letter and a number.';
+
+    for (const password of ['abcdefgh', '12345678']) {
+      const response = await agent
+        .post(`/admin/staff/${staff.id}/password`)
+        .type('form')
+        .send({ password, _csrf: token });
+
+      expect(response.status).toBe(400);
+      const view = lastRender();
+      expect(view.errors.password).toBe(message);
+      expect(view.editingStaffId).toBe(staff.id);
+    }
+
+    const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(staff.id);
+    expect(row.password_hash).toBe(originalHash);
+  });
+
   it('deactivates and reactivates a staff account with audit rows for both', async () => {
     const agent = await adminAgent();
     const token = await getCsrf(agent, '/admin/services');

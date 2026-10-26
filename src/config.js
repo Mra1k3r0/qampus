@@ -10,6 +10,7 @@ const isTest = process.env.NODE_ENV === 'test';
 
 const DEFAULT_PORT = 3000;
 const DEFAULT_SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000;
+const DEFAULT_REMEMBER_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_SESSION_SECRET_LENGTH = 32;
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
@@ -28,6 +29,9 @@ const cookieSecure = isProduction ? true : requestedCookieSecure;
 const queueEnforceHours = process.env.QUEUE_ENFORCE_HOURS === undefined
   ? true
   : parseBoolean(process.env.QUEUE_ENFORCE_HOURS);
+const passwordLeakCheck = process.env.PASSWORD_LEAK_CHECK === undefined
+  ? !isTest
+  : parseBoolean(process.env.PASSWORD_LEAK_CHECK);
 
 if (isProduction && sessionSecret.length < MIN_SESSION_SECRET_LENGTH) {
   throw new Error('SESSION_SECRET must be at least 32 characters in production.');
@@ -53,9 +57,14 @@ const config = {
   sessionSecret,
   cookieName: process.env.COOKIE_NAME || 'cspc_queue.sid',
   sessionMaxAgeMs: parseInteger(process.env.SESSION_MAX_AGE_MS, DEFAULT_SESSION_MAX_AGE_MS),
+  sessionRememberMaxAgeMs: parseInteger(
+    process.env.SESSION_REMEMBER_MAX_AGE_MS,
+    DEFAULT_REMEMBER_MAX_AGE_MS,
+  ),
   logLevel: isTest ? 'silent' : process.env.LOG_LEVEL || 'info',
   cookieSecure,
   queueEnforceHours,
+  passwordLeakCheck,
 };
 
 module.exports = config;

@@ -2,6 +2,7 @@
 const createError = require('http-errors');
 const { writeAudit } = require('../../core/audit');
 const { immediateTransaction } = require('../../core/db');
+const { isPasswordLeaked, LEAKED_PASSWORD_MESSAGE } = require('../../core/password-safety');
 const { nowIso } = require('../../core/time');
 const authRepository = require('./auth.repository');
 
@@ -20,11 +21,17 @@ function isUniqueViolation(err) {
   return err && typeof err.code === 'string' && err.code.startsWith('SQLITE_CONSTRAINT');
 }
 
-async function register(db, { fullName, studentNo, email, password, requestId }) {
+async function register(db, { fullName, studentNo, email, password, requestId, passwordLeakCheck = false }) {
   const existing = authRepository.findByEmail(db, email);
   if (existing) {
     throw createError(409, 'That email is already registered.', {
       fieldErrors: { email: 'That email is already registered.' },
+    });
+  }
+
+  if (passwordLeakCheck && await isPasswordLeaked(password)) {
+    throw createError(400, LEAKED_PASSWORD_MESSAGE, {
+      fieldErrors: { password: LEAKED_PASSWORD_MESSAGE },
     });
   }
 

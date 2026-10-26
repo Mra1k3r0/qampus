@@ -104,10 +104,18 @@
           autocomplete="new-password"
           minlength="8"
           maxlength="200"
+          pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,200}"
+          title="Password must have at least 8 characters, including a letter and a number."
           aria-describedby="password-hint<%= errorBag.password ? ' password-error' : '' %>"
           <% if (errorBag.password) { %>aria-invalid="true"<% } %>
         >
-        <p class="field__hint" id="password-hint">At least 8 characters. You can paste a password.</p>
+        <p class="field__hint" id="password-hint">At least 8 characters, with a letter and a number.</p>
+        <div id="password-client-error" hidden>
+          <p class="field__error">
+            <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+            Password must have at least 8 characters, including a letter and a number.
+          </p>
+        </div>
         <% if (errorBag.password) { %>
         <p class="field__error" id="password-error">
           <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
@@ -151,7 +159,10 @@
         <% } %>
       </div>
 
-      <button class="btn btn--primary btn--block" type="submit">Create account</button>
+      <button class="btn btn--primary btn--block" type="submit">
+        <%- include('../partials/icon', { name: 'user-plus', size: 16, title: null }) %>
+        Create account
+      </button>
 
       <p class="form__foot">Already have an account? <a href="/login">Sign in</a></p>
     </form>

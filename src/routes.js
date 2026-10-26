@@ -59,6 +59,7 @@ function createRouter({ db, config, security }) {
       'Disallow: /profile',
       'Disallow: /login',
       'Disallow: /register',
+      'Disallow: /forgot-password',
       'Disallow: /api/',
       'Disallow: /avatar/',
       'Disallow: /health',
@@ -89,7 +90,7 @@ function createRouter({ db, config, security }) {
   router.use(createProfileRouter({ db, security }));
   router.use(createQueueRouter({ db, security }));
   router.use(createStaffRouter({ db, security }));
-  router.use(createAdminRouter({ db, security }));
+  router.use(createAdminRouter({ db, config, security }));
 
   return router;
 }

@@ -1,6 +1,7 @@
 <%
   const errorBag = errors && typeof errors === 'object' ? errors : {};
   const emailValue = values && values.email ? values.email : '';
+  const rememberChecked = values && values.remember === 'on';
   const portalOptions = [
     {
       value: 'student',
@@ -133,6 +134,14 @@
           <%= errorBag.password %>
         </p>
         <% } %>
+      </div>
+
+      <div class="auth-options">
+        <label class="checkbox auth-options__remember" for="remember">
+          <input class="checkbox__input" id="remember" name="remember" type="checkbox" value="on"<%= rememberChecked ? ' checked' : '' %>>
+          <span class="checkbox__label">Keep me signed in</span>
+        </label>
+        <a class="auth-options__link" href="/forgot-password">Forgot password?</a>
       </div>
 
       <button class="btn btn--primary btn--block" type="submit">

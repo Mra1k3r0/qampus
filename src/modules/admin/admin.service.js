@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const createError = require('http-errors');
 const { writeAudit } = require('../../core/audit');
 const { immediateTransaction } = require('../../core/db');
+const { isPasswordLeaked, LEAKED_PASSWORD_MESSAGE } = require('../../core/password-safety');
 const { nowIso } = require('../../core/time');
 const adminRepository = require('./admin.repository');
 const { toServiceView } = require('../tickets/tickets.rules');
@@ -40,6 +41,14 @@ function staffAuditRecord(staff) {
     email: staff.email,
     isActive: staff.isActive,
   };
+}
+
+async function assertPasswordAllowed(password, passwordLeakCheck) {
+  if (passwordLeakCheck && await isPasswordLeaked(password)) {
+    throw createError(400, LEAKED_PASSWORD_MESSAGE, {
+      fieldErrors: { password: LEAKED_PASSWORD_MESSAGE },
+    });
+  }
 }
 
 function listServices(db) {
@@ -81,7 +90,8 @@ function findStaff(db, staffId) {
   return adminRepository.findStaffById(db, staffId);
 }
 
-async function createStaff(db, { values, actorUserId, requestId }) {
+async function createStaff(db, { values, actorUserId, requestId, passwordLeakCheck = false }) {
+  await assertPasswordAllowed(values.password, passwordLeakCheck);
   const passwordHash = await bcrypt.hash(values.password, BCRYPT_COST);
 
   try {
@@ -146,7 +156,8 @@ function updateStaff(db, { staffId, values, actorUserId, requestId }) {
   }
 }
 
-async function resetStaffPassword(db, { staffId, values, actorUserId, requestId }) {
+async function resetStaffPassword(db, { staffId, values, actorUserId, requestId, passwordLeakCheck = false }) {
+  await assertPasswordAllowed(values.password, passwordLeakCheck);
   const passwordHash = await bcrypt.hash(values.password, BCRYPT_COST);
 
   return immediateTransaction(db, () => {

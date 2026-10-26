@@ -56,8 +56,12 @@ const staffEmailSchema = z
 
 const staffPasswordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters.')
-  .max(200, 'Password must be 200 characters or fewer.');
+  .min(8, 'Password must have at least 8 characters, including a letter and a number.')
+  .max(200, 'Password must be 200 characters or fewer.')
+  .refine(
+    (value) => /[A-Za-z]/.test(value) && /[0-9]/.test(value),
+    'Password must have at least 8 characters, including a letter and a number.',
+  );
 
 const createStaffSchema = z.object({
   full_name: staffNameSchema,

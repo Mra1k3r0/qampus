@@ -17,7 +17,7 @@ function staffValues(body = {}) {
   return { full_name: name, fullName: name, email: typeof body.email === 'string' ? body.email : '' };
 }
 
-function createAdminStaffRouter({ db, security }) {
+function createAdminStaffRouter({ db, security, config }) {
   const router = express.Router();
   const adminOnly = security.requireRole('admin');
 
@@ -72,6 +72,7 @@ function createAdminStaffRouter({ db, security }) {
     mutation(async (req, res) => {
       const staff = await adminService.createStaff(db, {
         values: req.validatedBody, actorUserId: req.user.id, requestId: req.id,
+        passwordLeakCheck: config.passwordLeakCheck,
       });
       finish(req, res, `Staff account created for ${staff.fullName}.`);
     }, createOptions),
@@ -100,6 +101,7 @@ function createAdminStaffRouter({ db, security }) {
       const staff = await adminService.resetStaffPassword(db, {
         staffId: req.validatedParams.id, values: req.validatedBody,
         actorUserId: req.user.id, requestId: req.id,
+        passwordLeakCheck: config.passwordLeakCheck,
       });
       finish(req, res, `Password reset for ${staff.fullName}.`);
     }),
