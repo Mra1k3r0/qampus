@@ -101,22 +101,37 @@
             </form>
           </div>
 
-          <form class="upload-form" method="post" action="/profile/avatar/upload" enctype="multipart/form-data">
+          <form class="upload-form" method="post" action="/profile/avatar/upload" enctype="multipart/form-data" data-avatar-form>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <label class="field__label" for="avatar-upload">Upload a photo</label>
-            <div class="upload-form__row">
-              <input
-                class="input upload-form__input"
-                id="avatar-upload"
-                name="avatar"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                required
-                aria-describedby="avatar-upload-hint<%= errorBag.avatar ? ' avatar-error' : '' %>"
-              >
-              <button class="btn btn--secondary" type="submit">Upload</button>
+            <div class="upload-form__body">
+              <div class="upload-form__preview">
+                <span class="field__label">Preview</span>
+                <div class="avatar-preview" data-avatar-preview>
+                  <% if (avatarUrl) { %>
+                  <img class="avatar-preview__image" data-avatar-preview-image src="<%= avatarUrl %>" alt="Current profile photo" width="104" height="104">
+                  <% } %>
+                  <span class="avatar-preview__initials" data-avatar-preview-initials aria-hidden="true"<%= avatarUrl ? ' hidden' : '' %>><%= initials %></span>
+                </div>
+              </div>
+              <div class="upload-form__field">
+                <label class="field__label" for="avatar-upload">Upload a photo</label>
+                <div class="upload-form__row">
+                  <input
+                    class="input upload-form__input"
+                    id="avatar-upload"
+                    name="avatar"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    required
+                    data-avatar-input
+                    aria-describedby="avatar-upload-hint<%= errorBag.avatar ? ' avatar-error' : '' %>"
+                  >
+                  <button class="btn btn--secondary" type="submit">Save photo</button>
+                </div>
+                <p class="field__hint" id="avatar-upload-hint">PNG, JPEG, or WebP, up to 2 MB. Drag and zoom to crop to a square before saving.</p>
+                <p class="upload-form__status" data-avatar-status role="status"></p>
+              </div>
             </div>
-            <p class="field__hint" id="avatar-upload-hint">PNG, JPEG, or WebP, up to 2 MB.</p>
           </form>
         </div>
       </section>
@@ -158,4 +173,25 @@
       </section>
     </div>
   </div>
+
+  <dialog class="crop-dialog" data-crop-dialog aria-labelledby="crop-title" aria-describedby="crop-desc">
+    <div class="crop-dialog__inner">
+      <div class="crop-dialog__head">
+        <p class="eyebrow">Photo</p>
+        <h2 class="crop-dialog__title" id="crop-title">Adjust your photo</h2>
+        <p class="crop-dialog__lede" id="crop-desc">Drag to reposition, then zoom to fit the square. Arrow keys also nudge the photo.</p>
+      </div>
+      <div class="crop-dialog__stage" data-crop-stage tabindex="0" aria-label="Photo crop area" aria-describedby="crop-desc">
+        <img class="crop-dialog__image" data-crop-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="" draggable="false">
+      </div>
+      <div class="field crop-dialog__zoom">
+        <label class="field__label" for="crop-zoom">Zoom</label>
+        <input class="crop-dialog__range" id="crop-zoom" data-crop-zoom type="range" min="1" max="3" step="0.01" value="1">
+      </div>
+      <div class="crop-dialog__actions">
+        <button class="btn btn--secondary" type="button" data-crop-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-crop-apply>Use photo</button>
+      </div>
+    </div>
+  </dialog>
 </div>

@@ -88,3 +88,12 @@ Join, leave, call next, start, serve, no-show, recall, public display, and admin
 - The in-page call banner uses the navy fill, a gold signal rule, and a bell icon, so a called ticket reads as an alert rather than a quiet note.
 - The call dialog is a native `alertdialog` with a gold top rule, an 8 px panel radius, and a bell badge. It opens when the page loads with a called ticket, and again only when the call count rises. It does not reopen for the same count.
 - Without JavaScript the banner still carries the call; the sound button and dialog stay hidden.
+
+## Profile photo crop
+
+- The upload button reads "Save photo". The field label stays "Upload a photo", and the hint explains that the photo is cropped to a square before saving.
+- The photo panel shows a square preview of the saved photo on load. It swaps to the cropped photo after "Use photo", and the server-rendered photo fills it again after Save photo and reload.
+- Choosing a PNG, JPEG, or WebP opens a native dialog with a 1:1 stage. Drag to reposition, use arrow keys to nudge, and set zoom from 1 to 3. Escape, Cancel, or a backdrop click close it; Cancel restores the previous selection.
+- "Use photo" writes a 512 by 512 JPEG at quality 0.9 into the file input and updates the preview without submitting. "Save photo" still posts the form with the CSRF token.
+- Without JavaScript the dialog stays closed, the picker posts the original file, and the preview shows the saved avatar.
+- The 120 px round identity avatar and the preset grid are unchanged. Checked at 320, 390, 768, and 1440.

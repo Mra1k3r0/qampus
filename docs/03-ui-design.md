@@ -3,7 +3,6 @@
 Scope: the server-rendered screens of the CSPC queue, built with Express and EJS. Direction: a campus service desk, not a SaaS dashboard or a terminal. CSPC navy on warm paper, seal gold as the one accent, serif page titles, hard rules, oversized ticket numerals. No Bootstrap, no icon fonts, no emoji, no external fonts. Must read at 3 m and work at 320 px.
 
 ## 1. Design principles
-
 - **The next action is always visible.** Every screen answers "what do I do now" in one primary control within the first viewport: join, show code, call next, or leave.
 - **The ticket number is the hero.** Ticket code and position use the largest type on the page so a student can read them at arm's length and a projector can read them across a room.
 - **Waiting is legible.** Show position, estimated wait, and last update time together; never replace a number with a spinner or "almost there".
@@ -92,6 +91,7 @@ Global states: default is the resting style; hover changes colour or border in 1
 - **7. Staff console.** Eye first: the live queue table and the "Call next" button in the header. Primary: "Call next". A three-column stats strip shows waiting, average wait, served today. Filters are text tabs (Waiting, Serving, All) with a 2 px underline, not pills. Empty: "Queue is clear" with the last served ticket and time, plus a refresh timestamp. Paginate at 20 rows. Mobile: rows stack, "Call next" becomes a fixed bottom bar, filters wrap to two lines, no horizontal scroll.
 - **8. Staff ticket detail.** Eye first: ticket code, status, and waiting time in a 7-column header. Primary depends on state: "Start serving" for waiting, "Mark complete" for serving. Notes are read-only unless the staff member edits them. Audit trail lists time and action in mono. Empty: not applicable; show "Ticket not found" as a 404-style panel with a search field. Mobile: action bar fixed at the bottom, primary first, no-show below a rule, audit trail after the facts.
 - **9. 404 and 500.** Eye first: the numeral 404 or 500 at clamp(6rem, 18vw, 12rem) in mono. Primary: "Back to home"; secondary "View the board". 500 adds a reference code in mono and the line "The queue is still running. Try again in a moment." Empty: not applicable. Mobile: numeral at 30vw, copy at 1rem, actions stack full width. No joke copy, no illustration, no emoji.
+- **10. Profile settings.** Eye first: the 120 px round identity photo, name, and student number. The photo panel pairs a 104 px square preview with the file picker and the primary "Save photo"; the preview shows the saved photo on load and the cropped result before saving. Choosing a file opens a native dialog with a 1:1 stage, drag to reposition, arrow keys to nudge, a Zoom slider from 1 to 3, Cancel, and "Use photo". Use photo crops to a 512 by 512 JPEG and updates the preview without submitting; Save photo persists it. Presets stay in the 6-up grid, and Shuffle and Remove stay quiet actions. Without JavaScript the picker posts the original file. Mobile: preview and field stack, the dialog fits 320 px, and actions keep 44 px targets.
 
 ## 7. Motion
 
