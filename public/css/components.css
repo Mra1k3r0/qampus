@@ -144,16 +144,6 @@
   margin: 0;
 }
 
-.bot-trap {
-  position: absolute;
-  top: auto;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  overflow: hidden;
-}
-
 .field {
   display: grid;
   gap: var(--space-2);

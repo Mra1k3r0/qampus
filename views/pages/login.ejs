@@ -59,7 +59,6 @@
       </div>
 
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <%- include('../partials/bot-trap') %>
       <% if (nextPath) { %>
       <input type="hidden" name="next" value="<%= nextPath %>">
       <% } %>

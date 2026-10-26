@@ -74,14 +74,13 @@ Join, leave, call next, start, serve, no-show, recall, public display, and admin
 
 - Login and register render no site header bar and no footer. The seal, Qampus wordmark, and CCIT Service Desk line sit at the top left of the page, aligned with the form's page margin.
 - Guest nav: "Sign in" is text only, no icon. "Get started" is the primary blue button with the arrow-right icon after the text, on desktop and in the drawer foot.
-- The register and login forms no longer carry a visible company website field. The off-screen trap is described below, and email acceptance is left to the schema and seed data.
+- The register and login forms carry no website field. Email acceptance is left to the schema and seed data.
 
 ## Footer and release surface
 
 - The footer opens with the seal, the Qampus wordmark, and a short description, then office hours, location, and help. The base line reads `© 2026 qampus.dpdns.org`.
 - Terms of Use live at `/rules`. The old `/policy` path returns a 301 to `/rules`, and the sitemap plus `llms.txt` point to `/rules`.
 - The Privacy Policy is a standalone page at `/privacy`, linked from the register consent line and the footer.
-- The bot trap is an off-screen `website_url` field. A filled field is rejected on register and login, and the submission is logged.
 - Discovery files are self-hosted: `robots.txt`, `sitemap.xml`, `llms.txt`, and `site.webmanifest`, with canonical, Open Graph, and JSON-LD tags in the layout head.
 
 ## Called-ticket alert

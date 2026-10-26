@@ -6,14 +6,6 @@ const authService = require('./auth.service');
 
 const PORTALS = new Set(['student', 'staff', 'admin']);
 
-function isBotSubmission(body) {
-  return typeof body.website_url === 'string' && body.website_url.trim().length > 0;
-}
-
-function logBotSubmission(req) {
-  req.log.warn({ requestId: req.id }, 'rejected a bot trap submission');
-}
-
 function normalizePortal(value) {
   return typeof value === 'string' && PORTALS.has(value) ? value : 'student';
 }
@@ -91,33 +83,6 @@ function createAuthRouter({ db, config, security }) {
     });
   }
 
-  function rejectBotRegister(req, res, next) {
-    if (!isBotSubmission(req.body)) {
-      next();
-      return;
-    }
-    logBotSubmission(req);
-    renderRegister(res, {
-      status: 400,
-      errors: { form: 'Check the form and try again.' },
-      values: formValues(req.body),
-    });
-  }
-
-  function rejectBotLogin(req, res, next) {
-    if (!isBotSubmission(req.body)) {
-      next();
-      return;
-    }
-    logBotSubmission(req);
-    renderLogin(res, {
-      status: 401,
-      errors: { form: 'Email or password is incorrect.' },
-      values: loginFormValues(req.body),
-      nextPath: security.safeNextPath(req.body.next),
-    });
-  }
-
   function registerValidationError(err, req, res, next) {
     if (err.status === 400) {
       renderRegister(res, {
@@ -150,7 +115,6 @@ function createAuthRouter({ db, config, security }) {
   router.post(
     '/register',
     security.registerLimiter,
-    rejectBotRegister,
     validateBody(registerSchema, { onError: registerValidationError }),
     async (req, res, next) => {
       try {
@@ -189,7 +153,6 @@ function createAuthRouter({ db, config, security }) {
   router.post(
     '/login',
     security.loginLimiter,
-    rejectBotLogin,
     validateBody(loginSchema, { onError: loginValidationError }),
     async (req, res, next) => {
       const { email, password, portal, remember, next: nextCandidate } = req.validatedBody;
