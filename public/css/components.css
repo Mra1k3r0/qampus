@@ -228,6 +228,48 @@
   cursor: not-allowed;
 }
 
+/* Password reveal: a quiet control pinned inside the field, hidden until JS runs */
+.field__control {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+.field__control .input {
+  padding-right: calc(var(--tap-min) + var(--space-3));
+}
+
+.field__reveal {
+  position: absolute;
+  top: 50%;
+  right: var(--space-1);
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  padding: 0;
+  background-color: transparent;
+  border: 0;
+  border-radius: var(--radius-control);
+  color: var(--color-ink-muted);
+  transform: translateY(-50%);
+  transition:
+    background-color var(--duration-hover) var(--ease-exit),
+    color var(--duration-hover) var(--ease-exit);
+}
+
+.field__reveal[hidden],
+.field__reveal [hidden] {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .field__reveal:hover {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .input:hover,
   .select:hover,

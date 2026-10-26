@@ -119,14 +119,28 @@
 
       <div class="field<%= errorBag.password ? ' field--error' : '' %>">
         <label class="field__label" for="password">Password</label>
-        <input
-          class="input"
-          id="password"
-          name="password"
-          type="password"
-          autocomplete="current-password"
-          <% if (errorBag.password) { %>aria-describedby="password-error" aria-invalid="true"<% } %>
-        >
+        <div class="field__control">
+          <input
+            class="input"
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            <% if (errorBag.password) { %>aria-describedby="password-error" aria-invalid="true"<% } %>
+          >
+          <button
+            class="field__reveal"
+            type="button"
+            data-password-toggle="password"
+            aria-controls="password"
+            aria-pressed="false"
+            aria-label="Show password"
+            hidden
+          >
+            <span data-password-icon="show"><%- include('../partials/icon', { name: 'eye', size: 20, title: null }) %></span>
+            <span data-password-icon="hide" hidden><%- include('../partials/icon', { name: 'eye-off', size: 20, title: null }) %></span>
+          </button>
+        </div>
         <% if (errorBag.password) { %>
         <p class="field__error" id="password-error">
           <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>

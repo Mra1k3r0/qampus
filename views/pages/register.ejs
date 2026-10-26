@@ -95,19 +95,33 @@
 
       <div class="field<%= errorBag.password ? ' field--error' : '' %>">
         <label class="field__label" for="password">Password</label>
-        <input
-          class="input"
-          id="password"
-          name="password"
-          type="password"
-          autocomplete="new-password"
-          minlength="8"
-          maxlength="200"
-          pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,200}"
-          title="Password must have at least 8 characters, including a letter and a number."
-          aria-describedby="password-hint<%= errorBag.password ? ' password-error' : '' %>"
-          <% if (errorBag.password) { %>aria-invalid="true"<% } %>
-        >
+        <div class="field__control">
+          <input
+            class="input"
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            maxlength="200"
+            pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,200}"
+            title="Password must have at least 8 characters, including a letter and a number."
+            aria-describedby="password-hint<%= errorBag.password ? ' password-error' : '' %>"
+            <% if (errorBag.password) { %>aria-invalid="true"<% } %>
+          >
+          <button
+            class="field__reveal"
+            type="button"
+            data-password-toggle="password"
+            aria-controls="password"
+            aria-pressed="false"
+            aria-label="Show password"
+            hidden
+          >
+            <span data-password-icon="show"><%- include('../partials/icon', { name: 'eye', size: 20, title: null }) %></span>
+            <span data-password-icon="hide" hidden><%- include('../partials/icon', { name: 'eye-off', size: 20, title: null }) %></span>
+          </button>
+        </div>
         <p class="field__hint" id="password-hint">At least 8 characters, with a letter and a number.</p>
         <div id="password-client-error" hidden>
           <p class="field__error">
@@ -125,16 +139,30 @@
 
       <div class="field<%= errorBag.confirmPassword ? ' field--error' : '' %>">
         <label class="field__label" for="confirmPassword">Confirm password</label>
-        <input
-          class="input"
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          autocomplete="new-password"
-          minlength="8"
-          maxlength="200"
-          <% if (errorBag.confirmPassword) { %>aria-describedby="confirmPassword-error" aria-invalid="true"<% } %>
-        >
+        <div class="field__control">
+          <input
+            class="input"
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            maxlength="200"
+            <% if (errorBag.confirmPassword) { %>aria-describedby="confirmPassword-error" aria-invalid="true"<% } %>
+          >
+          <button
+            class="field__reveal"
+            type="button"
+            data-password-toggle="confirmPassword"
+            aria-controls="confirmPassword"
+            aria-pressed="false"
+            aria-label="Show confirm password"
+            hidden
+          >
+            <span data-password-icon="show"><%- include('../partials/icon', { name: 'eye', size: 20, title: null }) %></span>
+            <span data-password-icon="hide" hidden><%- include('../partials/icon', { name: 'eye-off', size: 20, title: null }) %></span>
+          </button>
+        </div>
         <% if (errorBag.confirmPassword) { %>
         <p class="field__error" id="confirmPassword-error">
           <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
