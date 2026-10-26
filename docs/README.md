@@ -34,7 +34,8 @@ SQLite is a documented fallback for the course's MySQL default. The reason and t
 | `05-test-plan.md` | Unit, integration, manual, and failure drill matrices | Done |
 | `06-git-and-ai.md` | Branching, commits, PR template, review, licence, AI log | Done |
 | `07-demo-script.md` | Eight minute run of show, accounts, fallbacks, Q&A | Done |
-| `08-deployment.md` | Railway, Render and Turso fallback, local LAN, smoke test | Done |
+| `08-deployment.md` | Hosting options, environment variables, local LAN, smoke test | Done |
+| `08a-pterodactyl-tunnel.md` | Pterodactyl, Cloudflare Tunnel, health checks, troubleshooting | Done |
 | `09-traceability.md` | Requirement to code to test to evidence matrix | Done as a plan |
 | `README.md` | This index and the start-here path | Done |
 

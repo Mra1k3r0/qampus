@@ -4,8 +4,8 @@ Stack: Express 4, EJS, better-sqlite3, express-session, bcryptjs, zod. Node 22. 
 
 ## 1. Recommendation
 
-- Primary: Railway trial, Singapore region, one replica, persistent volume mounted at `/data`, `DATABASE_PATH=/data/app.db`. Region list: https://docs.railway.com/reference/regions. Volumes: https://docs.railway.com/volumes. Trial terms: https://docs.railway.com/pricing/free-trial.
-- Fallback: Render free web service plus Turso remote database, accepting cold starts and no persistent local disk. Free tier limits: https://render.com/docs/free. Turso plans: https://turso.tech/pricing.
+- Primary: Pterodactyl with Cloudflare Tunnel. One process, a persistent `data` volume, and a dashboard-managed hostname. Setup: `docs/08a-pterodactyl-tunnel.md`.
+- Hosted fallback: Railway trial with a persistent volume, or Render plus Turso when a disk is unavailable. Region list: https://docs.railway.com/reference/regions. Render limits: https://render.com/docs/free.
 - Tradeoff: Railway with a volume gives file-backed SQLite persistence with almost no code change, while Render free survives only if data lives in Turso, which requires a small data-layer change and network dependency.
 
 ## 2. Environment variables
@@ -16,9 +16,8 @@ Stack: Express 4, EJS, better-sqlite3, express-session, bcryptjs, zod. Node 22. 
 | `PORT` | injected by host | Do not hardcode in production. |
 | `DATABASE_PATH` | `/data/app.db` | Must be on the mounted volume. |
 | `SESSION_SECRET` | 32+ random bytes | Generate once, store in host secrets. |
-| `APP_BASE_URL` | `https://<host>` | Used for absolute links and redirects. |
+| `PUBLIC_BASE_URL` | `https://<host>` | Used for canonical links, sitemap, and redirects. |
 | `COOKIE_SECURE` | `true` | Requires HTTPS; see https://expressjs.com/en/advanced/best-practice-security/. |
-| `TRUST_PROXY` | `1` | One reverse proxy in front of the app. |
 | `TZ` | `Asia/Manila` | Keeps displayed times and logs consistent. |
 | `TURSO_DATABASE_URL` | unset by default | Fallback only, `libsql://...`. |
 | `TURSO_AUTH_TOKEN` | unset by default | Fallback only, keep secret. |
@@ -28,9 +27,8 @@ NODE_ENV=production
 PORT=8080
 DATABASE_PATH=/data/app.db
 SESSION_SECRET=replace-with-32-plus-random-bytes
-APP_BASE_URL=https://your-app.up.railway.app
+PUBLIC_BASE_URL=https://your-app.up.railway.app
 COOKIE_SECURE=true
-TRUST_PROXY=1
 TZ=Asia/Manila
 # Turso fallback only
 TURSO_DATABASE_URL=

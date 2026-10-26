@@ -41,7 +41,7 @@ if (isProduction && process.env.COOKIE_SECURE === 'false') {
   throw new Error('COOKIE_SECURE cannot be false in production.');
 }
 
-const port = parseInteger(process.env.PORT, DEFAULT_PORT);
+const port = parseInteger(process.env.PORT || process.env.SERVER_PORT, DEFAULT_PORT);
 const publicBaseUrl = (process.env.PUBLIC_BASE_URL || `http://localhost:${port}`).replace(/\/+$/, '');
 
 const config = {
