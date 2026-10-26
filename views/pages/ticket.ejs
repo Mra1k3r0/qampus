@@ -69,12 +69,20 @@
 
   <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
 
-  <div data-live-region>
+  <div class="ticket-sound" data-sound-panel hidden>
+    <button class="ticket-sound__button" type="button" data-sound-toggle aria-pressed="true" aria-label="Turn off call sound" title="Turn off call sound">
+      <span data-sound-icon-on><%- include('../partials/icon', { name: 'volume-2', size: 20, title: null }) %></span>
+      <span data-sound-icon-off hidden><%- include('../partials/icon', { name: 'volume-x', size: 20, title: null }) %></span>
+    </button>
+    <audio data-called-sound src="/audio/called.mp3" preload="auto"></audio>
+  </div>
+
+  <div data-live-region data-call-count="<%= ticket.callCount %>" data-ticket-status="<%= ticket.status %>">
     <article class="ticket-sheet" aria-labelledby="ticket-heading">
       <div class="ticket-sheet__top">
         <div>
           <p class="ticket-sheet__label">Your ticket</p>
-          <h1 class="ticket-sheet__code" id="ticket-heading"><span class="visually-hidden">Ticket </span><%= ticket.code %></h1>
+          <h1 class="ticket-sheet__code" id="ticket-heading"><span class="visually-hidden">Ticket </span><span data-ticket-code><%= ticket.code %></span></h1>
         </div>
         <p class="pill pill--<%= statusClasses[ticket.status] || 'waiting' %>">
           <span class="pill__dot" aria-hidden="true"></span>
@@ -82,13 +90,15 @@
         </p>
       </div>
 
-      <p class="ticket-sheet__service"><%= ticket.serviceName %></p>
+      <p class="ticket-sheet__service" data-ticket-service><%= ticket.serviceName %></p>
 
-      <% if (isAtDesk) { %>
-      <p class="turn-banner" role="status">
-        <%= ticket.status === 'serving' ? 'You are being served.' : 'Your turn.' %>
-        Go to <strong><%= ticket.counterName || 'the service window' %></strong>.
+      <% if (ticket.status === 'called') { %>
+      <p class="turn-banner turn-banner--called" role="alert">
+        <span class="turn-banner__icon" aria-hidden="true"><%- include('../partials/icon', { name: 'bell-ring', size: 24, title: null }) %></span>
+        <span>Your turn. Go to <strong><%= ticket.counterName || 'the service window' %></strong> now.</span>
       </p>
+      <% } else if (isAtDesk) { %>
+      <p class="turn-banner" role="status">You are being served. Go to <strong><%= ticket.counterName || 'the service window' %></strong>.</p>
       <% } %>
 
       <dl class="ticket-sheet__facts">
@@ -102,7 +112,7 @@
         </div>
         <div>
           <dt class="fact__label">Counter</dt>
-          <dd class="fact__value"><%= counterLabel %></dd>
+          <dd class="fact__value" data-ticket-counter><%= counterLabel %></dd>
         </div>
         <div>
           <dt class="fact__label">Times called</dt>
@@ -147,4 +157,21 @@
       </div>
     </article>
   </div>
+
+  <dialog class="call-dialog" data-call-dialog role="alertdialog" aria-labelledby="call-dialog-title" aria-describedby="call-dialog-desc">
+    <div class="call-dialog__inner">
+      <div class="call-dialog__head">
+        <span class="call-dialog__icon"><%- include('../partials/icon', { name: 'bell-ring', size: 28, title: null }) %></span>
+        <p class="call-dialog__eyebrow">Ticket called</p>
+      </div>
+      <h2 class="call-dialog__title" id="call-dialog-title">Your turn</h2>
+      <p class="call-dialog__code"><span class="visually-hidden">Ticket </span><span data-call-dialog-code><%= ticket.code %></span></p>
+      <p class="call-dialog__desc" id="call-dialog-desc">
+        Go to <strong data-call-dialog-counter><%= counterLabel %></strong> for <span data-call-dialog-service><%= ticket.serviceName %></span>.
+      </p>
+      <form class="call-dialog__actions" method="dialog">
+        <button class="btn btn--primary btn--block call-dialog__close" type="submit" data-call-dialog-close>Got it</button>
+      </form>
+    </div>
+  </dialog>
 </div>

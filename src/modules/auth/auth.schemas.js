@@ -26,6 +26,10 @@ const passwordSchema = z
   .min(8, 'Password must be at least 8 characters.')
   .max(200, 'Password must be 200 characters or fewer.');
 
+const policySchema = z.literal('agreed', {
+  errorMap: () => ({ message: 'Agree to the Terms of Use and Privacy Policy to continue.' }),
+});
+
 const registerSchema = z
   .object({
     fullName: nameSchema,
@@ -33,6 +37,7 @@ const registerSchema = z
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string(),
+    policy: policySchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],

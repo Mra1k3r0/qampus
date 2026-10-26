@@ -64,6 +64,27 @@ Join, leave, call next, start, serve, no-show, recall, public display, and admin
 ## Verify before closing
 
 1. Open `/` at 1440 by 900 and 1920 by 1010.
-2. Open `/queue` as `student1@cspc.edu.ph`.
-3. Open `/staff/queue` as `staff@cspc.edu.ph`.
+2. Open `/queue` as `student1@my.cspc.edu.ph`.
+3. Open `/staff/queue` as `staff@my.cspc.edu.ph`.
 4. Check 320, 390, and 768 widths for stacking and no horizontal scroll.
+
+## Auth chrome and guest nav
+
+- Login and register render no site header bar and no footer. The seal, Qampus wordmark, and CCIT Service Desk line sit at the top left of the page, aligned with the form's page margin.
+- Guest nav: "Sign in" is text only, no icon. "Get started" is the primary blue button with the arrow-right icon after the text, on desktop and in the drawer foot.
+- The register and login forms no longer carry a visible company website field. The off-screen trap is described below, and email acceptance is left to the schema and seed data.
+
+## Footer and release surface
+
+- The footer opens with the seal, the Qampus wordmark, and a short description, then office hours, location, and help. The base line reads `© 2026 qampus.dpdns.org`.
+- Terms of Use live at `/rules`. The old `/policy` path returns a 301 to `/rules`, and the sitemap plus `llms.txt` point to `/rules`.
+- The Privacy Policy is a standalone page at `/privacy`, linked from the register consent line and the footer.
+- The bot trap is an off-screen `website_url` field. A filled field is rejected on register and login, and the submission is logged.
+- Discovery files are self-hosted: `robots.txt`, `sitemap.xml`, `llms.txt`, and `site.webmanifest`, with canonical, Open Graph, and JSON-LD tags in the layout head.
+
+## Called-ticket alert
+
+- Sound is on by default. The ticket page shows a 44 px icon-only speaker button; the stored `off` choice turns it off, and the button label flips between "Turn off call sound" and "Turn on call sound".
+- The in-page call banner uses the navy fill, a gold signal rule, and a bell icon, so a called ticket reads as an alert rather than a quiet note.
+- The call dialog is a native `alertdialog` with a gold top rule, an 8 px panel radius, and a bell badge. It opens when the page loads with a called ticket, and again only when the call count rises. It does not reopen for the same count.
+- Without JavaScript the banner still carries the call; the sound button and dialog stay hidden.

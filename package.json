@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "lint": "eslint .",
+    "lint": "eslint src tests scripts",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate": "node scripts/db.js migrate",
@@ -36,6 +36,7 @@
     "express-session": "^1.18.2",
     "helmet": "^8.1.0",
     "http-errors": "^2.0.1",
+    "multer": "^2.5.0",
     "pino": "^9.13.1",
     "pino-http": "^10.5.0",
     "zod": "^3.25.76"

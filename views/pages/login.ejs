@@ -18,7 +18,7 @@
       display: 'Your window, ready.',
       note: 'Sign in to call the next student and close tickets.',
       heading: 'Staff sign in',
-      sub: 'Use the account the office head gave you.',
+      sub: 'Use your CSPC email.',
     },
     {
       value: 'admin',
@@ -27,7 +27,7 @@
       display: 'Your office, in view.',
       note: 'Sign in to manage service windows and staff accounts.',
       heading: 'Office head sign in',
-      sub: 'Use the account the office head gave you.',
+      sub: 'Use your CSPC email.',
     },
   ];
   const portalValues = portalOptions.map(function (option) { return option.value; });
@@ -43,20 +43,6 @@
       <p class="auth-panel__note"><%= option.note %></p>
     </div>
     <% }); %>
-    <dl class="auth-panel__list">
-      <div>
-        <dt>One per window</dt>
-        <dd>One active ticket per student, per window, per day.</dd>
-      </div>
-      <div>
-        <dt>Two windows</dt>
-        <dd>A student can hold at most two active tickets at once.</dd>
-      </div>
-      <div>
-        <dt>Clear window</dt>
-        <dd>Joining closes 30 minutes before the window closes.</dd>
-      </div>
-    </dl>
   </aside>
 
   <div class="auth-form">
@@ -72,6 +58,7 @@
       </div>
 
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <%- include('../partials/bot-trap') %>
       <% if (nextPath) { %>
       <input type="hidden" name="next" value="<%= nextPath %>">
       <% } %>

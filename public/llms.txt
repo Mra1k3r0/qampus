@@ -1,0 +1,21 @@
+# Qampus
+
+> Campus queueing for CSPC CCIT: students take a ticket, watch their place, and show the code at the counter.
+
+## Public pages
+
+- [Home](/) - Start here: what Qampus does and how to take a ticket.
+- [Public display](/display) - Live board of ticket codes, services, counters, and waiting count.
+- [Terms of Use](/rules) - Queue rules, one active ticket per service per day, and no-show handling.
+- [Privacy Policy](/privacy) - What is stored, what the public display hides, and how long data is kept.
+
+## Private areas
+
+- /queue, /staff, /admin, /profile, /login, /register
+- These require an account and are not for indexing.
+
+## Notes
+
+- Timezone: Asia/Manila. Timestamps are stored in UTC and shown in local time.
+- The public display contains no names, emails, or student numbers.
+- Demo accounts exist only for the local demo and are not real people.

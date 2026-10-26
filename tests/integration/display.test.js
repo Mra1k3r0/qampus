@@ -51,7 +51,7 @@ describe('public display', () => {
     const response = await request(app).get('/display');
 
     expect(response.text).not.toContain('Alex Reyes');
-    expect(response.text).not.toContain('student1@cspc.edu.ph');
+    expect(response.text).not.toContain('student1@my.cspc.edu.ph');
     expect(response.text).not.toContain('2026-0001');
   });
 
@@ -111,7 +111,7 @@ describe('public display', () => {
     const response = await agent
       .post('/login')
       .type('form')
-      .send({ email: 'student1@cspc.edu.ph', password: DEMO_PASSWORD, _csrf: token });
+      .send({ email: 'student1@my.cspc.edu.ph', password: DEMO_PASSWORD, _csrf: token });
 
     expect(response.status).toBe(303);
     expect(response.headers.location).toBe('/queue');

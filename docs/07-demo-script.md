@@ -6,9 +6,9 @@ Target: 8 minutes plus 2 minutes for questions. Three presenters. One laptop, on
 
 | Role | Email | Password | Used for |
 | --- | --- | --- | --- |
-| Student | `student1@cspc.edu.ph` | `QueueDemo2026!` | Live join and ticket tracking |
-| Staff | `staff@cspc.edu.ph` | `QueueDemo2026!` | Call, start, serve |
-| Admin | `admin@cspc.edu.ph` | `QueueDemo2026!` | Service windows and staff accounts, only if asked |
+| Student | `student1@my.cspc.edu.ph` | `QueueDemo2026!` | Live join and ticket tracking |
+| Staff | `staff@my.cspc.edu.ph` | `QueueDemo2026!` | Call, start, serve |
+| Admin | `admin@my.cspc.edu.ph` | `QueueDemo2026!` | Service windows and staff accounts, only if asked |
 
 Passwords are demo-only, are not reused anywhere, and are rotated after the showcase. The seed script hashes them with bcrypt. No real student data is in the database.
 
@@ -31,7 +31,7 @@ Passwords are demo-only, are not reused anywhere, and are rotated after the show
 - "We built a queueing system for four offices: Registrar, Cashier, Scholarship, and Library."
 - "A student joins from a phone, sees a ticket code and an honest estimate, and can leave the line without losing the day."
 - "Staff see one queue per office, call the next student, and mark the outcome. The public board shows the same state."
-- "The rules are visible at `/policy`: the join window closes 30 minutes before the office does, one ticket per service, at most two active tickets, and two no-shows blocks the rest of the day."
+- "The rules are visible at `/rules`: the join window closes 30 minutes before the office does, one ticket per service, at most two active tickets, and two no-shows blocks the rest of the day."
 - State the boundary: "Round 1 is a working single-campus queue. We did not build appointments, SMS, or payments."
 
 ### 1:00 to 2:00, presenter 1: architecture in one slide
@@ -43,7 +43,7 @@ Passwords are demo-only, are not reused anywhere, and are rotated after the show
 
 ### 2:00 to 5:00, presenter 2: student flow
 
-1. Open `/login` in the private window. Pick the Student portal, then sign in as `student1@cspc.edu.ph` with the demo password. "The portal only chooses the landing page; the server still checks the role against the account."
+1. Open `/login` in the private window. Pick the Student portal, then sign in as `student1@my.cspc.edu.ph` with the demo password. "The portal only chooses the landing page; the server still checks the role against the account."
 2. Point at the dashboard: "One active ticket, four offices, current wait, and the office hours."
 3. Open Registrar. Point at the service status, average minutes, and the queue count. Press "Join queue".
 4. On the ticket page, point at the code, position, estimated time, and status timeline. "This is a real row, not a mock."
@@ -56,7 +56,7 @@ Do not read the page aloud. Point, say the one number that matters, move on.
 ### 5:00 to 7:00, presenter 3: staff flow and public display
 
 1. Switch the external display to `/display`. Point at the four columns, the now-serving code, and the waiting count.
-2. In the normal window, sign in as staff: pick the Staff portal, then use `staff@cspc.edu.ph`. Open the Registrar console.
+2. In the normal window, sign in as staff: pick the Staff portal, then use `staff@my.cspc.edu.ph`. Open the Registrar console.
 3. Point at the queue table: code, student name masked, wait time, status, actions.
 4. Press "Call next". The oldest waiting ticket becomes called. The board updates within 5 seconds.
 5. Switch to the student ticket. It now says called, with the window. Say: "The student sees this without refreshing manually."

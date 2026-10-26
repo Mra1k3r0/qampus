@@ -38,13 +38,13 @@ describe('staff console', () => {
 
   async function staffAgent() {
     const agent = request.agent(app);
-    await login(agent, 'staff@cspc.edu.ph');
+    await login(agent, 'staff@my.cspc.edu.ph');
     return agent;
   }
 
   it('returns 403 when a student opens the staff console', async () => {
     const agent = request.agent(app);
-    await login(agent, 'student1@cspc.edu.ph');
+    await login(agent, 'student1@my.cspc.edu.ph');
 
     const response = await agent.get('/staff/queue');
 

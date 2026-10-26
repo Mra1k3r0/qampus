@@ -28,9 +28,10 @@ describe('auth schemas', () => {
   const validRegister = {
     fullName: '  Alex Reyes  ',
     studentNo: '2026-0001',
-    email: 'alex@cspc.edu.ph',
+    email: 'alex@my.cspc.edu.ph',
     password: 'QueueDemo2026!',
     confirmPassword: 'QueueDemo2026!',
+    policy: 'agreed',
   };
 
   it('rejects a bad email and a password shorter than 8 characters', () => {
@@ -52,7 +53,7 @@ describe('auth schemas', () => {
 
     expect(result.success).toBe(true);
     expect(result.data.fullName).toBe('Alex Reyes');
-    expect(result.data.email).toBe('alex@cspc.edu.ph');
+    expect(result.data.email).toBe('alex@my.cspc.edu.ph');
   });
 
   it('rejects a confirmation that does not match', () => {
@@ -63,6 +64,16 @@ describe('auth schemas', () => {
 
     expect(result.success).toBe(false);
     expect(result.error.issues[0].path).toContain('confirmPassword');
+  });
+
+  it('rejects a registration without accepting the policy', () => {
+    const result = registerSchema.safeParse({
+      ...validRegister,
+      policy: undefined,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error.issues[0].path).toContain('policy');
   });
 
   it('requires an email and password on login', () => {

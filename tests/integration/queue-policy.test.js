@@ -14,7 +14,7 @@ const { createTestApp } = appHelper;
 const { getCsrf } = csrfHelper;
 const { DEMO_PASSWORD } = seedModule;
 
-const STUDENT_EMAIL = 'student1@cspc.edu.ph';
+const STUDENT_EMAIL = 'student1@my.cspc.edu.ph';
 const MONDAY_10AM = new Date('2026-10-26T02:00:00.000Z').getTime();
 const ONE_MINUTE_MS = 60 * 1000;
 

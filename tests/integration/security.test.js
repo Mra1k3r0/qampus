@@ -56,7 +56,7 @@ describe('security', () => {
       lastResponse = await agent
         .post('/login')
         .type('form')
-        .send({ email: 'student1@cspc.edu.ph', password: 'WrongPassword2026!', _csrf: token });
+        .send({ email: 'student1@my.cspc.edu.ph', password: 'WrongPassword2026!', _csrf: token });
     }
 
     expect(lastResponse.status).toBe(429);
@@ -82,7 +82,7 @@ describe('security', () => {
     const response = await request(app).post('/register').type('form').send({
       fullName: 'No Token',
       studentNo: '2026-9100',
-      email: 'no.token@cspc.edu.ph',
+      email: 'no.token@my.cspc.edu.ph',
       password: 'QueueDemo2026!',
       confirmPassword: 'QueueDemo2026!',
     });

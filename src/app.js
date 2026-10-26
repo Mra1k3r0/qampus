@@ -13,10 +13,11 @@ const { createSecurity } = require('./core/security');
 const { createContext } = require('./core/context');
 const { notFoundHandler, createErrorHandler } = require('./core/errors');
 const authRepository = require('./modules/auth/auth.repository');
+const { AVATAR_UPLOAD_PATH, avatarUploadPreCsrf } = require('./modules/profile/profile.upload');
 const { createRouter } = require('./routes');
 
 const PUBLIC_BOARD_PATHS = new Set(['/display', '/api/display']);
-const ANONYMOUS_READ_PATHS = new Set(['/', '/policy', '/display', '/api/display']);
+const ANONYMOUS_READ_PATHS = new Set(['/', '/rules', '/policy', '/display', '/api/display']);
 
 function loadUser(db) {
   return function loadUserMiddleware(req, _res, next) {
@@ -64,6 +65,14 @@ function createApp({ db, config: appConfig = config }) {
   app.use(express.static(path.join(appConfig.projectRoot, 'public')));
   app.use(express.urlencoded({ extended: false, limit: '16kb' }));
   app.use(express.json({ limit: '16kb' }));
+  app.use((req, res, next) => {
+    // multipart must be parsed before the global CSRF check can read req.body._csrf
+    if (req.method === 'POST' && req.path === AVATAR_UPLOAD_PATH) {
+      avatarUploadPreCsrf(req, res, next);
+      return;
+    }
+    next();
+  });
 
   app.use(
     session({
@@ -103,6 +112,10 @@ function createApp({ db, config: appConfig = config }) {
         get: () => req.csrfToken(),
       });
     }
+    next();
+  });
+  app.use((req, res, next) => {
+    res.locals.publicBaseUrl = appConfig.publicBaseUrl;
     next();
   });
   const context = createContext({ appName: appConfig.appName });

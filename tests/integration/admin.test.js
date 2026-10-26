@@ -33,7 +33,7 @@ describe('admin service windows', () => {
 
   async function adminAgent() {
     const agent = request.agent(app);
-    await login(agent, 'admin@cspc.edu.ph');
+    await login(agent, 'admin@my.cspc.edu.ph');
     return agent;
   }
 
@@ -51,7 +51,7 @@ describe('admin service windows', () => {
 
   it('returns 403 when staff opens the admin page', async () => {
     const agent = request.agent(app);
-    await login(agent, 'staff@cspc.edu.ph');
+    await login(agent, 'staff@my.cspc.edu.ph');
 
     const response = await agent.get('/admin/services');
 

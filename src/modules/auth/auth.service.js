@@ -47,7 +47,7 @@ async function register(db, { fullName, studentNo, email, password, requestId })
         action: 'register',
         entityType: 'user',
         entityId: created.id,
-        after: { role: created.role },
+        after: { role: created.role, policyAccepted: true },
         requestId,
       });
 

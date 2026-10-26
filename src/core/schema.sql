@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('student', 'staff', 'admin')),
   is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  avatar_type TEXT CHECK (avatar_type IN ('preset', 'upload')),
+  avatar_value TEXT,
+  avatar_updated_at TEXT,
   created_at TEXT NOT NULL
 );
 

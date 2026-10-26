@@ -144,6 +144,16 @@
   margin: 0;
 }
 
+.bot-trap {
+  position: absolute;
+  top: auto;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+}
+
 .field {
   display: grid;
   gap: var(--space-2);
@@ -833,6 +843,32 @@
   color: var(--color-paper);
 }
 
+.turn-banner--called {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-left-width: 6px;
+  background-color: var(--color-navy);
+  font-size: var(--text-body);
+  box-shadow: var(--shadow-ticket);
+}
+
+.turn-banner--called strong {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.turn-banner--called .turn-banner__icon {
+  color: var(--color-gold);
+}
+
+.turn-banner__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 2px;
+}
+
 /* Service windows */
 .window-row {
   display: grid;
@@ -1030,6 +1066,42 @@
   max-width: 54rem;
 }
 
+.ticket-sound {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+.ticket-sound[hidden] {
+  display: none;
+}
+
+.ticket-sound__button {
+  display: grid;
+  place-items: center;
+  width: calc(var(--control-height) - 4px);
+  height: calc(var(--control-height) - 4px);
+  padding: 0;
+  color: var(--color-ink-muted);
+  background-color: var(--color-paper-raised);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.ticket-sound__button:hover {
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+}
+
+.ticket-sound__button[aria-pressed='false'] {
+  color: var(--color-ink-muted);
+}
+
+.ticket-sound__button [hidden] {
+  display: none;
+}
+
 .ticket-sheet {
   display: grid;
   gap: var(--space-6);
@@ -1078,6 +1150,119 @@
   border-top: 1px dashed var(--color-rule-strong);
   font-size: var(--text-small);
   font-weight: 600;
+}
+
+/* Called-ticket dialog: the ticket stub pulled above the page */
+.call-dialog {
+  width: 34rem;
+  max-width: calc(100vw - (2 * var(--page-margin)));
+  max-height: calc(100vh - (2 * var(--space-6)));
+  max-height: calc(100dvh - (2 * var(--space-6)));
+  margin: auto;
+  padding: 0;
+  background-color: var(--color-paper-raised);
+  border: 1px solid var(--color-rule-strong);
+  border-top: 6px solid var(--color-gold);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-ticket);
+  color: var(--color-ink);
+  overflow: auto;
+}
+
+.call-dialog:not([open]) {
+  display: none;
+}
+
+.call-dialog[open] {
+  animation: rise-in var(--duration-panel) var(--ease-enter) both;
+}
+
+.call-dialog::backdrop {
+  background-color: var(--color-overlay);
+}
+
+.call-dialog__inner {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--ticket-pad);
+}
+
+.call-dialog__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.call-dialog__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  color: var(--color-gold-ink);
+  border: 2px solid var(--color-gold);
+  border-radius: 50%;
+  animation: call-alert-pulse 1.6s var(--ease-enter) 2;
+}
+
+@keyframes call-alert-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(183 121 31 / 30%);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0.5rem rgb(183 121 31 / 0%);
+  }
+}
+
+.call-dialog__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-gold-ink);
+  text-transform: uppercase;
+}
+
+.call-dialog__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.call-dialog__code {
+  padding-block: var(--space-2) var(--space-3);
+  border-block: 1px dashed var(--color-rule-strong);
+  font-family: var(--font-mono);
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--tracking-numeral);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.call-dialog__desc {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  overflow-wrap: anywhere;
+}
+
+.call-dialog__desc strong {
+  font-weight: 700;
+}
+
+.call-dialog__actions {
+  margin: 0;
+}
+
+.call-dialog__close {
+  width: 100%;
+  min-height: calc(var(--control-height) + var(--space-2));
+  font-size: var(--text-control);
 }
 
 /* Staff ticket rail */

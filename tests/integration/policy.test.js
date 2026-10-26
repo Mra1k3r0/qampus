@@ -13,7 +13,7 @@ const { DEMO_PASSWORD } = seedModule;
 
 const SESSION_COOKIE = config.cookieName;
 
-describe('queue rules page', () => {
+describe('terms of use page', () => {
   let db;
   let app;
   let cleanup;
@@ -39,14 +39,14 @@ describe('queue rules page', () => {
   });
 
   it('serves the rules page to a signed-out visitor', async () => {
-    const response = await request(app).get('/policy');
+    const response = await request(app).get('/rules');
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('Queue rules');
+    expect(response.text).toContain('Terms of Use');
   });
 
   it('states the live policy limits', async () => {
-    const response = await request(app).get('/policy');
+    const response = await request(app).get('/rules');
 
     expect(response.text).toContain('60 seconds');
     expect(response.text).toContain('30 minutes');
@@ -54,18 +54,18 @@ describe('queue rules page', () => {
   });
 
   it('shows no student data and no em dash', async () => {
-    const response = await request(app).get('/policy');
+    const response = await request(app).get('/rules');
 
     expect(response.text).not.toContain('\u2014');
     expect(response.text).not.toContain('Alex Reyes');
-    expect(response.text).not.toContain('student1@cspc.edu.ph');
+    expect(response.text).not.toContain('student1@my.cspc.edu.ph');
   });
 
   it('does not mint a session for an anonymous visitor', async () => {
     const agent = request.agent(app);
     const before = countSessions();
 
-    const response = await agent.get('/policy');
+    const response = await agent.get('/rules');
 
     expect(response.status).toBe(200);
     expect(hasSessionCookie(response)).toBe(false);
@@ -76,22 +76,29 @@ describe('queue rules page', () => {
     const agent = request.agent(app);
     const token = await getCsrf(agent, '/login');
     await agent.post('/login').type('form').send({
-      email: 'student1@cspc.edu.ph',
+      email: 'student1@my.cspc.edu.ph',
       password: DEMO_PASSWORD,
       portal: 'student',
       _csrf: token,
     });
 
-    const response = await agent.get('/policy');
+    const response = await agent.get('/rules');
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('Sign out');
+  });
+
+  it('redirects the old policy path to the rules page', async () => {
+    const response = await request(app).get('/policy');
+
+    expect(response.status).toBe(301);
+    expect(response.headers.location).toBe('/rules');
   });
 
   it('links to the rules page from the home footer', async () => {
     const response = await request(app).get('/');
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('href="/policy"');
+    expect(response.text).toContain('href="/rules"');
   });
 });

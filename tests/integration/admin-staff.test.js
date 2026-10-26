@@ -16,12 +16,12 @@ const STAFF_ROUTE_CASES = [
   {
     method: 'post',
     path: '/admin/staff',
-    body: { full_name: 'Blocked Staff', email: 'blocked@cspc.edu.ph', password: 'Password2026!' },
+    body: { full_name: 'Blocked Staff', email: 'blocked@my.cspc.edu.ph', password: 'Password2026!' },
   },
   {
     method: 'post',
     path: '/admin/staff/1',
-    body: { full_name: 'Blocked Staff', email: 'blocked@cspc.edu.ph' },
+    body: { full_name: 'Blocked Staff', email: 'blocked@my.cspc.edu.ph' },
   },
   { method: 'post', path: '/admin/staff/1/password', body: { password: 'Password2026!' } },
   { method: 'post', path: '/admin/staff/1/status', body: { isActive: '0' } },
@@ -72,7 +72,7 @@ describe('admin staff accounts', () => {
 
   async function adminAgent() {
     const agent = request.agent(app);
-    await login(agent, 'admin@cspc.edu.ph');
+    await login(agent, 'admin@my.cspc.edu.ph');
     return agent;
   }
 
@@ -98,7 +98,7 @@ describe('admin staff accounts', () => {
         `INSERT INTO users (full_name, student_no, email, password_hash, role, is_active, created_at)
          VALUES (?, ?, ?, ?, 'staff', 1, ?)`,
       )
-      .run('Marco Second', 'STAFF-099', 'marco.staff@cspc.edu.ph', hash, now).lastInsertRowid;
+      .run('Marco Second', 'STAFF-099', 'marco.staff@my.cspc.edu.ph', hash, now).lastInsertRowid;
   }
 
   it('lists staff accounts with the agreed view model', async () => {
@@ -115,7 +115,7 @@ describe('admin staff accounts', () => {
     expect(view.staff).toEqual([
       expect.objectContaining({
         fullName: 'Liza Fernandez',
-        email: 'staff@cspc.edu.ph',
+        email: 'staff@my.cspc.edu.ph',
         isActive: true,
       }),
     ]);
@@ -133,7 +133,7 @@ describe('admin staff accounts', () => {
       .type('form')
       .send({
         full_name: 'Nora Staff',
-        email: 'nora.staff@cspc.edu.ph',
+        email: 'nora.staff@my.cspc.edu.ph',
         password,
         _csrf: token,
       });
@@ -143,7 +143,7 @@ describe('admin staff accounts', () => {
 
     const row = db
       .prepare('SELECT * FROM users WHERE email = ?')
-      .get('nora.staff@cspc.edu.ph');
+      .get('nora.staff@my.cspc.edu.ph');
     expect(row.role).toBe('staff');
     expect(row.is_active).toBe(1);
     expect(row.student_no).toMatch(/^STAFF-\d{3}$/);
@@ -167,7 +167,7 @@ describe('admin staff accounts', () => {
       .type('form')
       .send({
         full_name: 'Liza F. Updated',
-        email: 'liza.updated@cspc.edu.ph',
+        email: 'liza.updated@my.cspc.edu.ph',
         _csrf: token,
       });
 
@@ -176,14 +176,14 @@ describe('admin staff accounts', () => {
 
     const row = db.prepare('SELECT * FROM users WHERE id = ?').get(staff.id);
     expect(row.full_name).toBe('Liza F. Updated');
-    expect(row.email).toBe('liza.updated@cspc.edu.ph');
+    expect(row.email).toBe('liza.updated@my.cspc.edu.ph');
     expect(auditCount('staff_update', staff.id)).toBe(1);
 
     await agent.get(`/admin/staff?edit=${staff.id}`);
     const view = lastRender();
     expect(view.editingStaffId).toBe(staff.id);
     expect(view.values.full_name).toBe('Liza F. Updated');
-    expect(view.values.email).toBe('liza.updated@cspc.edu.ph');
+    expect(view.values.email).toBe('liza.updated@my.cspc.edu.ph');
   });
 
   it('resets a staff password without exposing it and writes an audit row', async () => {
@@ -280,12 +280,12 @@ describe('admin staff accounts', () => {
     expect(view.editingStaffId).toBe(secondId);
     expect(view.values.email).toBe(staff.email);
     const row = db.prepare('SELECT email FROM users WHERE id = ?').get(secondId);
-    expect(row.email).toBe('marco.staff@cspc.edu.ph');
+    expect(row.email).toBe('marco.staff@my.cspc.edu.ph');
   });
 
   it('returns 403 for staff and students on every staff account route', async () => {
     const staffAgent = request.agent(app);
-    await login(staffAgent, 'staff@cspc.edu.ph');
+    await login(staffAgent, 'staff@my.cspc.edu.ph');
     const staffToken = await getCsrf(staffAgent, '/staff/queue');
 
     for (const testCase of STAFF_ROUTE_CASES) {
@@ -296,7 +296,7 @@ describe('admin staff accounts', () => {
     }
 
     const studentAgent = request.agent(app);
-    await login(studentAgent, 'student1@cspc.edu.ph');
+    await login(studentAgent, 'student1@my.cspc.edu.ph');
     const studentToken = await getCsrf(studentAgent, '/queue');
 
     for (const testCase of STAFF_ROUTE_CASES) {
@@ -326,7 +326,7 @@ describe('admin staff accounts', () => {
     const response = await agent
       .post('/admin/staff')
       .type('form')
-      .send({ full_name: 'No Token', email: 'no.token@cspc.edu.ph', password: 'NoToken2026!' });
+      .send({ full_name: 'No Token', email: 'no.token@my.cspc.edu.ph', password: 'NoToken2026!' });
 
     expect(response.status).toBe(403);
   });
@@ -337,7 +337,7 @@ describe('admin staff accounts', () => {
     const adminId = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get().id;
     const targetIds = [99999, adminId];
     const actions = [
-      { path: (id) => `/admin/staff/${id}`, body: { full_name: 'Ghost', email: 'ghost@cspc.edu.ph' } },
+      { path: (id) => `/admin/staff/${id}`, body: { full_name: 'Ghost', email: 'ghost@my.cspc.edu.ph' } },
       { path: (id) => `/admin/staff/${id}/password`, body: { password: 'GhostPass2026!' } },
       { path: (id) => `/admin/staff/${id}/status`, body: { isActive: '0' } },
     ];
@@ -356,7 +356,7 @@ describe('admin staff accounts', () => {
   it('blocks an inactive account from logging in and ends its existing session', async () => {
     const admin = await adminAgent();
     const staffAgent = request.agent(app);
-    await login(staffAgent, 'staff@cspc.edu.ph');
+    await login(staffAgent, 'staff@my.cspc.edu.ph');
     const staff = seededStaff();
     const token = await getCsrf(admin, '/admin/services');
 
@@ -367,7 +367,7 @@ describe('admin staff accounts', () => {
     expect(deactivate.status).toBe(303);
 
     const freshAgent = request.agent(app);
-    const loginAttempt = await login(freshAgent, 'staff@cspc.edu.ph');
+    const loginAttempt = await login(freshAgent, 'staff@my.cspc.edu.ph');
     expect(loginAttempt.status).toBe(401);
     expect(loginAttempt.text).toContain('Email or password is incorrect.');
 

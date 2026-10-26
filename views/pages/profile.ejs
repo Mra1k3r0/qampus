@@ -1,0 +1,161 @@
+<%
+  const identity = profile && typeof profile === 'object' ? profile : {};
+  const choices = Array.isArray(avatarChoices) ? avatarChoices : [];
+  const formValues = values && typeof values === 'object' ? values : {};
+  const errorBag = errors && typeof errors === 'object' ? errors : {};
+  const nameValue = formValues.fullName !== undefined && formValues.fullName !== null
+    ? formValues.fullName
+    : identity.fullName || '';
+  const avatarUrl = identity.avatarUrl || '';
+  const initials = identity.initials || '?';
+  const studentNoLabel = identity.studentNo || 'Not on file';
+  const memberSinceLabel = identity.memberSinceLabel || 'Not on file';
+%>
+<div class="shell page page--profile">
+  <header class="page-head profile-page__head">
+    <p class="eyebrow">Account</p>
+    <h1 class="page-head__title">Profile settings.</h1>
+    <p class="page-head__lede">Update the name and photo the service desk sees.</p>
+  </header>
+
+  <div class="profile-layout">
+    <aside class="profile-identity" aria-labelledby="identity-name">
+      <div class="profile-identity__top">
+        <% if (avatarUrl) { %>
+        <img class="profile-avatar" src="<%= avatarUrl %>" alt="" width="120" height="120">
+        <% } else { %>
+        <span class="profile-avatar profile-avatar--initials" aria-hidden="true"><%= initials %></span>
+        <% } %>
+        <div class="profile-identity__text">
+          <p class="profile-identity__role"><%= identity.roleLabel || 'Account' %></p>
+          <h2 class="profile-identity__name" id="identity-name"><%= identity.fullName %></h2>
+        </div>
+      </div>
+
+      <dl class="profile-facts">
+        <div>
+          <dt>Student number</dt>
+          <dd class="mono"><%= studentNoLabel %></dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd><%= identity.email %></dd>
+        </div>
+        <div>
+          <dt>Member since</dt>
+          <dd><%= memberSinceLabel %></dd>
+        </div>
+      </dl>
+
+      <p class="profile-identity__note">Your photo is used only inside Qampus. You can change or remove it at any time.</p>
+    </aside>
+
+    <div class="profile-stack">
+      <section class="profile-panel" aria-labelledby="photo-title">
+        <div class="profile-panel__head">
+          <p class="eyebrow">Photo</p>
+          <h2 class="profile-panel__title" id="photo-title">Your photo</h2>
+          <p class="profile-panel__lede">Pick a preset or upload your own. A clear photo makes your account easy to recognize.</p>
+        </div>
+
+        <% if (errorBag.avatar) { %>
+        <p class="field__error" id="avatar-error" role="alert">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= errorBag.avatar %>
+        </p>
+        <% } %>
+
+        <fieldset class="avatar-fieldset<%= errorBag.avatar ? ' field--error' : '' %>"<% if (errorBag.avatar) { %> aria-describedby="avatar-error"<% } %>>
+          <legend class="avatar-fieldset__legend">Choose a preset photo</legend>
+          <div class="avatar-grid">
+            <% choices.forEach(function (choice) { %>
+            <form class="avatar-choice" method="post" action="/profile/avatar/preset">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="preset" value="<%= choice.key %>">
+              <button class="avatar-choice__button<%= choice.isSelected ? ' is-selected' : '' %>" type="submit" aria-pressed="<%= choice.isSelected ? 'true' : 'false' %>">
+                <span class="avatar-choice__media">
+                  <img class="avatar-choice__image" src="<%= choice.url %>" alt="" width="96" height="96">
+                  <% if (choice.isSelected) { %>
+                  <span class="avatar-choice__check">
+                    <%- include('../partials/icon', { name: 'check', size: 16, title: null }) %>
+                  </span>
+                  <% } %>
+                </span>
+                <span class="avatar-choice__label"><%= choice.label %></span>
+                <span class="avatar-choice__state"><%= choice.isSelected ? 'Selected' : '' %></span>
+              </button>
+            </form>
+            <% }); %>
+          </div>
+        </fieldset>
+
+        <div class="profile-photo-actions">
+          <div class="profile-photo-actions__row">
+            <form method="post" action="/profile/avatar/shuffle">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--secondary btn--small" type="submit">Shuffle photo</button>
+            </form>
+            <form method="post" action="/profile/avatar/clear">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--quiet btn--small btn--danger" type="submit">Remove photo</button>
+            </form>
+          </div>
+
+          <form class="upload-form" method="post" action="/profile/avatar/upload" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label class="field__label" for="avatar-upload">Upload a photo</label>
+            <div class="upload-form__row">
+              <input
+                class="input upload-form__input"
+                id="avatar-upload"
+                name="avatar"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                required
+                aria-describedby="avatar-upload-hint<%= errorBag.avatar ? ' avatar-error' : '' %>"
+              >
+              <button class="btn btn--secondary" type="submit">Upload</button>
+            </div>
+            <p class="field__hint" id="avatar-upload-hint">PNG, JPEG, or WebP, up to 2 MB.</p>
+          </form>
+        </div>
+      </section>
+
+      <section class="profile-panel" aria-labelledby="name-title">
+        <div class="profile-panel__head">
+          <p class="eyebrow">Name</p>
+          <h2 class="profile-panel__title" id="name-title">Display name</h2>
+          <p class="profile-panel__lede">This name appears on your tickets and in the staff queue.</p>
+        </div>
+
+        <form class="form" method="post" action="/profile" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field<%= errorBag.fullName ? ' field--error' : '' %>">
+            <label class="field__label" for="fullName">Full name</label>
+            <input
+              class="input"
+              id="fullName"
+              name="fullName"
+              type="text"
+              value="<%= nameValue %>"
+              autocomplete="name"
+              required
+              aria-describedby="fullName-hint<%= errorBag.fullName ? ' fullName-error' : '' %>"
+              <%- errorBag.fullName ? 'aria-invalid="true"' : '' %>
+            >
+            <p class="field__hint" id="fullName-hint">Use the name your teachers know you by.</p>
+            <% if (errorBag.fullName) { %>
+            <p class="field__error" id="fullName-error">
+              <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+              <%= errorBag.fullName %>
+            </p>
+            <% } %>
+          </div>
+          <div class="profile-form__foot">
+            <button class="btn btn--primary" type="submit">Save name</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+</div>

@@ -26,7 +26,7 @@ describe('auth routes', () => {
     cleanup();
   });
 
-  async function login(agent, email = 'student1@cspc.edu.ph', password = DEMO_PASSWORD, portal) {
+  async function login(agent, email = 'student1@my.cspc.edu.ph', password = DEMO_PASSWORD, portal) {
     const token = await getCsrf(agent, '/login');
     const payload = { email, password, _csrf: token };
     if (portal) {
@@ -41,9 +41,10 @@ describe('auth routes', () => {
     const payload = {
       fullName: 'New Student',
       studentNo: '2026-9001',
-      email: 'new.student@cspc.edu.ph',
+      email: 'new.student@my.cspc.edu.ph',
       password: 'QueueDemo2026!',
       confirmPassword: 'QueueDemo2026!',
+      policy: 'agreed',
       _csrf: token,
     };
 
@@ -66,9 +67,10 @@ describe('auth routes', () => {
     const payload = {
       fullName: 'Alex Reyes',
       studentNo: '2026-9002',
-      email: 'student1@cspc.edu.ph',
+      email: 'student1@my.cspc.edu.ph',
       password: 'QueueDemo2026!',
       confirmPassword: 'QueueDemo2026!',
+      policy: 'agreed',
       _csrf: token,
     };
 
@@ -92,6 +94,7 @@ describe('auth routes', () => {
       email: 'not-an-email',
       password: 'short12',
       confirmPassword: 'short12',
+      policy: 'agreed',
       _csrf: token,
     });
 
@@ -100,6 +103,27 @@ describe('auth routes', () => {
     const row = db
       .prepare('SELECT id FROM users WHERE student_no = ?')
       .get('2026-9003');
+    expect(row).toBeUndefined();
+  });
+
+  it('returns 400 when the policy is not accepted', async () => {
+    const agent = request.agent(app);
+    const token = await getCsrf(agent, '/register');
+
+    const response = await agent.post('/register').type('form').send({
+      fullName: 'No Consent',
+      studentNo: '2026-9004',
+      email: 'no.consent@my.cspc.edu.ph',
+      password: 'QueueDemo2026!',
+      confirmPassword: 'QueueDemo2026!',
+      _csrf: token,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.text).toContain('Agree to the Terms of Use and Privacy Policy');
+    const row = db
+      .prepare('SELECT id FROM users WHERE student_no = ?')
+      .get('2026-9004');
     expect(row).toBeUndefined();
   });
 
@@ -114,7 +138,7 @@ describe('auth routes', () => {
 
   it('returns a generic 401 for a wrong password', async () => {
     const agent = request.agent(app);
-    const response = await login(agent, 'student1@cspc.edu.ph', 'WrongPassword2026!');
+    const response = await login(agent, 'student1@my.cspc.edu.ph', 'WrongPassword2026!');
 
     expect(response.status).toBe(401);
     expect(response.text).toContain('Email or password is incorrect.');
@@ -122,7 +146,7 @@ describe('auth routes', () => {
 
   it('returns the same generic 401 for an unknown email', async () => {
     const agent = request.agent(app);
-    const response = await login(agent, 'nobody@cspc.edu.ph', 'WrongPassword2026!');
+    const response = await login(agent, 'nobody@my.cspc.edu.ph', 'WrongPassword2026!');
 
     expect(response.status).toBe(401);
     expect(response.text).toContain('Email or password is incorrect.');
@@ -130,7 +154,7 @@ describe('auth routes', () => {
 
   it('redirects a staff login with the staff portal to the staff queue', async () => {
     const agent = request.agent(app);
-    const response = await login(agent, 'staff@cspc.edu.ph', DEMO_PASSWORD, 'staff');
+    const response = await login(agent, 'staff@my.cspc.edu.ph', DEMO_PASSWORD, 'staff');
 
     expect(response.status).toBe(303);
     expect(response.headers.location).toBe('/staff/queue');
@@ -138,7 +162,7 @@ describe('auth routes', () => {
 
   it('redirects an office head login with the admin portal to admin services', async () => {
     const agent = request.agent(app);
-    const response = await login(agent, 'admin@cspc.edu.ph', DEMO_PASSWORD, 'admin');
+    const response = await login(agent, 'admin@my.cspc.edu.ph', DEMO_PASSWORD, 'admin');
 
     expect(response.status).toBe(303);
     expect(response.headers.location).toBe('/admin/services');
@@ -150,7 +174,7 @@ describe('auth routes', () => {
 
   it('returns the generic 401 when the portal does not match the role', async () => {
     const agent = request.agent(app);
-    const response = await login(agent, 'student1@cspc.edu.ph', DEMO_PASSWORD, 'staff');
+    const response = await login(agent, 'student1@my.cspc.edu.ph', DEMO_PASSWORD, 'staff');
 
     expect(response.status).toBe(401);
     expect(response.text).toContain('Email or password is incorrect.');
@@ -165,13 +189,17 @@ describe('auth routes', () => {
     expect(response.headers.location).toBe('/queue');
   });
 
-  it('renders no demo credentials or fill controls on the login page', async () => {
+  it('renders no demo credentials, fill controls, or footer on the auth pages', async () => {
     const agent = request.agent(app);
-    const response = await agent.get('/login');
+    const loginPage = await agent.get('/login');
+    const registerPage = await agent.get('/register');
 
-    expect(response.status).toBe(200);
-    expect(response.text).not.toContain('QueueDemo2026!');
-    expect(response.text).not.toContain('data-demo-fill');
+    expect(loginPage.status).toBe(200);
+    expect(loginPage.text).not.toContain('QueueDemo2026!');
+    expect(loginPage.text).not.toContain('data-demo-fill');
+    expect(loginPage.text).not.toContain('Office hours');
+    expect(registerPage.status).toBe(200);
+    expect(registerPage.text).not.toContain('Office hours');
   });
 
   it('destroys the session on logout', async () => {

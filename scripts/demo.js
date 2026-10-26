@@ -30,7 +30,7 @@ function verifyDemo() {
   migrate(db);
   const counts = collectCounts(db);
   const staff = db
-    .prepare("SELECT password_hash FROM users WHERE email = 'staff@cspc.edu.ph'")
+    .prepare("SELECT password_hash FROM users WHERE email = 'staff@my.cspc.edu.ph'")
     .get();
 
   const checks = [

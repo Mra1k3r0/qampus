@@ -36,24 +36,24 @@ const SERVICES = [
 const STAFF = {
   fullName: 'Liza Fernandez',
   studentNo: 'STAFF-001',
-  email: 'staff@cspc.edu.ph',
+  email: 'staff@my.cspc.edu.ph',
   role: 'staff',
 };
 
 const ADMIN = {
   fullName: 'Ramon Dela Cruz',
   studentNo: 'ADMIN-001',
-  email: 'admin@cspc.edu.ph',
+  email: 'admin@my.cspc.edu.ph',
   role: 'admin',
 };
 
 const STUDENTS = [
-  { fullName: 'Alex Reyes', studentNo: '2026-0001', email: 'student1@cspc.edu.ph' },
-  { fullName: 'Bea Cruz', studentNo: '2026-0002', email: 'student2@cspc.edu.ph' },
-  { fullName: 'Carlo Mendoza', studentNo: '2026-0003', email: 'student3@cspc.edu.ph' },
-  { fullName: 'Dana Lim', studentNo: '2026-0004', email: 'student4@cspc.edu.ph' },
-  { fullName: 'Elio Garcia', studentNo: '2026-0005', email: 'student5@cspc.edu.ph' },
-  { fullName: 'Faith Navarro', studentNo: '2026-0006', email: 'student6@cspc.edu.ph' },
+  { fullName: 'Alex Reyes', studentNo: '2026-0001', email: 'student1@my.cspc.edu.ph' },
+  { fullName: 'Bea Cruz', studentNo: '2026-0002', email: 'student2@my.cspc.edu.ph' },
+  { fullName: 'Carlo Mendoza', studentNo: '2026-0003', email: 'student3@my.cspc.edu.ph' },
+  { fullName: 'Dana Lim', studentNo: '2026-0004', email: 'student4@my.cspc.edu.ph' },
+  { fullName: 'Elio Garcia', studentNo: '2026-0005', email: 'student5@my.cspc.edu.ph' },
+  { fullName: 'Faith Navarro', studentNo: '2026-0006', email: 'student6@my.cspc.edu.ph' },
 ];
 
 const TICKET_PLAN = [
@@ -78,6 +78,16 @@ function insertUser(db, user, passwordHash, createdAt) {
   ).run(user.fullName, user.studentNo, user.email, passwordHash, user.role, createdAt);
 
   return db.prepare('SELECT * FROM users WHERE email = ?').get(user.email);
+}
+
+function assignStudentAvatar(db, student, index, updatedAt) {
+  const presetKey = `preset-${String(index + 1).padStart(2, '0')}`;
+  db.prepare(
+    `UPDATE users
+     SET avatar_type = 'preset', avatar_value = ?, avatar_updated_at = ?
+     WHERE id = ? AND avatar_type IS NULL`,
+  ).run(presetKey, updatedAt, student.id);
+  return db.prepare('SELECT * FROM users WHERE id = ?').get(student.id);
 }
 
 function insertService(db, service, options, createdAt) {
@@ -145,9 +155,10 @@ function seedDatabase(db, {
   const runSeed = db.transaction(() => {
     const staff = insertUser(db, STAFF, passwordHash, baseIso);
     const admin = insertUser(db, ADMIN, passwordHash, baseIso);
-    const students = STUDENTS.slice(0, studentCount).map((student) =>
-      insertUser(db, { ...student, role: 'student' }, passwordHash, baseIso),
-    );
+    const students = STUDENTS.slice(0, studentCount).map((student, index) => {
+      const row = insertUser(db, { ...student, role: 'student' }, passwordHash, baseIso);
+      return assignStudentAvatar(db, row, index, baseIso);
+    });
 
     const services = SERVICES.map((service) => insertService(db, service, serviceOptions, baseIso));
     for (const service of services) {

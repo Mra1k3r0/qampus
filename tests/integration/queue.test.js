@@ -33,7 +33,7 @@ describe('queue read model', () => {
 
   it('shows a student their active ticket with position and wait', async () => {
     const agent = request.agent(app);
-    await login(agent, 'student1@cspc.edu.ph');
+    await login(agent, 'student1@my.cspc.edu.ph');
 
     const response = await agent.get('/queue');
 
@@ -44,9 +44,71 @@ describe('queue read model', () => {
     expect(response.text).toContain('Est. wait');
   });
 
+  it('renders the called-ticket sound control with the current call count', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student1@my.cspc.edu.ph');
+    const row = db.prepare('SELECT call_count FROM tickets WHERE id = 1').get();
+
+    const response = await agent.get('/queue/tickets/1');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('data-called-sound');
+    expect(response.text).toContain('src="/audio/called.mp3"');
+    expect(response.text).toContain(`data-call-count="${row.call_count}"`);
+    expect(response.text).toContain('data-ticket-status=');
+    expect(response.text).toContain('aria-label="Turn off call sound"');
+  });
+
+  it('keeps the called-ticket dialog outside the live region', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student1@my.cspc.edu.ph');
+
+    const response = await agent.get('/queue/tickets/1');
+    const liveBlock = response.text.match(/<div data-live-region[\s\S]*?<\/article>\s*<\/div>/);
+
+    expect(response.status).toBe(200);
+    expect(liveBlock).not.toBeNull();
+    expect(liveBlock[0]).not.toContain('data-call-dialog');
+    expect(response.text).toContain('<dialog class="call-dialog"');
+  });
+
+  it('labels the called-ticket dialog with its ticket fields and close control', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student1@my.cspc.edu.ph');
+    const row = db.prepare('SELECT code FROM tickets WHERE id = 1').get();
+
+    const response = await agent.get('/queue/tickets/1');
+    const dialogStart = response.text.indexOf('<dialog class="call-dialog"');
+
+    expect(response.status).toBe(200);
+    expect(dialogStart).toBeGreaterThan(-1);
+
+    const dialog = response.text.slice(dialogStart, response.text.indexOf('</dialog>', dialogStart));
+
+    expect(dialog).toContain('aria-labelledby="call-dialog-title"');
+    expect(dialog).toContain('aria-describedby="call-dialog-desc"');
+    expect(dialog).toContain('id="call-dialog-title">Your turn</h2>');
+    expect(dialog).toContain('id="call-dialog-desc"');
+    expect(dialog).toContain(`data-call-dialog-code>${row.code}</span>`);
+    expect(dialog).toContain('data-call-dialog-service>');
+    expect(dialog).toContain('data-call-dialog-counter>');
+    expect(dialog).toContain('data-call-dialog-close');
+    expect(dialog).toContain('>Got it</button>');
+    expect(response.text).toContain('data-ticket-code');
+    expect(response.text).toContain('data-ticket-service');
+    expect(response.text).toContain('data-ticket-counter');
+  });
+
+  it('serves the called-ticket sound as a self-hosted mp3', async () => {
+    const response = await request(app).get('/audio/called.mp3');
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toContain('audio/mpeg');
+  });
+
   it('sends staff to the staff queue after login', async () => {
     const agent = request.agent(app);
-    const response = await login(agent, 'staff@cspc.edu.ph');
+    const response = await login(agent, 'staff@my.cspc.edu.ph');
 
     expect(response.status).toBe(303);
     expect(response.headers.location).toBe('/staff/queue');
@@ -54,7 +116,7 @@ describe('queue read model', () => {
 
   it('shows the seeded waiting tickets and service windows on the staff console', async () => {
     const agent = request.agent(app);
-    await login(agent, 'staff@cspc.edu.ph');
+    await login(agent, 'staff@my.cspc.edu.ph');
 
     const response = await agent.get('/staff/queue');
 
@@ -74,7 +136,7 @@ describe('queue read model', () => {
 
   it('returns 404 when a student opens another student ticket', async () => {
     const agent = request.agent(app);
-    await login(agent, 'student2@cspc.edu.ph');
+    await login(agent, 'student2@my.cspc.edu.ph');
 
     const response = await agent.get('/queue/tickets/1');
 

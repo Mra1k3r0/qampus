@@ -30,8 +30,9 @@ The seal reads **1983**. The seal page prose says 1985. Do not alter the year or
 | --- | --- | --- |
 | `public/images/cspc/seal.png` | 120x125, 24 KB | Header mark at 32px and favicon. Downscaled from the official 500x519 raster without cropping. |
 | `public/images/cspc/campus-globe.jpg` | 2560x1711, 315 KB | Reserved campus photo. Not placed on a page yet. |
+| `public/audio/called.mp3` | 1.25 s, 16 KB | Call alert on the student ticket page. Two chimes, mono 44.1 kHz at 96 kbps. |
 
-The header uses the seal at 32px with the text `CSPC Queue`. The favicon now points at the same file. The old custom `public/favicon.svg` was removed.
+The header uses the seal at 32px with the text `Qampus`. The favicon now points at the same file. The old custom `public/favicon.svg` was removed. `called.mp3` is BigSoundBank sound 2066, "Notification, LaSoLisa #4" by Joseph SARDIN, https://bigsoundbank.com/lasolisa-4-s2066.html, released CC0 (public domain, no attribution required). The chime repeats after 450 ms and is levelled to -15 LUFS; it is served from `public/`, never hotlinked.
 
 ## 4. Photo findings
 

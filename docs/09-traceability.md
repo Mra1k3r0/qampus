@@ -5,7 +5,7 @@ Purpose: prove that every rubric criterion and every requirement has a build art
 ## 1. Rules
 
 - Source of truth for requirements: `01-requirements.md`, FR-01 to FR-14 and NFR-01 to NFR-08.
-- Source of truth for test IDs: `05-test-plan.md`, U01 to U18, I01 to I50, M01 to M16, D01 to D05. FR to test mapping lives in section 5 of this file.
+- Source of truth for test IDs: `05-test-plan.md`, U01 to U18, I01 to I51, M01 to M16, D01 to D05. FR to test mapping lives in section 5 of this file.
 - Source of truth for phases: `04-sdlc-plan.md`, P0 to P13.
 - A requirement is covered only when the test exists, passes, and the evidence path is recorded in section 10.
 - Do not mark a row Done because the page renders. Mark it Done when the failure case also passes.
@@ -48,11 +48,11 @@ Purpose: prove that every rubric criterion and every requirement has a build art
 | FR-02 | Ticket code with prefix and daily sequence | `src/modules/tickets/tickets.service.js`, `tickets.rules.js` | U01, I13 | M11 | Built |
 | FR-03 | Position and ETA, refreshed at most every 10 seconds | `src/modules/tickets/tickets.rules.js`, `public/js/queue.js` | U04 to U09, U18, I13 | M04, M12 | Built |
 | FR-04 | Leave an owned waiting ticket; called or serving cannot leave | `src/modules/tickets/tickets.service.js`, `src/modules/tickets/tickets.rules.js` | U02, U12, U13, I17 to I19 | M03 | Built |
-| FR-05 | Staff calls the oldest waiting ticket atomically | `src/modules/tickets/tickets.service.js` | U10, I20, I21 | M10 | Built |
+| FR-05 | Staff calls the oldest waiting ticket atomically | `src/modules/tickets/tickets.service.js`, `public/js/queue.js`, `views/pages/ticket.ejs`, `public/css/components.css` | U10, I20, I21, I51 | M04, M10 | Built |
 | FR-06 | Staff starts a called ticket | `src/modules/tickets/tickets.service.js` | U10, I23 | M03 | Built |
 | FR-07 | Staff marks a serving ticket served | `src/modules/tickets/tickets.service.js` | U10, I23 | M03 | Built |
 | FR-08 | Staff marks a called ticket no-show; student may rejoin | `src/modules/tickets/tickets.service.js` | U10, I24, I33 | M10 | Built |
-| FR-09 | Staff recalls a called ticket | `src/modules/tickets/tickets.service.js` | U10, I25 | M11 | Built |
+| FR-09 | Staff recalls a called ticket | `src/modules/tickets/tickets.service.js`, `public/js/queue.js`, `views/pages/ticket.ejs`, `public/css/components.css` | U10, I25, I51 | M04 | Built |
 | FR-10 | Office head sets weekly windows, opens or closes a service, labels counters | `src/modules/admin/admin.service.js`, `views/pages/admin-services.ejs` | I16, I36, I38 to I41 | M14 | Built |
 | FR-11 | Public display with no PII, refreshed every 5 seconds | `src/modules/display/display.routes.js`, `display.service.js`, `public/js/display.js` | I26, I27 | M11, M12 | Built |
 | FR-12 | Staff filters by service, status, date; filters persist | `src/modules/tickets/tickets.repository.js` | I35 | M14 | Planned |
@@ -134,7 +134,7 @@ Pass condition per page: no horizontal scroll, no clipped control, no text under
 | Load test NFR-01 | Must run before claiming | A p95 claim without a run is not evidence | Record the real number even if it misses; tune indexes and pragmas |
 | Retention script | Must exist, may run manually | Privacy requirement is real, a cron job is out of scope | Add a documented daily command |
 | Polling interval | 5 seconds display, 10 seconds ticket | Requirements and UI now agree | Update `03-ui-design.md` if it drifts |
-| Queue and action flows | Built, tested | Join, leave, call, start, serve, no-show, recall, display, and admin windows are implemented; 102 tests pass including staff, display, policy, and admin suites; filters (FR-12) remain open | Extend I35 filter coverage if Round 1 time remains |
+| Queue and action flows | Built, tested | Join, leave, call, start, serve, no-show, recall, display, and admin windows are implemented; 106 tests pass including staff, display, policy, and admin suites; filters (FR-12) remain open | Extend I35 filter coverage if Round 1 time remains |
 | Join policy and rules page | Built, tested | Window cutoff, two-ticket cap, 60-second cooldown, no-show block, role-aware sign-in, and `GET /policy` are implemented and covered by I45 to I49; anonymous reads of `/`, `/policy`, `/display`, and `/api/display` mint no session | Rehearse the demo with `QUEUE_ENFORCE_HOURS` if the slot is outside office hours |
 | Staff account management | Built, tested | Office head creates, edits, resets, deactivates, and reactivates staff accounts at `/admin/staff`; deactivation blocks sign-in and kills the live session; I50 covers the failure cases | No hard delete by design; add invite email only if Round 2 needs it |
 

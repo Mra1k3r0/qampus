@@ -1,6 +1,6 @@
 # 03b Responsive Behavior Contract
 
-Scope: every screen of the CSPC Student Queueing System must look deliberate at every width, not merely survive. This contract is testable: each rule names a breakpoint, a size, or a check. Visual truth: 03-ui-design.md. Base unit 4 px. No horizontal scroll at any width in section 1, including 200 percent zoom and 200 percent text spacing. All widths below are CSS px; supported range is 320 to 3840, and below 320 the page may reflow but is not tested. The header is 56 px below 768 and 64 px above, sticky, and never changes height on scroll.
+Scope: every screen of Qampus must look deliberate at every width, not merely survive. This contract is testable: each rule names a breakpoint, a size, or a check. Visual truth: 03-ui-design.md. Base unit 4 px. No horizontal scroll at any width in section 1, including 200 percent zoom and 200 percent text spacing. All widths below are CSS px; supported range is 320 to 3840, and below 320 the page may reflow but is not tested. The header is 56 px below 768 and 64 px above, sticky, and never changes height on scroll.
 
 ## 1. Viewport contract
 
@@ -36,7 +36,7 @@ Scope: every screen of the CSPC Student Queueing System must look deliberate at 
 ## 3. Grid behavior per page
 
 - Landing. Below 480: one column, order header, kicker, h1, primary, live strip, three numbered steps; strip stays after the hero actions. 480 to 767: same order, steps become 3 rows at 64 px. 768 to 1023: one column, strip stays inline below the hero actions. 1024+: 12 columns, headline 7, live strip 5, steps 3 columns of 4 between hairlines. Above the fold at 320: header, kicker, h1, primary; at 1440: header, kicker, h1, primary, strip.
-- Auth (login and register). Below 768: form first, editorial panel becomes a 48 px label strip under the header, h1 1.75rem, inputs full width, summary above the first field. 768+: 5/7 grid, form max 420 px, panel left. Above the fold at 320: label strip, h1, first field.
+- Auth (login and register). Brand mark at the top left with no header bar at every width. Below 768: form only, editorial panel hidden, h1 1.75rem, inputs full width, summary above the first field. 768+: 5/7 grid, form max 420 px, panel left. Above the fold at 320: h1 and first field.
 - Dashboard. Below 480: one column, code 3.5rem on top, position and wait in 2 columns, joined time below, sticky bottom bar. 480 to 767: status band in 3 columns. 768+: band plus ticket panel 8/4. Above the fold at 320: code, position, wait, primary action.
 - Join. Below 768: one column, preview collapses to a 48 px summary line directly above the button, select and button full width. 768 to 1023: form 7 columns, preview 5 columns below it. 1024+: 7/5 side by side, preview sticky at 96 px. Above the fold at 320: h1, service select, summary line, primary.
 - Ticket detail. Below 480: code 3.5rem, meta stacks to 1 column, single action full width, no shadow, no raised edge. 480 to 767: meta 2 columns. 768+: 8/4 with help in the right column, panel max 720 px. Above the fold at 320: code, status, window, leave action.

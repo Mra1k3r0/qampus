@@ -5,7 +5,13 @@ const { nowIso } = require('./time');
 
 const INITIAL_MIGRATION = '001_init';
 const USER_ACTIVE_MIGRATION = '002_user_is_active';
+const USER_AVATAR_MIGRATION = '003_user_avatar';
 const USER_ACTIVE_COLUMN = 'is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))';
+const USER_AVATAR_COLUMNS = [
+  ['avatar_type', "avatar_type TEXT CHECK (avatar_type IN ('preset', 'upload'))"],
+  ['avatar_value', 'avatar_value TEXT'],
+  ['avatar_updated_at', 'avatar_updated_at TEXT'],
+];
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 function applyPragmas(db, { journalMode = 'WAL' } = {}) {
@@ -37,6 +43,14 @@ function addUserActiveColumn(db) {
   db.exec(`ALTER TABLE users ADD COLUMN ${USER_ACTIVE_COLUMN}`);
 }
 
+function addUserAvatarColumns(db) {
+  for (const [column, definition] of USER_AVATAR_COLUMNS) {
+    if (!hasColumn(db, 'users', column)) {
+      db.exec(`ALTER TABLE users ADD COLUMN ${definition}`);
+    }
+  }
+}
+
 const MIGRATIONS = [
   {
     version: INITIAL_MIGRATION,
@@ -47,6 +61,10 @@ const MIGRATIONS = [
   {
     version: USER_ACTIVE_MIGRATION,
     up: addUserActiveColumn,
+  },
+  {
+    version: USER_AVATAR_MIGRATION,
+    up: addUserAvatarColumns,
   },
 ];
 
@@ -94,4 +112,5 @@ module.exports = {
   immediateTransaction,
   INITIAL_MIGRATION,
   USER_ACTIVE_MIGRATION,
+  USER_AVATAR_MIGRATION,
 };

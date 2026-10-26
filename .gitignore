@@ -6,6 +6,7 @@ node_modules/
 data/*.sqlite
 data/*.sqlite-*
 data/*.db
+data/uploads/
 
 tests/.tmp/
 coverage/
@@ -15,3 +16,8 @@ coverage/
 npm-debug.log*
 .DS_Store
 Thumbs.db
+
+# BEGIN oh-my-opencode-slim worktrees
+.slim/worktrees/
+.slim/worktrees.json
+# END oh-my-opencode-slim worktrees

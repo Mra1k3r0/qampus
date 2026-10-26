@@ -11,6 +11,7 @@ const isTest = process.env.NODE_ENV === 'test';
 const DEFAULT_PORT = 3000;
 const DEFAULT_SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 const MIN_SESSION_SECRET_LENGTH = 32;
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 function parseInteger(value, fallback) {
   const parsed = Number.parseInt(value, 10);
@@ -36,13 +37,19 @@ if (isProduction && process.env.COOKIE_SECURE === 'false') {
   throw new Error('COOKIE_SECURE cannot be false in production.');
 }
 
+const port = parseInteger(process.env.PORT, DEFAULT_PORT);
+const publicBaseUrl = (process.env.PUBLIC_BASE_URL || `http://localhost:${port}`).replace(/\/+$/, '');
+
 const config = {
-  appName: 'CSPC Student Queue',
+  appName: 'Qampus',
   projectRoot,
   isProduction,
   isTest,
-  port: parseInteger(process.env.PORT, DEFAULT_PORT),
+  port,
+  publicBaseUrl,
   databasePath: path.resolve(projectRoot, process.env.DATABASE_PATH || 'data/cspc_queue.sqlite'),
+  avatarUploadDir: path.resolve(projectRoot, 'data/uploads/avatars'),
+  avatarMaxBytes: AVATAR_MAX_BYTES,
   sessionSecret,
   cookieName: process.env.COOKIE_NAME || 'cspc_queue.sid',
   sessionMaxAgeMs: parseInteger(process.env.SESSION_MAX_AGE_MS, DEFAULT_SESSION_MAX_AGE_MS),

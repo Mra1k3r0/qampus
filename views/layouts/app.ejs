@@ -7,6 +7,41 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="Take a ticket for a CSPC office, watch your place in line, and show your code at the counter.">
   <title><%= title %> - <%= appName %></title>
+  <%
+    const pageDescription = 'Take a ticket for a CSPC office, watch your place in line, and show your code at the counter.';
+    const pagePath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
+    const pageUrl = publicBaseUrl + pagePath;
+    const socialImage = publicBaseUrl + '/images/cspc/seal.png';
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Qampus',
+      url: pageUrl,
+      description: pageDescription,
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'en-PH',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'PHP',
+      },
+      provider: {
+        '@type': 'Organization',
+        name: 'CSPC CCIT',
+      },
+    };
+  %>
+  <link rel="canonical" href="<%= pageUrl %>">
+  <meta property="og:title" content="<%= title %> - <%= appName %>">
+  <meta property="og:description" content="<%= pageDescription %>">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= pageUrl %>">
+  <meta property="og:image" content="<%= socialImage %>">
+  <meta property="og:site_name" content="Qampus">
+  <meta name="twitter:card" content="summary">
+  <link rel="manifest" href="/site.webmanifest">
+  <script type="application/ld+json"><%- JSON.stringify(structuredData) %></script>
   <link rel="icon" href="/images/cspc/seal.png" type="image/png">
   <link rel="stylesheet" href="/css/main.css">
   <script src="/js/app.js" defer></script>
@@ -27,6 +62,11 @@
     const isStaff = Boolean(user && (user.role === 'staff' || user.role === 'admin'));
     const isAdmin = Boolean(user && user.role === 'admin');
     const isStudent = Boolean(user && user.role === 'student');
+    const isProfilePage = currentPath === '/profile';
+    const accountInitials = user
+      ? (user.initials || String(user.fullName || '').trim().split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() || '?')
+      : '';
+    const isAuthPage = currentPath === '/login' || currentPath === '/register';
     let activePageScript = typeof pageScript === 'string' && pageScript.length > 0
       ? pageScript
       : null;
@@ -38,12 +78,23 @@
       }
     }
   %>
+  <% if (isAuthPage) { %>
+  <div class="auth-mark shell">
+    <a class="brand" href="/">
+      <img class="brand__seal" src="/images/cspc/seal.png" alt="" width="120" height="125">
+      <span class="brand__text">
+        <span class="brand__name">Qampus</span>
+        <span class="brand__meta">CCIT Service Desk</span>
+      </span>
+    </a>
+  </div>
+  <% } else { %>
   <header class="site-header">
     <div class="shell site-header__inner">
       <a class="brand" href="/">
         <img class="brand__seal" src="/images/cspc/seal.png" alt="" width="120" height="125">
         <span class="brand__text">
-          <span class="brand__name">CSPC Queue</span>
+          <span class="brand__name">Qampus</span>
           <span class="brand__meta">CCIT Service Desk</span>
         </span>
       </a>
@@ -62,23 +113,30 @@
         <a class="nav-link<%= currentPath === '/admin/staff' ? ' is-current' : '' %>" href="/admin/staff"<%- currentPath === '/admin/staff' ? ' aria-current="page"' : '' %>>Staff accounts</a>
         <% } %>
         <% if (user) { %>
-        <span class="account">
-          <span class="account__name"><%= user.fullName %></span>
-          <span class="account__role"><%= roleLabel %></span>
-        </span>
+        <a class="account<%= isProfilePage ? ' is-current' : '' %>" href="/profile"<%- isProfilePage ? ' aria-current="page"' : '' %>>
+          <% if (user.avatarUrl) { %>
+          <img class="avatar avatar--account" src="<%= user.avatarUrl %>" alt="" width="32" height="32">
+          <% } else { %>
+          <span class="avatar avatar--account avatar--initials" aria-hidden="true"><%= accountInitials %></span>
+          <% } %>
+          <span class="account__text">
+            <span class="account__name"><%= user.fullName %></span>
+            <span class="account__role"><%= roleLabel %></span>
+          </span>
+        </a>
         <form class="nav-logout" method="post" action="/logout">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button class="btn btn--quiet btn--small" type="submit">
-            <%- include('../partials/icon', { name: 'log-out', size: 16, title: null }) %>
-            Sign out
+          <button class="nav-logout__button" type="submit" title="Sign out">
+            <%- include('../partials/icon', { name: 'log-out', size: 20, title: null }) %>
+            <span class="visually-hidden">Sign out</span>
           </button>
         </form>
         <% } else { %>
-        <a class="nav-link" href="/login">
-          <%- include('../partials/icon', { name: 'log-in', size: 16, title: null }) %>
-          Sign in
+        <a class="nav-link" href="/login">Sign in</a>
+        <a class="btn btn--primary btn--small" href="/register">
+          Get started
+          <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
         </a>
-        <a class="btn btn--secondary btn--small" href="/register">Create account</a>
         <% } %>
       </nav>
 
@@ -91,43 +149,63 @@
           <div class="mobile-menu__head">
             <div class="mobile-menu__brand">
               <img class="mobile-menu__seal" src="/images/cspc/seal.png" alt="" width="120" height="125">
-              <span>CSPC Queue</span>
+              <span>Qampus</span>
             </div>
             <button class="mobile-menu__close" type="button" data-close-menu aria-label="Close menu">
               <%- include('../partials/icon', { name: 'x', size: 24, title: null }) %>
             </button>
           </div>
-          <a class="mobile-menu__link<%= currentPath === '/' ? ' is-current' : '' %>" href="/"<%- currentPath === '/' ? ' aria-current="page"' : '' %>>Home</a>
-          <a class="mobile-menu__link<%= currentPath === '/display' ? ' is-current' : '' %>" href="/display"<%- currentPath === '/display' ? ' aria-current="page"' : '' %>>Display</a>
-          <% if (isStudent) { %>
-          <a class="mobile-menu__link<%= currentPath === '/queue' ? ' is-current' : '' %>" href="/queue"<%- currentPath === '/queue' ? ' aria-current="page"' : '' %>>My queue</a>
-          <% } %>
-          <% if (isStaff) { %>
-          <a class="mobile-menu__link<%= currentPath.indexOf('/staff/') === 0 ? ' is-current' : '' %>" href="/staff/queue"<%- currentPath.indexOf('/staff/') === 0 ? ' aria-current="page"' : '' %>>Staff queue</a>
-          <% } %>
-          <% if (isAdmin) { %>
-          <a class="mobile-menu__link<%= currentPath === '/admin/services' ? ' is-current' : '' %>" href="/admin/services"<%- currentPath === '/admin/services' ? ' aria-current="page"' : '' %>>Service windows</a>
-          <a class="mobile-menu__link<%= currentPath === '/admin/staff' ? ' is-current' : '' %>" href="/admin/staff"<%- currentPath === '/admin/staff' ? ' aria-current="page"' : '' %>>Staff accounts</a>
-          <% } %>
+
+          <div class="mobile-menu__body">
+            <a class="mobile-menu__link<%= currentPath === '/' ? ' is-current' : '' %>" href="/"<%- currentPath === '/' ? ' aria-current="page"' : '' %>>Home</a>
+            <a class="mobile-menu__link<%= currentPath === '/display' ? ' is-current' : '' %>" href="/display"<%- currentPath === '/display' ? ' aria-current="page"' : '' %>>Display</a>
+            <% if (isStudent) { %>
+            <a class="mobile-menu__link<%= currentPath === '/queue' ? ' is-current' : '' %>" href="/queue"<%- currentPath === '/queue' ? ' aria-current="page"' : '' %>>My queue</a>
+            <% } %>
+            <% if (isStaff) { %>
+            <a class="mobile-menu__link<%= currentPath.indexOf('/staff/') === 0 ? ' is-current' : '' %>" href="/staff/queue"<%- currentPath.indexOf('/staff/') === 0 ? ' aria-current="page"' : '' %>>Staff queue</a>
+            <% } %>
+            <% if (isAdmin) { %>
+            <a class="mobile-menu__link<%= currentPath === '/admin/services' ? ' is-current' : '' %>" href="/admin/services"<%- currentPath === '/admin/services' ? ' aria-current="page"' : '' %>>Service windows</a>
+            <a class="mobile-menu__link<%= currentPath === '/admin/staff' ? ' is-current' : '' %>" href="/admin/staff"<%- currentPath === '/admin/staff' ? ' aria-current="page"' : '' %>>Staff accounts</a>
+            <% } %>
+          </div>
+
           <% if (user) { %>
-          <p class="mobile-menu__account"><span><%= user.fullName %></span> <%= roleLabel %></p>
-          <form method="post" action="/logout">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn--secondary btn--block" type="submit">Sign out</button>
-          </form>
+          <div class="mobile-menu__foot">
+            <a class="mobile-menu__account<%= isProfilePage ? ' is-current' : '' %>" href="/profile"<%- isProfilePage ? ' aria-current="page"' : '' %>>
+              <% if (user.avatarUrl) { %>
+              <img class="avatar avatar--drawer" src="<%= user.avatarUrl %>" alt="" width="44" height="44">
+              <% } else { %>
+              <span class="avatar avatar--drawer avatar--initials" aria-hidden="true"><%= accountInitials %></span>
+              <% } %>
+              <span class="mobile-menu__account-text">
+                <span class="mobile-menu__account-name"><%= user.fullName %></span>
+                <span class="mobile-menu__account-role"><%= roleLabel %></span>
+              </span>
+            </a>
+            <form class="mobile-menu__logout" method="post" action="/logout">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="mobile-menu__signout" type="submit" title="Sign out">
+                <%- include('../partials/icon', { name: 'log-out', size: 20, title: null }) %>
+                <span class="visually-hidden">Sign out</span>
+              </button>
+            </form>
+          </div>
           <% } else { %>
-          <a class="mobile-menu__link" href="/login">Sign in</a>
-          <a class="btn btn--primary btn--block" href="/register">Create account</a>
+          <div class="mobile-menu__foot mobile-menu__foot--guest">
+            <a class="btn btn--secondary btn--block" href="/login">Sign in</a>
+            <a class="btn btn--primary btn--block" href="/register">
+              Get started
+              <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+            </a>
+          </div>
           <% } %>
-          <p class="mobile-menu__note">
-            <span>CCIT Office, Window 1</span>
-            <span>Monday to Friday</span>
-            <span>08:00 to 17:00 PHT</span>
-          </p>
         </nav>
       </details>
     </div>
   </header>
+  <% } %>
 
   <%- include('../partials/flash', { flash: flash }) %>
 
@@ -135,8 +213,16 @@
     <%- body %>
   </main>
 
+  <% if (!isAuthPage) { %>
   <footer class="site-footer">
     <div class="shell footer__grid">
+      <div class="footer__col footer__col--brand">
+        <p class="footer__brand">
+          <img class="footer__logo" src="/images/cspc/seal.png" alt="" width="36" height="37">
+          <span class="footer__wordmark">Qampus</span>
+        </p>
+        <p class="footer__about">A student queueing system for CSPC CCIT offices. Take a ticket, watch your place, and show your code at the counter.</p>
+      </div>
       <div class="footer__col">
         <p class="footer__label">Office hours</p>
         <p>Monday to Friday<br>08:00 to 17:00 PHT</p>
@@ -148,14 +234,16 @@
       <div class="footer__col">
         <p class="footer__label">Help</p>
         <p><a href="/#how-it-works">How the queue works</a></p>
-        <p><a href="/policy">Queue rules</a></p>
+        <p><a href="/rules">Terms of Use</a></p>
+        <p><a href="/privacy">Privacy Policy</a></p>
       </div>
     </div>
     <div class="shell footer__base">
-      <p><%= appName %></p>
+      <p>&copy; 2026 qampus.dpdns.org</p>
       <p>Office hours are in Philippine Standard Time.</p>
     </div>
   </footer>
+  <% } %>
 
   <% if (activePageScript) { %>
   <script src="<%= activePageScript %>" defer></script>

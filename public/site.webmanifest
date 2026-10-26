@@ -1,0 +1,19 @@
+{
+  "name": "Qampus",
+  "short_name": "Qampus",
+  "description": "Campus queueing for CSPC CCIT: take a ticket, watch your place, and show the code at the counter.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F4EC",
+  "theme_color": "#F7F4EC",
+  "lang": "en-PH",
+  "icons": [
+    {
+      "src": "/images/cspc/seal.png",
+      "sizes": "116x120",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -78,6 +78,10 @@ function dateTimeLabel(value) {
   return formatInManila(value, 'MMM D, h:mm A');
 }
 
+function monthYearLabel(value) {
+  return formatInManila(value, 'MMMM YYYY');
+}
+
 function formatDateTime(value = new Date()) {
   return formatInManila(value, 'MMM D, YYYY h:mm A');
 }
@@ -143,6 +147,7 @@ module.exports = {
   clockLabel,
   formatTime,
   dateTimeLabel,
+  monthYearLabel,
   formatDateTime,
   serviceHoursLabel,
   relativeUpdatedLabel,
