@@ -1,7 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { createRequire } from 'node:module';
 import dbModule from '../../src/core/db.js';
 import repo from '../../src/modules/auth/auth.repository.js';
 import challenges from '../../src/modules/auth/challenges.service.js';
+
+const require = createRequire(import.meta.url);
+const bcrypt = require('bcryptjs');
 
 const { openDatabase, migrate } = dbModule;
 const { createUser } = repo;
@@ -291,6 +295,48 @@ describe('verifyChallenge', () => {
 
     const user = db.prepare('SELECT email_verified_at FROM users WHERE id = ?').get(userId);
     expect(user.email_verified_at).toBeNull();
+  });
+
+  it('returns missing when the pending challenge is superseded during the compare', async () => {
+    const first = await issue();
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const originalCompare = bcrypt.compare;
+    const compareSpy = vi.spyOn(bcrypt, 'compare').mockImplementation(async (code, hash) => {
+      await gate;
+      return originalCompare(code, hash);
+    });
+
+    try {
+      const verification = verifyChallenge(db, {
+        userId,
+        purpose: 'verify_email',
+        code: first.code,
+        now: addSeconds(NOW, 62),
+      });
+      expect(compareSpy).toHaveBeenCalledTimes(1);
+
+      const replacement = await issue({ now: addSeconds(NOW, 61) });
+      release();
+
+      const result = await verification;
+      expect(result).toEqual({ ok: false, reason: 'missing' });
+
+      const rows = challengeRows();
+      expect(rows).toHaveLength(2);
+      const active = activeChallenges();
+      expect(active).toHaveLength(1);
+      expect(active[0].id).toBe(replacement.id);
+      expect(active[0].attempts).toBe(0);
+      expect(active[0].consumed_at).toBeNull();
+      expect(rows[0].attempts).toBe(0);
+      expect(rows[0].consumed_at).toBeNull();
+    } finally {
+      compareSpy.mockRestore();
+      release();
+    }
   });
 
   it('rejects a code issued for a different purpose', async () => {

@@ -213,6 +213,9 @@ async function verifyChallenge(db, { userId, purpose, code, now = nowIso() }) {
     if (!challenge) {
       return { ok: false, reason: 'missing' };
     }
+    if (challenge.id !== pending.id) {
+      return { ok: false, reason: 'missing' };
+    }
     if (!matches) {
       return settleFailure(db, { challenge, userId, now });
     }
