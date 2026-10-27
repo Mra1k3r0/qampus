@@ -57,6 +57,7 @@ function createRegisterRouter({ db, config, security }) {
 
   router.post(
     '/register',
+    security.requireGuest,
     security.registerLimiter,
     validateBody(registerSchema, { onError: registerValidationError }),
     async (req, res, next) => {

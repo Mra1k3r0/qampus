@@ -139,7 +139,11 @@ function createVerificationRouter({ db, config, security }) {
         return;
       }
 
-      setFlash(req, 'success', result.challengeError ? COOLDOWN_FLASH : RESEND_FLASH);
+      if (result.challengeError) {
+        setFlash(req, 'error', COOLDOWN_FLASH);
+      } else {
+        setFlash(req, 'success', RESEND_FLASH);
+      }
       await saveSession(req);
       res.redirect(303, '/register/check-email');
     },

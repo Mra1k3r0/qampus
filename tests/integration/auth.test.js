@@ -595,3 +595,49 @@ describe('login error summary copy', () => {
     expect(summary).not.toContain('<a ');
   });
 });
+
+describe('register guest guard', () => {
+  let db;
+  let app;
+  let cleanup;
+
+  beforeAll(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db;
+    cleanup = testDb.cleanup;
+    app = createTestApp(db).app;
+  });
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  it('redirects a signed-in user away from register without creating the account', async () => {
+    const agent = request.agent(app);
+    const loginToken = await getCsrf(agent, '/login');
+    const signedIn = await agent.post('/login').type('form').send({
+      email: 'student1@my.cspc.edu.ph',
+      password: DEMO_PASSWORD,
+      _csrf: loginToken,
+    });
+    expect(signedIn.status).toBe(303);
+
+    const token = await getCsrf(agent, '/queue');
+    const email = 'guest.only@my.cspc.edu.ph';
+
+    const response = await agent.post('/register').type('form').send({
+      fullName: 'Guest Only',
+      studentNo: '2026-9005',
+      email,
+      password: 'QueueDemo2026!',
+      confirmPassword: 'QueueDemo2026!',
+      policy: 'agreed',
+      _csrf: token,
+    });
+
+    expect(response.status).toBe(303);
+    expect(response.headers.location).toBe('/queue');
+    const row = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    expect(row).toBeUndefined();
+  });
+});
