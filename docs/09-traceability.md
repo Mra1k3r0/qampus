@@ -90,7 +90,7 @@ Purpose: prove that every rubric criterion and every requirement has a build art
 - [ ] Passwords hashed with bcrypt cost 12; plaintext absent from the database and logs.
 - [ ] Session id regenerated on login; cookie HttpOnly, SameSite=Lax, Secure in production.
 - [ ] CSRF token on every POST; missing or mismatched token returns 403.
-- [ ] Helmet CSP with no inline script or style; frame-ancestors none; nosniff.
+- [ ] Helmet CSP with one hashed inline theme bootstrap and no `unsafe-inline`; frame-ancestors none; nosniff; Permissions-Policy denies camera, microphone, geolocation, payment, and USB while keeping same-origin autoplay for the call chime; HSTS is two years with preload.
 - [ ] Every query parameterised; no string-built SQL.
 - [ ] zod validation on body, params, and query; unknown keys stripped; length limits set.
 - [ ] Login rate limit 10 per 15 minutes; join limit 20 per hour per user.
@@ -138,8 +138,8 @@ Pass condition per page: no horizontal scroll, no clipped control, no text under
 | Join policy, rules, and privacy pages | Built, tested | Window cutoff, two-ticket cap, 60-second cooldown, no-show block, role-aware sign-in, and the rules and privacy pages are implemented and covered by I45 to I49; both policy pages share a 34rem reading column, a sticky On this page rail at 1024 px, and heading ids for deep links; anonymous reads of `/`, `/rules`, `/policy`, `/display`, and `/api/display` mint no session | Rehearse the demo with `QUEUE_ENFORCE_HOURS` if the slot is outside office hours |
 | Staff account management | Built, tested | Office head creates, edits, resets, deactivates, and reactivates staff accounts at `/admin/staff`; deactivation blocks sign-in and kills the live session; I50 covers the failure cases | No hard delete by design; add invite email only if Round 2 needs it |
 | Remember me and password help | Built, tested | Checked remember sets a 30-day cookie and a matching `sessions.expires_at`; unchecked stays a browser-session cookie while the store keeps the 8h fallback; passwords require 8 or more characters with a letter and a digit, enforced on register and staff reset and in the register browser check; when enabled, new passwords are checked against the Pwned Passwords range API and fail open on network errors; `GET /forgot-password` is an office-assisted information page with no token or email; covered in `tests/integration/auth.test.js`, `tests/integration/admin-staff.test.js`, and `tests/unit/password-safety.test.js` | Keep `SESSION_REMEMBER_MAX_AGE_MS` and `PASSWORD_LEAK_CHECK` documented in `.env.example`; no password reset flow in Round 1 |
+| Window status, public origin, asset cache, and headers | Built, tested | The visible window state is derived from the weekday and Asia/Manila schedule without the 30-minute join cutoff, so a manual `is_open` flag cannot keep a window green after `closes_at`; the sitemap, robots file, canonical, and social tags use the request origin or `PUBLIC_BASE_URL` instead of the localhost fallback; static assets are content-versioned with immutable caching and the desk seal has 64 and 128 px sources; Permissions-Policy and a two-year HSTS header are live; I52 to I55 cover the behavior and the full suite is 187 tests | Re-run the live after-hours smoke test after deploy, then record the header capture and sitemap output in `docs/evidence/` |
 ## 12. Sign-off
-
 | Role | Name | Confirms | Date |
 | --- | --- | --- | --- |
 | Requirements owner | Member A | FR and NFR match the build | |

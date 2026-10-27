@@ -596,8 +596,14 @@
   background-color: var(--status-open);
 }
 
+.pill--closed {
+  border-color: color-mix(in srgb, var(--color-danger) 45%, transparent);
+  background-color: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  color: var(--color-danger);
+}
+
 .pill--closed .pill__dot {
-  background-color: var(--status-closed);
+  background-color: var(--color-danger);
 }
 
 .pill--waiting .pill__dot {

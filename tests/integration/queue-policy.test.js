@@ -177,4 +177,44 @@ describe('join policy', () => {
       config.queueEnforceHours = previous;
     }
   });
+
+  function setWeekdayHours(serviceId) {
+    setService(serviceId, {
+      open_days: JSON.stringify(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']),
+      opens_at: '08:00',
+      closes_at: '17:00',
+    });
+  }
+
+  it('rejects a join at 17:38 PHT after the window closed', async () => {
+    vi.setSystemTime(new Date('2026-10-27T09:38:00.000Z'));
+    setWeekdayHours(1);
+    const agent = await login();
+
+    const response = await join(agent, 1);
+
+    expect(response.status).toBe(409);
+    expect(response.text).toContain('That service window is closed right now.');
+  });
+
+  it('rejects a join at 16:45 PHT within the closing cutoff', async () => {
+    vi.setSystemTime(new Date('2026-10-27T08:45:00.000Z'));
+    setWeekdayHours(1);
+    const agent = await login();
+
+    const response = await join(agent, 1);
+
+    expect(response.status).toBe(409);
+    expect(response.text).toContain('That window closes soon. Try again when it reopens.');
+  });
+
+  it('allows a join at 10:00 PHT inside the window', async () => {
+    vi.setSystemTime(new Date('2026-10-27T02:00:00.000Z'));
+    setWeekdayHours(1);
+    const agent = await login();
+
+    const response = await join(agent, 1);
+
+    expect(response.status).toBe(303);
+  });
 });

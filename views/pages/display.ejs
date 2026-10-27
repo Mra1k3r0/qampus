@@ -7,10 +7,10 @@
   <meta name="color-scheme" content="dark">
   <meta name="description" content="Now serving at the CSPC CCIT service desk. Ticket codes, windows, and waiting counts only.">
   <title><%= appName %> | <%= title %></title>
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/cspc/seal-32.png">
-  <link rel="stylesheet" href="/css/page-display.min.css">
-  <script src="/js/display.min.js" defer></script>
+  <link rel="icon" href="<%= assetUrl('/favicon.ico') %>" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="<%= assetUrl('/images/cspc/seal-32.png') %>">
+  <link rel="stylesheet" href="<%= assetUrl('/css/page-display.min.css') %>">
+  <script defer src="<%= assetUrl('/js/display.min.js') %>"></script>
 </head>
 <%
   const boardServices = board && Array.isArray(board.services) ? board.services : [];
@@ -25,7 +25,7 @@
     <div class="board__inner">
       <header class="board__top">
         <div class="board__brand">
-          <img class="board__seal" src="/images/cspc/seal-120.webp" srcset="/images/cspc/seal-120.webp 1x, /images/cspc/seal-240.webp 2x" alt="" width="120" height="125">
+          <img class="board__seal" src="<%= assetUrl('/images/cspc/seal-64.webp') %>" srcset="<%= assetUrl('/images/cspc/seal-64.webp') %> 64w, <%= assetUrl('/images/cspc/seal-128.webp') %> 128w" sizes="(min-width: 1280px) 64px, 40px" alt="" width="120" height="125">
           <div>
             <p class="board__name">Qampus</p>
             <p class="board__sub">CCIT Office service windows</p>

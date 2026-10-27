@@ -162,7 +162,13 @@
       <div class="empty-state">
         <p class="empty-state__numeral" aria-hidden="true">0</p>
         <h2 id="closed-title">This window is closed.</h2>
-        <p>The window is not accepting tickets right now. It opens at <%= service.opensAt %> and closes at <%= service.closesAt %> PHT.</p>
+        <% if (service.scheduleState && service.scheduleState.reason === 'closed-day') { %>
+        <p>Closed today. This window is open on <%= service.openDaysLabel %>.</p>
+        <% } else if (service.scheduleState && !service.scheduleState.isOpen) { %>
+        <p>Closed for now. Opens at <%= service.opensAt %>.</p>
+        <% } else { %>
+        <p><%= service.joinMessage || 'The window is not accepting tickets right now.' %></p>
+        <% } %>
         <a class="btn btn--secondary" href="/queue">
           <%- include('../partials/icon', { name: 'arrow-left', size: 16, title: null }) %>
           Back<span class="visually-hidden"> to my queue</span>

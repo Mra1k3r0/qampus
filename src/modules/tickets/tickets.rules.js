@@ -99,18 +99,36 @@ function parseOpenDays(openDays) {
   }
 }
 
-function windowRejection({ service, weekday, minutes, cutoffMinutes = JOIN_CUTOFF_MINUTES }) {
-  const days = parseOpenDays(service.openDays);
-  const opensAt = parseClockMinutes(service.opensAt);
-  const closesAt = parseClockMinutes(service.closesAt);
+function serviceScheduleState({ service, weekday, minutes } = {}) {
+  const days = service ? parseOpenDays(service.openDays) : null;
+  const opensAt = service ? parseClockMinutes(service.opensAt) : null;
+  const closesAt = service ? parseClockMinutes(service.closesAt) : null;
 
-  if (!days || opensAt === null || closesAt === null) {
+  if (!days || opensAt === null || closesAt === null || !Number.isFinite(minutes)) {
+    return { isOpen: false, reason: 'closed-day' };
+  }
+  if (!days.includes(weekday)) {
+    return { isOpen: false, reason: 'closed-day' };
+  }
+  if (minutes < opensAt) {
+    return { isOpen: false, reason: 'before-hours' };
+  }
+  if (minutes >= closesAt) {
+    return { isOpen: false, reason: 'after-hours' };
+  }
+  return { isOpen: true, reason: 'open' };
+}
+
+function windowRejection({ service, weekday, minutes, cutoffMinutes = JOIN_CUTOFF_MINUTES }) {
+  const schedule = serviceScheduleState({ service, weekday, minutes });
+
+  if (!schedule.isOpen) {
     return JOIN_MESSAGES.closed;
   }
-  if (!days.includes(weekday) || minutes < opensAt) {
-    return JOIN_MESSAGES.closed;
-  }
-  if (minutes >= closesAt - cutoffMinutes) {
+
+  const closesAt = parseClockMinutes(service.closesAt);
+  const remainingMinutes = closesAt - minutes;
+  if (remainingMinutes > 0 && remainingMinutes <= cutoffMinutes) {
     return JOIN_MESSAGES.closingSoon;
   }
   return null;
@@ -290,18 +308,22 @@ function toTicketView(ticket) {
   };
 }
 
-function toServiceView(service) {
+function toServiceView(service, { weekday, minutes, enforceHours = true } = {}) {
   if (!service) {
     return null;
   }
 
-  const isOpen = Boolean(service.isOpen);
+  const hasSchedulePoint = typeof weekday === 'string' && Number.isFinite(minutes);
+  const scheduleState = serviceScheduleState({ service, weekday, minutes });
+  const isOpen = Boolean(service.isOpen)
+    && (!enforceHours || !hasSchedulePoint || scheduleState.isOpen);
 
   return {
     ...service,
     isOpen,
     openLabel: isOpen ? 'Open' : 'Closed',
     openClass: isOpen ? 'pill--open' : 'pill--closed',
+    scheduleState,
     hoursLabel: serviceHoursLabel(service.opensAt, service.closesAt),
     openDaysLabel: openDaysLabel(service.openDays),
     waitingLabel: queueCountText(service.waitingCount),
@@ -326,6 +348,7 @@ module.exports = {
   canViewTicket,
   canLeave,
   canJoin,
+  serviceScheduleState,
   isWithinServiceWindow,
   evaluateJoinPolicy,
   isActiveStatus,
