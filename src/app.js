@@ -21,6 +21,7 @@ const {
 } = require('./core/assets');
 const authRepository = require('./modules/auth/auth.repository');
 const { AVATAR_UPLOAD_PATH, avatarUploadPreCsrf } = require('./modules/profile/profile.upload');
+const { createDailySweep } = require('./modules/tickets/tickets.sweep');
 const { createRouter } = require('./routes');
 
 const PUBLIC_BOARD_PATHS = new Set(['/display', '/api/display']);
@@ -66,7 +67,7 @@ function loadUser(db) {
   };
 }
 
-function createApp({ db, config: appConfig = config }) {
+function createApp({ db, config: appConfig = config, enableSweep = true }) {
   const app = express();
   const logger = createLogger(appConfig);
   const security = createSecurity();
@@ -93,6 +94,9 @@ function createApp({ db, config: appConfig = config }) {
   initAssets(path.join(appConfig.projectRoot, 'public'));
   app.use(createAssetCacheHeaders());
   app.use(express.static(path.join(appConfig.projectRoot, 'public'), { cacheControl: false }));
+  if (enableSweep) {
+    app.use(createDailySweep({ db, logger }));
+  }
   app.use(express.urlencoded({ extended: false, limit: '16kb' }));
   app.use(express.json({ limit: '16kb' }));
   app.use((req, res, next) => {

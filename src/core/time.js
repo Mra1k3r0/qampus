@@ -32,6 +32,10 @@ function serviceDate(value = new Date()) {
   return toManila(value).format('YYYY-MM-DD');
 }
 
+function serviceDayEndIso(date = serviceDate()) {
+  return dayjs.tz(`${date} 00:00:00`, TIME_ZONE).add(1, 'day').toISOString();
+}
+
 function parseClockMinutes(value) {
   if (typeof value !== 'string') {
     return null;
@@ -140,6 +144,7 @@ function openDaysLabel(openDays) {
 module.exports = {
   TIME_ZONE,
   serviceDate,
+  serviceDayEndIso,
   parseClockMinutes,
   manilaNowParts,
   nowIso,

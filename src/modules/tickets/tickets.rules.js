@@ -3,6 +3,7 @@ const {
   dateTimeLabel,
   openDaysLabel,
   parseClockMinutes,
+  serviceDayEndIso,
   serviceHoursLabel,
 } = require('../../core/time');
 
@@ -28,6 +29,7 @@ const STATUS = Object.freeze({
   served: Object.freeze({ label: 'Completed', tone: 'success', className: 'completed', isActive: false }),
   no_show: Object.freeze({ label: 'No-show', tone: 'danger', className: 'noshow', isActive: false }),
   left: Object.freeze({ label: 'Left', tone: 'muted', className: 'left', isActive: false }),
+  expired: Object.freeze({ label: 'Expired', tone: 'muted', className: 'expired', isActive: false }),
 });
 
 const FALLBACK_STATUS = Object.freeze({ label: 'Unknown', tone: 'neutral', className: 'waiting', isActive: false });
@@ -74,6 +76,26 @@ function isWaiting(ticket) {
 
 function isAtDesk(ticket) {
   return Boolean(ticket) && (ticket.status === 'called' || ticket.status === 'serving');
+}
+
+function isStaleActive(ticket, today) {
+  return Boolean(ticket)
+    && Boolean(today)
+    && isActiveStatus(ticket.status)
+    && ticket.serviceDate < today;
+}
+
+function toCurrentTicket(ticket, today) {
+  if (!isStaleActive(ticket, today)) {
+    return ticket;
+  }
+  return {
+    ...ticket,
+    status: 'expired',
+    endedAt: serviceDayEndIso(ticket.serviceDate),
+    position: null,
+    waitMinutes: 0,
+  };
 }
 
 function canLeave(ticket, user) {
@@ -275,15 +297,26 @@ function currentServingText(service) {
   return `${service.currentCode} at ${service.currentCounter}`;
 }
 
+function endedCaption(ticket) {
+  if (!ticket.endedAt) {
+    return '';
+  }
+  if (ticket.status === 'served') {
+    return 'Completed';
+  }
+  if (ticket.status === 'expired') {
+    return 'Expired';
+  }
+  return 'Closed';
+}
+
 function toTicketView(ticket) {
   if (!ticket) {
     return null;
   }
 
   const meta = statusMeta(ticket.status);
-  const endedCaption = ticket.endedAt
-    ? (ticket.status === 'served' ? 'Completed' : 'Closed')
-    : '';
+  const caption = endedCaption(ticket);
 
   return {
     ...ticket,
@@ -304,7 +337,7 @@ function toTicketView(ticket) {
     calledLabel: clockLabel(ticket.calledAt),
     startedLabel: clockLabel(ticket.startedAt),
     servedLabel: clockLabel(ticket.endedAt),
-    endedCaption,
+    endedCaption: caption,
   };
 }
 
@@ -354,6 +387,8 @@ module.exports = {
   isActiveStatus,
   isWaiting,
   isAtDesk,
+  isStaleActive,
+  toCurrentTicket,
   estimateWaitMinutes,
   positionText,
   etaText,

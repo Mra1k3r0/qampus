@@ -9,6 +9,9 @@ const {
   canLeave,
   canJoin,
   isActiveStatus,
+  isStaleActive,
+  toCurrentTicket,
+  toTicketView,
   evaluateJoinPolicy,
   estimateWaitMinutes,
   serviceScheduleState,
@@ -62,6 +65,41 @@ describe('ticket ownership rules', () => {
     expect(isActiveStatus('served')).toBe(false);
     expect(isActiveStatus('left')).toBe(false);
     expect(isActiveStatus('no_show')).toBe(false);
+    expect(isActiveStatus('expired')).toBe(false);
+  });
+});
+
+describe('stale ticket display', () => {
+  const ticket = {
+    status: 'waiting',
+    serviceDate: '2026-10-26',
+    updatedAt: '2026-10-26T09:00:00.000Z',
+    position: 3,
+    waitMinutes: 24,
+  };
+
+  it('marks an active ticket from an earlier service day as expired', () => {
+    expect(isStaleActive(ticket, '2026-10-27')).toBe(true);
+    expect(toCurrentTicket(ticket, '2026-10-27')).toMatchObject({
+      status: 'expired',
+      endedAt: '2026-10-26T16:00:00.000Z',
+      position: null,
+      waitMinutes: 0,
+    });
+  });
+
+  it('leaves today and already closed tickets unchanged', () => {
+    expect(isStaleActive(ticket, '2026-10-26')).toBe(false);
+    expect(toCurrentTicket(ticket, '2026-10-26')).toBe(ticket);
+    const served = { ...ticket, status: 'served' };
+    expect(toCurrentTicket(served, '2026-10-27')).toBe(served);
+  });
+
+  it('renders the expired label and caption', () => {
+    const view = toTicketView(toCurrentTicket(ticket, '2026-10-27'));
+    expect(view.statusLabel).toBe('Expired');
+    expect(view.statusClass).toBe('expired');
+    expect(view.endedCaption).toBe('Expired');
   });
 });
 

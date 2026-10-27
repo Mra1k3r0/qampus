@@ -20,7 +20,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | ID | Target | Case | Assertion |
 |----|--------|------|-----------|
 | U01 | `src/modules/tickets/tickets.service.js` | Format for service REG, sequence 7 | `ticketCode('REG', 7)` returns `REG-007`; three digit padding holds at 120 |
-| U02 | `tickets.rules.js` | Predicates matrix | `canViewTicket` true for staff and admin on any ticket, false for another student or null; `canJoin` true only for students; `isActiveStatus` true for waiting, called, serving, false for served, left, no_show |
+| U02 | `tickets.rules.js` | Predicates matrix | `canViewTicket` true for staff and admin on any ticket, false for another student or null; `canJoin` true only for students; `isActiveStatus` true for waiting, called, serving, false for served, left, no_show, expired |
 | U04 | `src/modules/tickets/tickets.rules.js` | Three waiting tickets ahead | Position is 4 |
 | U05 | `tickets.rules.js` | Served, no_show, left tickets ahead | Excluded; position counts only waiting and called |
 | U06 | `tickets.rules.js` | Equal `created_at` | Tie broken by ascending `id`, stable result |
@@ -95,8 +95,8 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | I53 | `seo.test.js` | Public origin for sitemap, robots, canonical, and social tags | A forwarded host and protocol produce the matching absolute origin; an explicit `PUBLIC_BASE_URL` wins; a local test host stays on http; a hostile forwarded host is rejected and falls back without a redirect; rendered pages are `no-store` |
 | I54 | `seo.test.js` | Versioned asset cache policy | A versioned stylesheet and script return a long-lived immutable cache; the same paths without a version require revalidation; the home and display pages reference the versioned URLs and the right-sized seal |
 | I55 | `security.test.js` | Permissions-Policy and HSTS | `autoplay=(self)` is present for the same-origin call chime; camera, microphone, geolocation, payment, and USB stay denied; the policy has no wildcard; HSTS is `max-age=63072000; includeSubDomains; preload`; the only inline script is the hashed theme bootstrap |
+| I56 | `expiry.test.js` | Stale tickets across the Manila day boundary | Prior-day waiting, called, and serving tickets become `expired` with one system audit row each and a request id; today and served tickets stay unchanged, and today starts at sequence 1; a second run and dry-run are safe; a direct read shows Expired and transitions are rejected; the first request of a new day sweeps; migration 004 rebuilds the status CHECK and preserves rows; `node scripts/db.js expire` is the manual fallback |
 ## 5. Manual Test Matrix
-
 | ID | Case | Pass condition |
 |----|------|----------------|
 | M01 | Keyboard-only register and join | Tab reaches every field and button in order; Enter submits; no mouse needed |

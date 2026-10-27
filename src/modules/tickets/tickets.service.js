@@ -4,7 +4,12 @@ const { writeAudit } = require('../../core/audit');
 const { immediateTransaction } = require('../../core/db');
 const { manilaNowParts, nowIso, serviceDate } = require('../../core/time');
 const ticketsRepository = require('./tickets.repository');
-const { estimateWaitMinutes, evaluateJoinPolicy, toTicketView } = require('./tickets.rules');
+const {
+  estimateWaitMinutes,
+  evaluateJoinPolicy,
+  toCurrentTicket,
+  toTicketView,
+} = require('./tickets.rules');
 
 const MAX_INSERT_ATTEMPTS = 2;
 const TICKET_CODE_PAD = 3;
@@ -33,7 +38,7 @@ function findTicketOrThrow(db, ticketId) {
   if (!ticket) {
     throw createError(404, 'That ticket does not exist.');
   }
-  return withWait(ticket);
+  return withWait(toCurrentTicket(ticket, serviceDate()));
 }
 
 function withWait(ticket, now = nowIso()) {
@@ -102,9 +107,8 @@ function canJoinService(args) {
 }
 
 function joinQueue(db, { userId, serviceId, requestId, enforceHours = config.queueEnforceHours }) {
-  const date = serviceDate();
-
   return immediateTransaction(db, () => {
+    const date = serviceDate();
     const service = ticketsRepository.findServiceById(db, serviceId);
     if (!service) {
       throw createError(404, 'That service window does not exist.');
@@ -209,9 +213,8 @@ function getStaffTicket(db, ticketId) {
 }
 
 function callNext(db, { serviceId, staffUserId, requestId }) {
-  const date = serviceDate();
-
   return immediateTransaction(db, () => {
+    const date = serviceDate();
     const service = ticketsRepository.findServiceById(db, serviceId);
     if (!service) {
       throw createError(404, 'That service window does not exist.');

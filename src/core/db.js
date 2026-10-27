@@ -6,6 +6,7 @@ const { nowIso } = require('./time');
 const INITIAL_MIGRATION = '001_init';
 const USER_ACTIVE_MIGRATION = '002_user_is_active';
 const USER_AVATAR_MIGRATION = '003_user_avatar';
+const TICKET_EXPIRED_MIGRATION = '004_ticket_expired_status';
 const USER_ACTIVE_COLUMN = 'is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))';
 const USER_AVATAR_COLUMNS = [
   ['avatar_type', "avatar_type TEXT CHECK (avatar_type IN ('preset', 'upload'))"],
@@ -51,6 +52,59 @@ function addUserAvatarColumns(db) {
   }
 }
 
+function ticketsAllowExpiredStatus(db) {
+  const row = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'tickets'")
+    .get();
+  return Boolean(row && row.sql && row.sql.includes("'expired'"));
+}
+
+function addExpiredTicketStatus(db) {
+  if (ticketsAllowExpiredStatus(db)) {
+    return;
+  }
+
+  db.exec(`
+    ALTER TABLE tickets RENAME TO tickets_legacy;
+    CREATE TABLE tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL,
+      service_id INTEGER NOT NULL REFERENCES services(id),
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      counter_id INTEGER REFERENCES counters(id),
+      called_by INTEGER REFERENCES users(id),
+      status TEXT NOT NULL DEFAULT 'waiting'
+        CHECK (status IN ('waiting', 'called', 'serving', 'served', 'left', 'no_show', 'expired')),
+      note TEXT NOT NULL DEFAULT '',
+      service_date TEXT NOT NULL,
+      sequence INTEGER NOT NULL CHECK (sequence > 0),
+      call_count INTEGER NOT NULL DEFAULT 0 CHECK (call_count >= 0),
+      called_at TEXT,
+      started_at TEXT,
+      ended_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (service_id, service_date, sequence),
+      UNIQUE (code, service_date)
+    );
+    INSERT INTO tickets
+      (id, code, service_id, user_id, counter_id, called_by, status, note, service_date,
+       sequence, call_count, called_at, started_at, ended_at, created_at, updated_at)
+    SELECT
+      id, code, service_id, user_id, counter_id, called_by, status, note, service_date,
+      sequence, call_count, called_at, started_at, ended_at, created_at, updated_at
+    FROM tickets_legacy;
+    DROP TABLE tickets_legacy;
+    CREATE UNIQUE INDEX one_active_ticket
+      ON tickets (user_id, service_id, service_date)
+      WHERE status IN ('waiting', 'called', 'serving');
+    CREATE INDEX idx_tickets_waiting
+      ON tickets (service_id, service_date, status, sequence);
+    CREATE INDEX idx_tickets_user_active
+      ON tickets (user_id, status);
+  `);
+}
+
 const MIGRATIONS = [
   {
     version: INITIAL_MIGRATION,
@@ -65,6 +119,10 @@ const MIGRATIONS = [
   {
     version: USER_AVATAR_MIGRATION,
     up: addUserAvatarColumns,
+  },
+  {
+    version: TICKET_EXPIRED_MIGRATION,
+    up: addExpiredTicketStatus,
   },
 ];
 
@@ -113,4 +171,5 @@ module.exports = {
   INITIAL_MIGRATION,
   USER_ACTIVE_MIGRATION,
   USER_AVATAR_MIGRATION,
+  TICKET_EXPIRED_MIGRATION,
 };

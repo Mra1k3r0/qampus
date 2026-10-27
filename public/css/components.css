@@ -630,6 +630,10 @@
   background-color: var(--status-left);
 }
 
+.pill--expired .pill__dot {
+  background-color: var(--status-expired);
+}
+
 /* Live status reads as a quiet heartbeat, then a sharper call */
 @keyframes status-waiting-dot {
   0%,

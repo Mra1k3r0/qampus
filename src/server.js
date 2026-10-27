@@ -2,6 +2,7 @@ const config = require('./config');
 const { openDatabase, migrate } = require('./core/db');
 const { createLogger } = require('./core/logger');
 const { seedDatabase } = require('./core/seed');
+const { expireStaleTickets } = require('./modules/tickets/tickets.sweep');
 const { createApp } = require('./app');
 const { isTunnelEnabled, parseExtraArgs, startTunnel } = require('./tunnel');
 
@@ -15,6 +16,17 @@ let tunnelHandle = null;
 
 function countServices() {
   return db.prepare('SELECT COUNT(*) AS count FROM services').get().count;
+}
+
+function expireOnStartup() {
+  try {
+    const result = expireStaleTickets(db);
+    if (result.expired > 0) {
+      logger.info({ date: result.date, expired: result.expired }, 'expired stale tickets');
+    }
+  } catch (err) {
+    logger.error({ err }, 'failed to expire stale tickets');
+  }
 }
 
 function startCleanup(store) {
@@ -89,6 +101,8 @@ async function main() {
     seedDatabase(db);
     logger.info('seeded the empty database');
   }
+
+  expireOnStartup();
 
   const app = createApp({ db, config });
   server = await listen(app, config.port);

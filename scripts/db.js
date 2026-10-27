@@ -3,6 +3,7 @@ const config = require('../src/config');
 const { openDatabase, migrate } = require('../src/core/db');
 const { seedDatabase } = require('../src/core/seed');
 const { nowIso } = require('../src/core/time');
+const { expireStaleTickets } = require('../src/modules/tickets/tickets.sweep');
 
 const AUDIT_RETENTION_DAYS = 90;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -41,6 +42,14 @@ function seedExistingDatabase(options = {}) {
   const counts = seedDatabase(db, options);
   db.close();
   return counts;
+}
+
+function expireTickets({ dryRun = false } = {}) {
+  const db = openDatabase(config.databasePath);
+  migrate(db);
+  const result = expireStaleTickets(db, { dryRun });
+  db.close();
+  return result;
 }
 
 function retention({ dryRun = false } = {}) {
@@ -85,6 +94,14 @@ function main() {
     return;
   }
 
+  if (command === 'expire') {
+    const dryRun = process.argv.includes('--dry-run');
+    const result = expireTickets({ dryRun });
+    const prefix = dryRun ? 'Would expire' : 'Expired';
+    console.log(`${prefix} ${result.expired} stale tickets for ${result.date}.`);
+    return;
+  }
+
   if (command === 'retention') {
     const dryRun = process.argv.includes('--dry-run');
     const result = retention({ dryRun });
@@ -95,7 +112,7 @@ function main() {
     return;
   }
 
-  console.error('Usage: node scripts/db.js <migrate|seed|reset|retention [--dry-run]>');
+  console.error('Usage: node scripts/db.js <migrate|seed|reset|expire [--dry-run]|retention [--dry-run]>');
   process.exitCode = 1;
 }
 
@@ -107,6 +124,7 @@ module.exports = {
   resetDatabase,
   migrateDatabase,
   seedExistingDatabase,
+  expireTickets,
   retention,
   AUDIT_RETENTION_DAYS,
 };
