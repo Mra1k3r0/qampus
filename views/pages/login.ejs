@@ -34,6 +34,25 @@
   const portalValues = portalOptions.map(function (option) { return option.value; });
   const requestedPortal = values && values.portal ? values.portal : '';
   const selectedPortal = portalValues.includes(requestedPortal) ? requestedPortal : 'student';
+  const missing = Array.isArray(missingFields) ? missingFields : [];
+  const emailIsEmpty = missing.includes('email');
+  const passwordIsEmpty = missing.includes('password');
+  const firstFieldError = ['portal', 'email', 'password']
+    .map(function (name) { return errorBag[name]; })
+    .find(Boolean);
+  const summaryLines = [];
+
+  if (emailIsEmpty && passwordIsEmpty) {
+    summaryLines.push('Enter your email address and password.');
+  } else if (passwordIsEmpty) {
+    summaryLines.push('Enter your password.');
+  } else if (emailIsEmpty) {
+    summaryLines.push('Enter your email address.');
+  } else if (errorBag.form) {
+    summaryLines.push(errorBag.form);
+  } else if (firstFieldError) {
+    summaryLines.push(firstFieldError);
+  }
 %>
 <div class="auth shell">
   <aside class="auth-panel">
@@ -65,11 +84,7 @@
 
       <%- include('../partials/error-summary', {
         errors: errorBag,
-        fields: [
-          { name: 'portal', id: 'portal', label: 'Sign-in role' },
-          { name: 'email', label: 'Email' },
-          { name: 'password', label: 'Password' },
-        ],
+        lines: summaryLines,
       }) %>
 
       <fieldset class="role-picker<%= errorBag.portal ? ' field--error' : '' %>" id="portal" tabindex="-1">

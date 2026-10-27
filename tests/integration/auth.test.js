@@ -133,7 +133,14 @@ describe('auth routes', () => {
     expect(response.text).toContain('Enter your email address.');
     expect(response.text).toContain('Password must have at least 8 characters');
     expect(response.text).toContain('Confirm your password.');
-    expect(response.text).toContain('Agree to the Terms of Use and Privacy Policy');
+    expect(response.text).toContain('Accept the terms to continue.');
+
+    const summary = response.text.match(/<div class="error-summary"[\s\S]*?<\/div>/)[0];
+    expect(summary).toContain('Complete all required fields.');
+    expect(summary).toContain('Accept the terms to continue.');
+    expect(summary).not.toContain('Full name:');
+    expect(summary).not.toContain('Email:');
+    expect(summary).not.toContain('<a ');
   });
 
   it('returns 400 when the policy is not accepted', async () => {
@@ -150,7 +157,7 @@ describe('auth routes', () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.text).toContain('Agree to the Terms of Use and Privacy Policy');
+    expect(response.text).toContain('Accept the terms to continue.');
     const row = db
       .prepare('SELECT id FROM users WHERE student_no = ?')
       .get('2026-9004');
@@ -532,5 +539,53 @@ describe('login portal selection', () => {
 
     expect(response.status).toBe(400);
     expect(lastLoginOptions().values.portal).toBe('staff');
+  });
+});
+
+describe('login error summary copy', () => {
+  let db;
+  let app;
+  let cleanup;
+
+  beforeAll(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db;
+    cleanup = testDb.cleanup;
+    app = createTestApp(db).app;
+  });
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  async function postLogin(payload) {
+    const agent = request.agent(app);
+    const token = await getCsrf(agent, '/login');
+    return agent.post('/login').type('form').send({ ...payload, _csrf: token });
+  }
+
+  function summaryOf(response) {
+    const match = response.text.match(/<div class="error-summary"[\s\S]*?<\/div>/);
+    return match ? match[0] : '';
+  }
+
+  it('asks for both fields when email and password are empty', async () => {
+    const response = await postLogin({ email: '', password: '' });
+
+    expect(response.status).toBe(400);
+    const summary = summaryOf(response);
+    expect(summary).toContain('Enter your email address and password.');
+    expect(summary).not.toContain('Email:');
+    expect(summary).not.toContain('<a ');
+  });
+
+  it('asks only for the password when the email is filled', async () => {
+    const response = await postLogin({ email: 'student1@my.cspc.edu.ph', password: '' });
+
+    expect(response.status).toBe(400);
+    const summary = summaryOf(response);
+    expect(summary).toContain('Enter your password.');
+    expect(summary).not.toContain('Enter your email address.');
+    expect(summary).not.toContain('<a ');
   });
 });

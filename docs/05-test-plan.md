@@ -42,7 +42,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 |----|------|------|-----------|
 | I01 | `tests/integration/auth.test.js` | `POST /register` valid | 302 to `/login`; users row role `student`; stored hash is not plaintext |
 | I02 | `auth.test.js` | `POST /register` duplicate email | 409; register view error; user count stays 1 |
-| I03 | `auth.test.js` | `POST /register` invalid payload | 400; field errors in HTML; no user row |
+| I03 | `auth.test.js` | `POST /register` and `POST /login` invalid payload | 400; auth summary is short and label-free; inline field errors remain; no user row |
 | I04 | `auth.test.js` | `POST /login` valid | 302 to `/queue`; `Set-Cookie` contains `cspc_queue.sid` |
 | I05 | `auth.test.js` | `POST /login` wrong password | 401; generic message; no `req.session.user` |
 | I06 | `auth.test.js` | `POST /login` unknown email | 401; same message and timing shape as I05 |

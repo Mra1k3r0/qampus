@@ -31,7 +31,7 @@ const passwordSchema = z
   );
 
 const policySchema = z.literal('agreed', {
-  error: 'Agree to the Terms of Use and Privacy Policy to continue.',
+  error: 'Accept the terms to continue.',
 });
 
 const registerSchema = z

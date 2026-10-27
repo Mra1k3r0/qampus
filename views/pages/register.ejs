@@ -4,6 +4,24 @@
   const studentNoValue = values && values.studentNo ? values.studentNo : '';
   const emailValue = values && values.email ? values.email : '';
   const policyChecked = values && values.policy === 'agreed';
+  const requiredFields = ['fullName', 'studentNo', 'email', 'password', 'confirmPassword'];
+  const missing = Array.isArray(missingFields) ? missingFields : [];
+  const firstFieldError = requiredFields
+    .map(function (name) { return errorBag[name]; })
+    .find(Boolean);
+  const summaryLines = [];
+
+  if (missing.length >= 2) {
+    summaryLines.push('Complete all required fields.');
+  } else if (missing.length === 1) {
+    summaryLines.push(errorBag[missing[0]] || 'Complete all required fields.');
+  } else if (firstFieldError) {
+    summaryLines.push(firstFieldError);
+  }
+
+  if (errorBag.policy) {
+    summaryLines.push(errorBag.policy);
+  }
 %>
 <div class="auth shell">
   <aside class="auth-panel">
@@ -20,14 +38,7 @@
 
       <%- include('../partials/error-summary', {
         errors: errorBag,
-        fields: [
-          { name: 'fullName', label: 'Full name' },
-          { name: 'studentNo', label: 'Student number' },
-          { name: 'email', label: 'Email' },
-          { name: 'password', label: 'Password' },
-          { name: 'confirmPassword', label: 'Confirm password' },
-          { name: 'policy', label: 'Terms of Use and Privacy Policy' },
-        ],
+        lines: summaryLines,
       }) %>
 
       <div class="field<%= errorBag.fullName ? ' field--error' : '' %>">

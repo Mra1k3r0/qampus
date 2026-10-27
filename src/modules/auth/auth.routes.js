@@ -5,9 +5,16 @@ const { registerSchema, loginSchema } = require('./auth.schemas');
 const authService = require('./auth.service');
 
 const PORTALS = new Set(['student', 'staff', 'admin']);
+const REGISTER_REQUIRED_FIELDS = ['fullName', 'studentNo', 'email', 'password', 'confirmPassword'];
+const LOGIN_REQUIRED_FIELDS = ['email', 'password'];
 
 function normalizePortal(value) {
   return typeof value === 'string' && PORTALS.has(value) ? value : 'student';
+}
+
+function getMissingFields(body, fieldNames) {
+  const input = body && typeof body === 'object' ? body : {};
+  return fieldNames.filter((name) => typeof input[name] !== 'string' || input[name].trim() === '');
 }
 
 function formValues(body) {
@@ -66,19 +73,21 @@ function destroySession(req) {
 function createAuthRouter({ db, config, security }) {
   const router = express.Router();
 
-  function renderRegister(res, { status = 200, errors = {}, values = {} } = {}) {
+  function renderRegister(res, { status = 200, errors = {}, values = {}, missingFields = [] } = {}) {
     res.status(status).render('pages/register', {
       title: 'Create account',
       errors,
       values,
+      missingFields,
     });
   }
 
-  function renderLogin(res, { status = 200, errors = {}, values = {}, nextPath = null } = {}) {
+  function renderLogin(res, { status = 200, errors = {}, values = {}, missingFields = [], nextPath = null } = {}) {
     res.status(status).render('pages/login', {
       title: 'Sign in',
       errors,
       values,
+      missingFields,
       nextPath,
     });
   }
@@ -89,6 +98,7 @@ function createAuthRouter({ db, config, security }) {
         status: 400,
         errors: err.fieldErrors || { form: err.message },
         values: formValues(req.body),
+        missingFields: getMissingFields(req.body, REGISTER_REQUIRED_FIELDS),
       });
       return;
     }
@@ -101,6 +111,7 @@ function createAuthRouter({ db, config, security }) {
         status: 400,
         errors: err.fieldErrors || { form: err.message },
         values: loginFormValues(req.body),
+        missingFields: getMissingFields(req.body, LOGIN_REQUIRED_FIELDS),
         nextPath: security.safeNextPath(req.body.next),
       });
       return;
@@ -131,6 +142,7 @@ function createAuthRouter({ db, config, security }) {
             status: err.status,
             errors: err.fieldErrors || { form: err.message },
             values: formValues(req.body),
+            missingFields: getMissingFields(req.body, REGISTER_REQUIRED_FIELDS),
           });
           return;
         }
