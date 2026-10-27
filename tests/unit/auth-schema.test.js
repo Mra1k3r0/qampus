@@ -4,9 +4,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dbModule from '../../src/core/db.js';
 import authRepository from '../../src/modules/auth/auth.repository.js';
+import seedModule from '../../src/core/seed.js';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const { openDatabase, migrate, AUTH_VERIFICATION_MIGRATION } = dbModule;
+const { seedDatabase, DEMO_ACCOUNT_EMAILS } = seedModule;
 
 const LEGACY_MIGRATIONS = [
   '001_init',
@@ -114,6 +116,32 @@ describe('auth verification schema', () => {
 
     expect(user.emailVerifiedAt).toBeNull();
     expect(user.sessionVersion).toBe(1);
+
+    db.close();
+  });
+
+  it('seeds every demo account with a verified email', () => {
+    const db = openDatabase(':memory:', { journalMode: 'DELETE' });
+    migrate(db);
+    seedDatabase(db);
+
+    const placeholders = DEMO_ACCOUNT_EMAILS.map(() => '?').join(', ');
+    const demoUsers = db
+      .prepare(`SELECT email, email_verified_at FROM users WHERE email IN (${placeholders})`)
+      .all(...DEMO_ACCOUNT_EMAILS);
+
+    expect(demoUsers).toHaveLength(DEMO_ACCOUNT_EMAILS.length);
+    for (const user of demoUsers) {
+      expect(user.email_verified_at).toBeTruthy();
+    }
+
+    const unverified = db
+      .prepare(`
+        SELECT email FROM users
+        WHERE email IN (${placeholders}) AND email_verified_at IS NULL
+      `)
+      .all(...DEMO_ACCOUNT_EMAILS);
+    expect(unverified).toEqual([]);
 
     db.close();
   });

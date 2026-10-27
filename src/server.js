@@ -2,16 +2,21 @@ const config = require('./config');
 const { openDatabase, migrate } = require('./core/db');
 const { createLogger } = require('./core/logger');
 const { seedDatabase } = require('./core/seed');
+const { createRenderer } = require('./core/mailer/render');
+const { startMailWorker } = require('./core/mailer/worker');
+const { cleanupAuth } = require('./modules/auth/auth.cleanup');
 const { expireStaleTickets } = require('./modules/tickets/tickets.sweep');
 const { createApp } = require('./app');
 const { isTunnelEnabled, parseExtraArgs, startTunnel } = require('./tunnel');
 
 const SESSION_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+const MAIL_WORKER_INTERVAL_MS = 2000;
 
 const logger = createLogger(config);
 let db;
 let server;
 let cleanupTimer;
+let mailWorker;
 let tunnelHandle = null;
 
 function countServices() {
@@ -29,16 +34,32 @@ function expireOnStartup() {
   }
 }
 
+function runAuthCleanup() {
+  try {
+    const counts = cleanupAuth(db);
+    if (counts.challenges > 0 || counts.throttle > 0 || counts.outbox > 0) {
+      logger.info(counts, 'cleaned up auth rows');
+    }
+  } catch (err) {
+    logger.error({ err }, 'auth cleanup failed');
+  }
+}
+
 function startCleanup(store) {
   store.clearExpired();
+  runAuthCleanup();
   cleanupTimer = setInterval(() => {
     store.clearExpired();
+    runAuthCleanup();
   }, SESSION_CLEANUP_INTERVAL_MS);
   cleanupTimer.unref();
 }
 
 function shutdown(signal) {
   logger.info({ signal }, 'shutting down');
+  if (mailWorker) {
+    mailWorker.stop();
+  }
   if (cleanupTimer) {
     clearInterval(cleanupTimer);
   }
@@ -109,6 +130,14 @@ async function main() {
   logger.info({ port: config.port }, 'server listening');
 
   startCleanup(app.locals.sessionStore);
+
+  mailWorker = startMailWorker({
+    db,
+    mailer: app.locals.mailer,
+    render: createRenderer(),
+    logger,
+    intervalMs: MAIL_WORKER_INTERVAL_MS,
+  });
 
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));

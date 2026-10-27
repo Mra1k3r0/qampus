@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const config = require('../src/config');
 const { openDatabase, migrate } = require('../src/core/db');
-const { DEMO_PASSWORD } = require('../src/core/seed');
+const { DEMO_PASSWORD, DEMO_ACCOUNT_EMAILS } = require('../src/core/seed');
 const { resetDatabase } = require('./db');
 
 const EXPECTED = {
@@ -56,6 +56,21 @@ function verifyDemo() {
     failed = true;
   }
   console.log(`${passwordOk ? 'PASS' : 'FAIL'} demo password verifies for staff account`);
+
+  const placeholders = DEMO_ACCOUNT_EMAILS.map(() => '?').join(', ');
+  const unverified = db
+    .prepare(`
+      SELECT COUNT(*) AS count FROM users
+      WHERE email IN (${placeholders}) AND email_verified_at IS NULL
+    `)
+    .get(...DEMO_ACCOUNT_EMAILS).count;
+  if (unverified !== 0) {
+    failed = true;
+  }
+  const verifiedLabel = unverified === 0
+    ? 'demo accounts verified'
+    : `demo accounts verified: ${unverified} unverified`;
+  console.log(`${unverified === 0 ? 'PASS' : 'FAIL'} ${verifiedLabel}`);
 
   db.close();
   return !failed;

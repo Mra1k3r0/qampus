@@ -65,6 +65,12 @@ const TICKET_PLAN = [
   { serviceCode: 'CSH', sequence: 2 },
 ];
 
+const DEMO_ACCOUNT_EMAILS = Object.freeze([
+  STAFF.email,
+  ADMIN.email,
+  ...STUDENTS.map((student) => student.email),
+]);
+
 function seedBaseDate() {
   const today = serviceDate();
   return new Date(`${today}T00:00:00.000Z`);
@@ -208,6 +214,7 @@ function seedDatabase(db, {
 
 module.exports = {
   DEMO_PASSWORD,
+  DEMO_ACCOUNT_EMAILS,
   SERVICES,
   seedDatabase,
 };
