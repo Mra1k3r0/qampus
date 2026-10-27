@@ -50,6 +50,12 @@
   border-top: 0;
 }
 
+.auth--single .form__foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}
+
 .auth-code__input {
   min-height: calc(var(--control-height) + var(--space-8));
   padding-inline: var(--space-2);

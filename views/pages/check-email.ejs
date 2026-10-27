@@ -11,11 +11,10 @@
     <div class="auth-form__intro">
       <h1 class="auth-form__title">Check your email</h1>
       <p class="auth-form__sub">
-        We sent an 8-digit code to
         <% if (submittedEmail) { %>
-        <strong class="auth-form__email"><%= submittedEmail %></strong>, and it expires in 10 minutes.
+        We sent an 8-digit code to <strong class="auth-form__email"><%= submittedEmail %></strong>, and it expires in 10 minutes.
         <% } else { %>
-        the address you entered, and it expires in 10 minutes.
+        If that address can be used, a code is on its way. It expires in 10 minutes.
         <% } %>
       </p>
     </div>

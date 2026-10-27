@@ -10,6 +10,10 @@
   <%
     const pageDescription = 'Take a ticket for a CSPC office, watch your place in line, and show your code at the counter.';
     const isVerificationPage = currentPath === '/register/check-email' || currentPath === '/verify-email';
+    const isResetPage = currentPath === '/forgot-password'
+      || currentPath === '/forgot-password/sent'
+      || currentPath === '/reset-password'
+      || currentPath === '/reset-password/new';
     const pagePath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
     const pageUrl = publicBaseUrl + pagePath;
     const socialImage = publicBaseUrl + assetUrl('/images/cspc/seal-512.png');
@@ -30,7 +34,7 @@
       currentPath === '/login'
       || currentPath === '/register'
       || isVerificationPage
-      || currentPath === '/forgot-password'
+      || isResetPage
     ) {
       pageCssKey = 'auth';
     }
@@ -96,7 +100,7 @@
     const isAuthPage = currentPath === '/login'
       || currentPath === '/register'
       || isVerificationPage
-      || currentPath === '/forgot-password';
+      || isResetPage;
     let activePageScript = typeof pageScript === 'string' && pageScript.length > 0
       ? pageScript
       : null;
@@ -109,6 +113,7 @@
         currentPath === '/login'
         || currentPath === '/register'
         || isVerificationPage
+        || currentPath === '/reset-password/new'
       ) {
         activePageScript = '/js/auth.min.js';
       } else if (currentPath === '/profile') {
