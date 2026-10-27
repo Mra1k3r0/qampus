@@ -43,9 +43,11 @@ const PAGE_BUNDLES = {
     'public/js/app.js',
   ],
   auth: [
+    'views/pages/check-email.ejs',
     'views/pages/forgot-password.ejs',
     'views/pages/login.ejs',
     'views/pages/register.ejs',
+    'views/pages/verify-email.ejs',
     'public/js/app.js',
     'public/js/auth.js',
   ],

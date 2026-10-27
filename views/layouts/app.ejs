@@ -9,6 +9,7 @@
   <title><%= appName %> | <%= title %></title>
   <%
     const pageDescription = 'Take a ticket for a CSPC office, watch your place in line, and show your code at the counter.';
+    const isVerificationPage = currentPath === '/register/check-email' || currentPath === '/verify-email';
     const pagePath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
     const pageUrl = publicBaseUrl + pagePath;
     const socialImage = publicBaseUrl + assetUrl('/images/cspc/seal-512.png');
@@ -28,6 +29,7 @@
     } else if (
       currentPath === '/login'
       || currentPath === '/register'
+      || isVerificationPage
       || currentPath === '/forgot-password'
     ) {
       pageCssKey = 'auth';
@@ -91,7 +93,10 @@
     const accountInitials = user
       ? (user.initials || String(user.fullName || '').trim().split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() || '?')
       : '';
-    const isAuthPage = currentPath === '/login' || currentPath === '/register' || currentPath === '/forgot-password';
+    const isAuthPage = currentPath === '/login'
+      || currentPath === '/register'
+      || isVerificationPage
+      || currentPath === '/forgot-password';
     let activePageScript = typeof pageScript === 'string' && pageScript.length > 0
       ? pageScript
       : null;
@@ -100,7 +105,11 @@
         activePageScript = '/js/queue.min.js';
       } else if (currentPath.indexOf('/staff/') === 0) {
         activePageScript = '/js/staff.min.js';
-      } else if (currentPath === '/login' || currentPath === '/register') {
+      } else if (
+        currentPath === '/login'
+        || currentPath === '/register'
+        || isVerificationPage
+      ) {
         activePageScript = '/js/auth.min.js';
       } else if (currentPath === '/profile') {
         activePageScript = '/js/profile.min.js';
@@ -110,7 +119,9 @@
   <% if (isAuthPage) { %>
   <div class="auth-mark shell">
     <a class="brand" href="/">
+      <% if (!isVerificationPage) { %>
       <img class="brand__seal" src="<%= assetUrl('/images/cspc/seal-64.webp') %>" srcset="<%= assetUrl('/images/cspc/seal-64.webp') %> 64w, <%= assetUrl('/images/cspc/seal-128.webp') %> 128w" sizes="(min-width: 768px) 42px, 38px" alt="" width="120" height="125">
+      <% } %>
       <span class="brand__text">
         <span class="brand__name">Qampus</span>
         <span class="brand__meta">CCIT Service Desk</span>

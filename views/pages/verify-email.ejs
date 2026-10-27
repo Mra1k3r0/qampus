@@ -1,0 +1,106 @@
+<%
+  const errorBag = typeof errors !== 'undefined' && errors && typeof errors === 'object'
+    ? errors
+    : {};
+  const valuesBag = typeof values !== 'undefined' && values && typeof values === 'object'
+    ? values
+    : {};
+  const codeValue = typeof valuesBag.code === 'string' ? valuesBag.code : '';
+  const missing = typeof missingFields !== 'undefined' && Array.isArray(missingFields)
+    ? missingFields
+    : [];
+  const codeMissing = missing.includes('code');
+  const emailAddress = typeof email !== 'undefined' && typeof email === 'string'
+    ? email.trim()
+    : '';
+  const codeError = errorBag.code || (codeMissing ? 'Enter the 8-digit code from the email.' : '');
+  const codeDescribedBy = codeError ? 'code-hint code-error' : 'code-hint';
+  const token = typeof csrfToken !== 'undefined' && typeof csrfToken === 'string'
+    ? csrfToken
+    : '';
+  const summaryLines = [];
+
+  if (errorBag.form) {
+    summaryLines.push(errorBag.form);
+  }
+
+  if (codeMissing) {
+    summaryLines.push('Enter the 8-digit code from the email.');
+  } else if (errorBag.code) {
+    summaryLines.push(errorBag.code);
+  }
+%>
+<div class="auth auth--verify shell">
+  <aside class="auth-panel">
+    <p class="eyebrow">Email check</p>
+    <p class="auth-panel__display">The last step before your first ticket.</p>
+    <p class="auth-panel__note">Enter the 8-digit code from the email. It expires 10 minutes after it was sent.</p>
+  </aside>
+
+  <div class="auth-form">
+    <form class="form" method="post" action="/verify-email" novalidate>
+      <div class="auth-form__intro">
+        <p class="eyebrow">Verify email</p>
+        <h1 class="auth-form__title">Verify your email</h1>
+        <p class="auth-form__sub">
+          <% if (emailAddress) { %>
+          Enter the 8-digit code we sent to <strong class="auth-form__email"><%= emailAddress %></strong>.
+          <% } else { %>
+          Enter the 8-digit code from your email.
+          <% } %>
+        </p>
+      </div>
+
+      <input type="hidden" name="_csrf" value="<%= token %>">
+
+      <%- include('../partials/error-summary', {
+        errors: errorBag,
+        lines: summaryLines,
+      }) %>
+
+      <div class="field auth-code<%= codeError ? ' field--error' : '' %>">
+        <label class="field__label auth-code__label" for="code">8-digit code</label>
+        <input
+          class="input auth-code__input"
+          id="code"
+          name="code"
+          type="text"
+          value="<%= codeValue %>"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          autocapitalize="off"
+          spellcheck="false"
+          maxlength="8"
+          pattern="[0-9]{8}"
+          required
+          aria-describedby="<%= codeDescribedBy %>"
+          <% if (codeError) { %>aria-invalid="true"<% } %>
+        >
+        <p class="field__hint auth-code__hint" id="code-hint">Numbers only. It expires 10 minutes after it was sent.</p>
+        <% if (codeError) { %>
+        <p class="field__error auth-code__error" id="code-error">
+          <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
+          <%= codeError %>
+        </p>
+        <% } %>
+      </div>
+
+      <button class="btn btn--primary btn--block" type="submit">
+        <%- include('../partials/icon', { name: 'check', size: 16, title: null }) %>
+        Verify email
+      </button>
+    </form>
+
+    <form class="auth-resend" method="post" action="/verify-email/resend">
+      <input type="hidden" name="_csrf" value="<%= token %>">
+      <button class="btn btn--secondary btn--block" type="submit">
+        <%- include('../partials/icon', { name: 'rotate-ccw', size: 16, title: null }) %>
+        Send a new code
+      </button>
+    </form>
+
+    <p class="auth-note">Check the spam or junk folder if the code does not arrive. You can send a new code after 60 seconds.</p>
+
+    <p class="form__foot">Back to <a href="/login">sign in</a>.</p>
+  </div>
+</div>

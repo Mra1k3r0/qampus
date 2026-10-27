@@ -1,0 +1,101 @@
+.auth--verify {
+  max-width: calc(600px + (2 * var(--page-margin)));
+  padding-top: var(--space-8);
+  border-top: 2px solid var(--color-gold);
+}
+
+.auth--verify .auth-form {
+  display: grid;
+  gap: var(--stack-gap);
+  align-content: start;
+}
+
+.auth-form__email {
+  color: var(--color-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.auth-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.auth-fact {
+  min-width: 0;
+  padding: var(--space-3) 0;
+}
+
+.auth-fact + .auth-fact {
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--color-rule);
+}
+
+.auth-fact__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+}
+
+.auth-fact__value {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-note {
+  max-width: 46ch;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  color: var(--color-ink-muted);
+}
+
+.auth-resend {
+  margin: 0;
+}
+
+.auth-code {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  background-color: var(--color-paper-raised);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-none);
+}
+
+.auth-code__label,
+.auth-code__hint {
+  text-align: center;
+}
+
+.auth-code__input {
+  min-height: calc(var(--control-height) + var(--space-8));
+  padding-inline: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.auth-code__error {
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 359px) {
+  .auth-code__input {
+    font-size: 2.25rem;
+  }
+}

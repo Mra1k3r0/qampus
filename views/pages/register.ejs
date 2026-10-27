@@ -97,8 +97,10 @@
           inputmode="email"
           required
           maxlength="160"
-          <% if (errorBag.email) { %>aria-describedby="email-error" aria-invalid="true"<% } %>
+          aria-describedby="email-hint<%= errorBag.email ? ' email-error' : '' %>"
+          <% if (errorBag.email) { %>aria-invalid="true"<% } %>
         >
+        <p class="field__hint" id="email-hint">You will confirm this address with an 8-digit code before you can sign in.</p>
         <% if (errorBag.email) { %>
         <p class="field__error" id="email-error">
           <%- include('../partials/icon', { name: 'circle-alert', size: 16, title: null }) %>
