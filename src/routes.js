@@ -5,6 +5,7 @@ const { resolvePublicBaseUrl } = require('./core/base-url');
 const { createAuthRouter } = require('./modules/auth/auth.routes');
 const { createRegisterRouter } = require('./modules/auth/register.routes');
 const { createVerificationRouter } = require('./modules/auth/verification.routes');
+const { createResetRouter } = require('./modules/auth/reset.routes');
 const { createQueueRouter } = require('./modules/queue/queue.routes');
 const { createStaffRouter } = require('./modules/staff/staff.routes');
 const { createDisplayRouter } = require('./modules/display/display.routes');
@@ -98,6 +99,7 @@ function createRouter({ db, config, security }) {
 
   router.use(createRegisterRouter({ db, config, security }));
   router.use(createVerificationRouter({ db, config, security }));
+  router.use(createResetRouter({ db, config, security }));
   router.use(createAuthRouter({ db, config, security }));
   router.use(createProfileRouter({ db, security }));
   router.use(createQueueRouter({ db, security }));

@@ -192,6 +192,7 @@ function logout(db, { userId, requestId }) {
 
 module.exports = {
   BCRYPT_COST,
+  DUMMY_HASH,
   hashPassword,
   verifyPassword,
   register,

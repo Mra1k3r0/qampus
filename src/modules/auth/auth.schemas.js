@@ -73,10 +73,19 @@ const resetPasswordSchema = z
     message: 'Passwords do not match.',
   });
 
+const forgotPasswordSchema = z.object({ email: emailSchema });
+
+const resetCodeSchema = z.object({
+  email: emailSchema,
+  code: codeSchema,
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   codeSchema,
   codeFormSchema,
   resetPasswordSchema,
+  forgotPasswordSchema,
+  resetCodeSchema,
 };

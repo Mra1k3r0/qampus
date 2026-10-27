@@ -62,10 +62,6 @@ function createAuthRouter({ db, config, security }) {
     });
   });
 
-  router.get('/forgot-password', security.requireGuest, (_req, res) => {
-    res.render('pages/forgot-password', { title: 'Forgot password' });
-  });
-
   router.post(
     '/login',
     security.loginLimiter,
