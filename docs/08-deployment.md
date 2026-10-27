@@ -80,7 +80,7 @@ npm run demo:reset  # clears queue rows and reseeds demo data
 ```
 
 - Guard every seed write with `INSERT ... ON CONFLICT DO NOTHING` or a version check.
-- `demo:reset` is destructive. Require `--confirm`, take a backup first, and refuse when `NODE_ENV=production` unless `ALLOW_DEMO_RESET=1`.
+- `demo:reset` is destructive. Take a backup first. It refuses when `NODE_ENV=production` unless `ALLOW_DEMO_RESET=1`.
 - Backup before reset: `sqlite3 "$DATABASE_PATH" ".backup '/data/app.db.bak'"`.
 
 ## 7. Health check and smoke test
@@ -141,9 +141,9 @@ TZ=Asia/Manila
 npm ci
 npm run db:migrate && npm run db:seed
 npm start
-ipconfig   # note the IPv4 address, update APP_BASE_URL
+ipconfig   # note the IPv4 address, update PUBLIC_BASE_URL
 ```
 
 Open `http://<laptop-ip>:8080/health` from a phone on the same network. Allow Node through Windows Firewall on private networks. Keep the laptop plugged in, disable sleep, and do not close the terminal. If the LAN blocks client isolation, use a phone hotspot and share that URL.
 
-This LAN fallback runs in development with Ethereal, so no Brevo key is needed and codes open from the server log; it is not the public configuration. `COOKIE_SECURE=false` is allowed only here. Do not use it with real student data, and rotate `SESSION_SECRET` after the demo.
+This LAN fallback runs in development with Ethereal, so no Brevo key is needed. The server log prints an Ethereal preview URL; open it to read the code. It is not the public configuration. `COOKIE_SECURE=false` is allowed only here. Do not use it with real student data, and rotate `SESSION_SECRET` after the demo.

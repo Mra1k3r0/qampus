@@ -16,7 +16,9 @@ npm start
 
 On the first start the app creates `data/cspc_queue.sqlite`, applies the schema, and seeds the demo data, because the server seeds whenever the services table is empty. It listens on `http://localhost:3000`, and `/health` returns `{"status":"ok","db":"ok"}`.
 
-A `.env` file is optional in development. Copy `.env.example` to `.env` when you need a different port, a real `SESSION_SECRET`, or the hours flag below.
+A `.env` file is optional in development. Copy `.env.example` to `.env` when you need a different port, a real `SESSION_SECRET`, mail settings, or the hours flag below.
+
+Account mail uses Ethereal in development and Brevo in production. Registration sends an 8-digit code, and the server log prints an Ethereal preview URL you can open to read it. Production requires the mail keys and a verified sender domain; see `docs/08-deployment.md`.
 
 ## Environment
 
@@ -31,6 +33,14 @@ A `.env` file is optional in development. Copy `.env.example` to `.env` when you
 | `COOKIE_SECURE` | `false` | Forced on in production |
 | `QUEUE_ENFORCE_HOURS` | `true` | Joining respects Mon to Fri and 08:00 to 17:00 Manila. Set `false` for demos outside office hours |
 | `LOG_LEVEL` | `info` | pino level, `silent` in tests |
+| `MAIL_DRIVER` | `ethereal` | `brevo` is required in production; tests use `memory` |
+| `MAIL_FROM` | Qampus sender | Must be on the verified Brevo domain in production |
+| `BREVO_API_KEY` | empty | Required when `MAIL_DRIVER=brevo` |
+| `MAIL_ENCRYPTION_KEY` | dev fallback | 32-byte base64 key; required in production |
+| `AUTH_PEPPER` | dev fallback | 32+ character HMAC key; required in production |
+| `OTP_TTL_MINUTES` | `10` | Verification and reset code lifetime |
+| `OTP_MAX_ATTEMPTS` | `5` | Wrong-code tries before the code is replaced |
+| `OTP_RESEND_COOLDOWN_SECONDS` | `60` | Minimum wait before another code |
 
 ## Scripts
 
@@ -50,7 +60,7 @@ A `.env` file is optional in development. Copy `.env.example` to `.env` when you
 
 ## Demo accounts
 
-Every demo account uses the password `QueueDemo2026!`.
+Every demo account uses the password `QueueDemo2026!` and is seeded as verified.
 
 | Role | Email |
 | --- | --- |
@@ -100,7 +110,7 @@ src/
   routes.js       home, health, feature routers
   config.js       env parsing and production guards
   core/           db, schema, errors, logger, security, sessions, validation, audit, context, time, seed
-  modules/auth/   register, login, logout
+  modules/auth/   register, verification, password reset, login, logout
   modules/queue/  student queue routes, dashboard, join and leave
   modules/tickets/ ownership, position, ETA, transitions, audit
   modules/staff/  call, recall, start, serve, no-show
@@ -245,7 +255,8 @@ The read guard means the UI cannot show a prior-day ticket as usable even before
 
 - Every POST requires a `_csrf` field that matches the session token with a timing-safe compare.
 - Helmet sets a self-only CSP, `X-Frame-Options: DENY`, and `nosniff`.
-- Login is limited to 10 attempts per 15 minutes per IP; register to 5 per hour per IP.
+- Login is limited to 10 attempts per 15 minutes per IP; register to 5 per hour per IP. Verification and reset POSTs are limited per IP and per account.
+- New accounts stay unverified until the emailed 8-digit code is entered. Codes are hashed, expire in 10 minutes, and are stored as ciphertext in the mail outbox. A reset ends every old session.
 - Sessions live in SQLite. The cookie is HttpOnly, SameSite=Lax, and Secure in production. Login regenerates the session and logout destroys it.
 - Role checks and ticket ownership run on the server. Another student's ticket returns 404, not 403.
 - Every state change writes an audit row. Time is Asia/Manila for service dates, stored as UTC ISO strings.
