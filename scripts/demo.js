@@ -80,8 +80,13 @@ function main() {
   const command = process.argv[2];
 
   if (command === 'reset') {
-    const counts = resetDatabase();
-    console.log(`Demo database reset: ${JSON.stringify(counts)}`);
+    try {
+      const counts = resetDatabase();
+      console.log(`Demo database reset: ${JSON.stringify(counts)}`);
+    } catch (err) {
+      console.error(err.message);
+      process.exitCode = 1;
+    }
     return;
   }
 

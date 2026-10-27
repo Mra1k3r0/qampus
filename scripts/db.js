@@ -7,6 +7,15 @@ const { expireStaleTickets } = require('../src/modules/tickets/tickets.sweep');
 
 const AUDIT_RETENTION_DAYS = 90;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const PRODUCTION_RESET_OVERRIDE = 'ALLOW_DEMO_RESET';
+
+function assertResetAllowed() {
+  if (process.env.NODE_ENV === 'production' && process.env[PRODUCTION_RESET_OVERRIDE] !== '1') {
+    throw new Error(
+      `Refusing to reset the demo database in production. Set ${PRODUCTION_RESET_OVERRIDE}=1 to override.`,
+    );
+  }
+}
 
 function removeDatabaseFiles() {
   const suffixes = ['', '-wal', '-shm'];
@@ -20,6 +29,7 @@ function removeDatabaseFiles() {
 }
 
 function resetDatabase(options = {}) {
+  assertResetAllowed();
   const { studentCount = 6, includeTickets = true } = options;
   removeDatabaseFiles();
   const db = openDatabase(config.databasePath);
@@ -89,8 +99,13 @@ function main() {
   }
 
   if (command === 'reset') {
-    const counts = resetDatabase();
-    console.log(JSON.stringify(counts));
+    try {
+      const counts = resetDatabase();
+      console.log(JSON.stringify(counts));
+    } catch (err) {
+      console.error(err.message);
+      process.exitCode = 1;
+    }
     return;
   }
 
