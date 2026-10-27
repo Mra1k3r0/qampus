@@ -37,9 +37,6 @@ function createBrevoMailer(mailConfig, { logger, fetchImpl = fetch } = {}) {
         'content-type': 'application/json',
         accept: 'application/json',
       };
-      if (idempotencyKey) {
-        headers.IdempotencyKey = String(idempotencyKey);
-      }
 
       const body = {
         sender: parseSender(mailConfig.from),
@@ -48,6 +45,9 @@ function createBrevoMailer(mailConfig, { logger, fetchImpl = fetch } = {}) {
         htmlContent: html,
         textContent: text,
       };
+      if (idempotencyKey) {
+        body.headers = { idempotencyKey: String(idempotencyKey) };
+      }
       if (mailConfig.replyTo) {
         body.replyTo = { email: mailConfig.replyTo };
       }

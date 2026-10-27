@@ -123,11 +123,12 @@ describe('brevo mailer', () => {
     expect(url).toBe('https://api.brevo.com/v3/smtp/email');
     expect(init.method).toBe('POST');
     expect(init.headers['api-key']).toBe('api-key-value');
-    expect(init.headers.IdempotencyKey).toBe('outbox-9');
+    expect(init.headers.IdempotencyKey).toBeUndefined();
     expect(init.signal).toBeInstanceOf(AbortSignal);
     const body = JSON.parse(init.body);
     expect(body.subject).toBe('Your Qampus verification code');
     expect(body.htmlContent).toContain('12345678');
+    expect(body.headers.idempotencyKey).toBe('outbox-9');
   });
 
   it('throws a retryable error on a 500 response', async () => {
