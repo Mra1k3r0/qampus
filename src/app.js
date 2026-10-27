@@ -11,6 +11,7 @@ const { createLogger, createHttpLogger } = require('./core/logger');
 const { SQLiteStore } = require('./core/session-store');
 const { createSecurity } = require('./core/security');
 const { createContext } = require('./core/context');
+const { createMailer } = require('./core/mailer');
 const { notFoundHandler, createErrorHandler } = require('./core/errors');
 const {
   THEME_BOOTSTRAP_SCRIPT,
@@ -67,9 +68,10 @@ function loadUser(db) {
   };
 }
 
-function createApp({ db, config: appConfig = config, enableSweep = true }) {
+function createApp({ db, config: appConfig = config, enableSweep = true, mailer }) {
   const app = express();
   const logger = createLogger(appConfig);
+  const mailerInstance = mailer || createMailer(appConfig, { logger });
   const security = createSecurity();
   const sessionStore = new SQLiteStore(db, {
     ttlMs: appConfig.sessionMaxAgeMs,
@@ -170,6 +172,7 @@ function createApp({ db, config: appConfig = config, enableSweep = true }) {
 
   app.locals.db = db;
   app.locals.logger = logger;
+  app.locals.mailer = mailerInstance;
   app.locals.sessionStore = sessionStore;
   app.locals.assetUrl = assetUrl;
   app.locals.themeBootstrap = THEME_BOOTSTRAP_SCRIPT;
