@@ -461,6 +461,43 @@ describe('registration and verification flow', () => {
     expect(outboxRows(email, 'verify-code')).toHaveLength(1);
   });
 
+  it('replaces the pending password and profile when an unverified email registers again', async () => {
+    const testApp = freshApp();
+    const email = 'flow.duplicate.takeover@my.cspc.edu.ph';
+    const firstAgent = request.agent(testApp.app);
+    const secondAgent = request.agent(testApp.app);
+
+    await registerUser(firstAgent, {
+      email,
+      studentNo: '2026-9511',
+      fullName: 'First Claim',
+      password: 'FirstPass2026!',
+    });
+    const second = await registerUser(secondAgent, {
+      email,
+      studentNo: '2026-9512',
+      fullName: 'Email Owner',
+      password: 'SecondPass2026!',
+    });
+
+    expect(second.status).toBe(303);
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    expect(user.full_name).toBe('Email Owner');
+    expect(user.student_no).toBe('2026-9512');
+
+    await drainOutbox(testApp);
+    const code = newestCode(testApp);
+    const token = await getCsrf(secondAgent, '/verify-email');
+    const verified = await secondAgent.post('/verify-email').type('form').send({ code, _csrf: token });
+    expect(verified.status).toBe(303);
+
+    const freshAgent = request.agent(testApp.app);
+    const firstLogin = await login(freshAgent, email, 'FirstPass2026!');
+    expect(firstLogin.status).toBe(401);
+    const secondLogin = await login(freshAgent, email, 'SecondPass2026!');
+    expect(secondLogin.status).toBe(303);
+  });
+
   it('requires CSRF on the verify POST and does not change state without it', async () => {
     const testApp = freshApp();
     const agent = request.agent(testApp.app);
@@ -479,8 +516,3 @@ describe('registration and verification flow', () => {
     expect(activeChallenges(userId)[0].attempts).toBe(0);
   });
 });
-
-
-
-
-

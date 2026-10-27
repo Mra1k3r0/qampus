@@ -24,6 +24,16 @@ function isUniqueViolation(err) {
   return err && typeof err.code === 'string' && err.code.startsWith('SQLITE_CONSTRAINT');
 }
 
+function isStudentNoConflict(err) {
+  return isUniqueViolation(err) && String(err.message).includes('users.student_no');
+}
+
+function studentNoConflictError() {
+  return createError(409, 'That student number is already registered.', {
+    fieldErrors: { studentNo: 'That student number is already registered.' },
+  });
+}
+
 function sendAccountExists(db, { userId, email, requestId, mailConfig }) {
   immediateTransaction(db, () => {
     enqueueMail(
@@ -93,12 +103,44 @@ function createUser(db, { fullName, studentNo, email, passwordHash, requestId })
     if (!isUniqueViolation(err)) {
       throw err;
     }
-    if (String(err.message).includes('users.student_no')) {
-      throw createError(409, 'That student number is already registered.', {
-        fieldErrors: { studentNo: 'That student number is already registered.' },
-      });
+    if (isStudentNoConflict(err)) {
+      throw studentNoConflictError();
     }
     return authRepository.findByEmail(db, email);
+  }
+}
+
+function updatePendingUser(db, {
+  userId, fullName, studentNo, passwordHash, requestId,
+}) {
+  try {
+    return immediateTransaction(db, () => {
+      const updated = authRepository.updatePendingRegistration(db, {
+        userId,
+        fullName,
+        studentNo,
+        passwordHash,
+      });
+      if (!updated) {
+        return null;
+      }
+
+      writeAudit(db, {
+        actorUserId: updated.id,
+        action: 'register_pending_update',
+        entityType: 'user',
+        entityId: updated.id,
+        after: { fields: ['fullName', 'studentNo'] },
+        requestId,
+      });
+
+      return updated;
+    });
+  } catch (err) {
+    if (isStudentNoConflict(err)) {
+      throw studentNoConflictError();
+    }
+    throw err;
   }
 }
 
@@ -118,15 +160,15 @@ async function register(db, {
     return { user: existing, isVerified: true, challengeError: null };
   }
 
-  if (!existing && passwordLeakCheck && await isPasswordLeaked(password)) {
+  if (passwordLeakCheck && await isPasswordLeaked(password)) {
     throw createError(400, LEAKED_PASSWORD_MESSAGE, {
       fieldErrors: { password: LEAKED_PASSWORD_MESSAGE },
     });
   }
 
+  const passwordHash = await hashPassword(password);
   let user = existing;
   if (!user) {
-    const passwordHash = await hashPassword(password);
     user = createUser(db, { fullName, studentNo, email, passwordHash, requestId });
     if (!user) {
       throw createError(500, 'Could not create the account.');
@@ -135,6 +177,24 @@ async function register(db, {
     if (user.emailVerifiedAt) {
       sendAccountExists(db, { userId: user.id, email, requestId, mailConfig });
       return { user, isVerified: true, challengeError: null };
+    }
+  } else {
+    // The latest person to register sets the password. Otherwise an unverified
+    // squatter keeps a password the email owner does not know.
+    user = updatePendingUser(db, {
+      userId: user.id,
+      fullName,
+      studentNo,
+      passwordHash,
+      requestId,
+    });
+    if (!user) {
+      const current = authRepository.findByEmail(db, email);
+      if (current && current.emailVerifiedAt) {
+        sendAccountExists(db, { userId: current.id, email, requestId, mailConfig });
+        return { user: current, isVerified: true, challengeError: null };
+      }
+      throw createError(500, 'Could not create the account.');
     }
   }
 
@@ -201,4 +261,3 @@ module.exports = {
   issueVerification,
   sendAccountExists,
 };
-

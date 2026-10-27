@@ -69,6 +69,21 @@ function updatePasswordHash(db, userId, passwordHash) {
   return findById(db, userId);
 }
 
+function updatePendingRegistration(db, { userId, fullName, studentNo, passwordHash }) {
+  const result = db
+    .prepare(
+      `UPDATE users
+       SET full_name = ?, student_no = ?, password_hash = ?
+       WHERE id = ? AND email_verified_at IS NULL`,
+    )
+    .run(fullName, studentNo, passwordHash, userId);
+
+  if (result.changes === 0) {
+    return null;
+  }
+  return findById(db, userId);
+}
+
 function incrementSessionVersion(db, userId) {
   db.prepare('UPDATE users SET session_version = session_version + 1 WHERE id = ?').run(userId);
   return findById(db, userId);
@@ -80,5 +95,6 @@ module.exports = {
   createUser,
   markEmailVerified,
   updatePasswordHash,
+  updatePendingRegistration,
   incrementSessionVersion,
 };

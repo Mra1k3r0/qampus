@@ -41,7 +41,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | ID | File | Case | Assertion |
 |----|------|------|-----------|
 | I01 | `tests/integration/verification.test.js` | `POST /register` valid | 303 to `/register/check-email`; users row role `student` and unverified; one sealed `verify-code` outbox row; stored hash is not plaintext |
-| I02 | `verification.test.js` | `POST /register` duplicate email | Same 303 and copy as I01; no second user; password unchanged; verified address gets one `account-exists` mail |
+| I02 | `verification.test.js` | `POST /register` duplicate email | Same 303; no second user; a verified address gets one `account-exists` mail and no challenge; an unverified duplicate replaces the pending name, student number, and password, then gets a new code or the cooldown flash |
 | I03 | `auth.test.js` | `POST /register` and `POST /login` invalid payload | 400; auth summary is short and label-free; inline field errors remain; no user row |
 | I04 | `auth.test.js` | `POST /login` valid | 302 to `/queue`; `Set-Cookie` contains `cspc_queue.sid` |
 | I05 | `auth.test.js` | `POST /login` wrong password, unknown email, unverified or inactive account | 401; same generic message and timing shape; no `req.session.user` |
