@@ -1,10 +1,10 @@
 # Qampus
 
-Server-rendered queueing system for the CSPC CCIT 106 midterm. Node.js 22, Express 4, EJS, and SQLite through better-sqlite3.
+Server-rendered queueing system for the CSPC CCIT 106 midterm. Node.js 22.12 or newer, Express 4, EJS, and SQLite through better-sqlite3.
 
 ## Requirements
 
-- Node.js 22 (see `.nvmrc`)
+- Node.js 22.12 or newer. Node 24 is supported and is the version pinned in `.nvmrc`.
 - npm 10 or newer
 
 ## Setup
@@ -81,7 +81,7 @@ Unit tests pin the pure rules (codes, position, ETA, transitions, schemas, time)
 
 ## Continuous integration
 
-Every pull request and push to `master` runs `.github/workflows/ci.yml` on Node 22. The job checks lint, tests, generated asset drift, and the demo reset and verify path. It does not deploy.
+Every pull request and push to `master` runs `.github/workflows/ci.yml` on Node 22 and Node 24. Each job checks lint, tests, generated asset drift, and the demo reset and verify path. It does not deploy.
 
 ## Troubleshooting
 
@@ -113,6 +113,133 @@ tests/            unit, integration, helpers, fixtures
 ```
 
 The full design, test plan, and traceability documents live in the repository `docs/` folder and are not part of this test bundle.
+
+## Data model
+
+```mermaid
+erDiagram
+  USERS ||--o{ TICKETS : owns
+  USERS |o--o{ TICKETS : calls
+  USERS |o--o{ AUDIT_LOG : acts
+  SERVICES ||--o{ COUNTERS : has
+  SERVICES ||--o{ TICKETS : queues
+  COUNTERS |o--o{ TICKETS : serves
+
+  USERS {
+    INTEGER id PK
+    TEXT full_name
+    TEXT student_no UK
+    TEXT email UK
+    TEXT password_hash
+    TEXT role
+    INTEGER is_active
+    TEXT avatar_type
+    TEXT avatar_value
+    TEXT avatar_updated_at
+    TEXT created_at
+  }
+
+  SERVICES {
+    INTEGER id PK
+    TEXT code UK
+    TEXT name
+    TEXT description
+    INTEGER avg_minutes
+    TEXT open_days
+    TEXT opens_at
+    TEXT closes_at
+    INTEGER is_open
+    TEXT created_at
+  }
+
+  COUNTERS {
+    INTEGER id PK
+    INTEGER service_id FK
+    TEXT name
+    INTEGER is_active
+  }
+
+  TICKETS {
+    INTEGER id PK
+    TEXT code
+    INTEGER service_id FK
+    INTEGER user_id FK
+    INTEGER counter_id FK
+    INTEGER called_by FK
+    TEXT status
+    TEXT note
+    TEXT service_date
+    INTEGER sequence
+    INTEGER call_count
+    TEXT called_at
+    TEXT started_at
+    TEXT ended_at
+    TEXT created_at
+    TEXT updated_at
+  }
+
+  AUDIT_LOG {
+    INTEGER id PK
+    INTEGER actor_user_id FK
+    TEXT action
+    TEXT entity_type
+    INTEGER entity_id
+    TEXT before_json
+    TEXT after_json
+    TEXT request_id
+    TEXT created_at
+  }
+
+  SESSIONS {
+    TEXT sid PK
+    TEXT sess
+    TEXT expires_at
+  }
+
+  SCHEMA_MIGRATIONS {
+    TEXT version PK
+    TEXT applied_at
+  }
+```
+
+`tickets.counter_id` and `tickets.called_by` are nullable. `audit_log.actor_user_id` is null for system actions. A ticket is unique by `(service_id, service_date, sequence)` and by `(code, service_date)`. The partial unique index allows only one of `waiting`, `called`, or `serving` per student, service, and day.
+
+## Ticket expiry
+
+A ticket belongs to the Manila service day in `service_date`. When that day ends, an active ticket is stale. The sweep expires stale `waiting`, `called`, and `serving` tickets:
+
+- once at startup after migrations and seeding,
+- once on the first request of each new Manila day,
+- and on demand with `node scripts/db.js expire` or `node scripts/db.js expire --dry-run`.
+
+```mermaid
+flowchart TD
+  A[Process start] --> B[Open database and run migrations]
+  B --> C{Services table empty}
+  C -- yes --> D[Seed demo data]
+  C -- no --> E[Run startup expiry sweep]
+  D --> E
+  E --> F[Create app and listen]
+  F --> G[First request of a new Manila day]
+  G --> H[Select tickets before today with status waiting, called, or serving]
+  H --> I{Any stale tickets}
+  I -- no --> J[Remember the swept date and continue]
+  I -- yes --> K[BEGIN IMMEDIATE]
+  K --> L[Set status to expired]
+  L --> M[Set ended_at to the end of that ticket service day]
+  M --> N[Set updated_at to the sweep time]
+  N --> O[Write one ticket.expire audit row per ticket]
+  O --> P[COMMIT]
+  P --> J
+
+  subgraph ReadGuard [Read guard]
+    R[Read a ticket] --> S{Stale active ticket}
+    S -- yes --> T[Return an expired view]
+    S -- no --> U[Return the stored ticket]
+  end
+```
+
+The read guard means the UI cannot show a prior-day ticket as usable even before the sweep writes the row. The next sweep persists it. Because sequence and uniqueness are scoped by `service_date`, today's first ticket starts at 1 again while history stays in the table.
 
 ## Security notes
 

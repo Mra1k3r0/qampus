@@ -31,7 +31,7 @@ const passwordSchema = z
   );
 
 const policySchema = z.literal('agreed', {
-  errorMap: () => ({ message: 'Agree to the Terms of Use and Privacy Policy to continue.' }),
+  error: 'Agree to the Terms of Use and Privacy Policy to continue.',
 });
 
 const registerSchema = z
