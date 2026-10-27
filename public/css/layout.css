@@ -913,6 +913,19 @@
     display: flex;
   }
 
+  .nav-link--home {
+    display: none;
+  }
+
+  .account {
+    display: inline-flex;
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .account__text {
+    display: none;
+  }
+
   .mobile-menu {
     display: none;
   }
@@ -969,8 +982,17 @@
 }
 
 @media (min-width: 1024px) {
+  .nav-link--home {
+    display: inline-flex;
+  }
+
   .account {
     display: inline-flex;
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
+  }
+
+  .account__text {
+    display: grid;
   }
 
   .footer__grid {

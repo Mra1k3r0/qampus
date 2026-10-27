@@ -27,7 +27,7 @@ Do not scaffold the full tree now. It is a reference for a later iteration, not 
 
 ### Round 1 build map
 
-Use these exact paths. Do not create parallel modules, alternate views, or a second CSS entry point.
+Use these exact paths. Do not create parallel modules or alternate views. `public/css/main.css` is the only source CSS entry; page-specific runtime bundles are generated from it by `scripts/build-assets.js`.
 
 | Concern | Exact paths |
 | --- | --- |
@@ -39,7 +39,7 @@ Use these exact paths. Do not create parallel modules, alternate views, or a sec
 | Mounts and guards | `src/routes.js`, `src/core/security.js` |
 | Auth and session | `src/modules/auth/auth.routes.js`, `src/modules/auth/auth.service.js`, `src/modules/auth/auth.repository.js`, `src/core/session-store.js` |
 | Data and time | `src/core/schema.sql`, `src/core/db.js`, `src/core/time.js`, `src/core/audit.js` |
-| CSS entry | `public/css/main.css` imports `public/css/display.css`; shared styles stay in `public/css/tokens.css`, `public/css/base.css`, `public/css/layout.css`, `public/css/components.css` |
+| CSS entry | `public/css/main.css` imports `public/css/display.css`; shared styles stay in `public/css/tokens.css`, `public/css/base.css`, `public/css/layout.css`, `public/css/components.css`; generated `public/css/page-*.min.css` is built by `scripts/build-assets.js` |
 | Tests | `tests/integration/queue.test.js`, `tests/integration/display.test.js`, `tests/integration/staff.test.js`, `tests/integration/admin.test.js`, `tests/integration/security.test.js`, `tests/unit/tickets.test.js` |
 | Docs to update | `docs/02-architecture.md`, `docs/03-ui-design.md`, `docs/03b-responsive.md`, `docs/05-test-plan.md`, `docs/07-demo-script.md`, `docs/09-traceability.md` |
 
@@ -117,7 +117,7 @@ If the comment would not help a tired teammate at 2 a.m., delete it.
 - Session cookie: `cspc_queue.sid`, `httpOnly`, `sameSite=lax`, `secure` in production.
 - Regenerate the session on login. Destroy it on logout.
 - Rate limit login and join. Return a plain message, not a stack.
-- Helmet is on. CSP allows only self-hosted assets.
+- Helmet is on. CSP allows only self-hosted assets plus the Cloudflare Web Analytics beacon, requires Trusted Types for scripts, and HSTS is sent with preload.
 - Escape all user data in EJS with `<%= %>`. Never use `<%- %>` on user data.
 
 ## 9. Database

@@ -176,7 +176,10 @@
             <% } %>
           </div>
           <div class="profile-form__foot">
-            <button class="btn btn--primary" type="submit">Save name</button>
+            <button class="btn btn--primary" type="submit">
+              <%- include('../partials/icon', { name: 'save', size: 16, title: null }) %>
+              Save<span class="visually-hidden"> name</span>
+            </button>
           </div>
         </form>
       </section>
@@ -198,8 +201,14 @@
         <input class="crop-dialog__range" id="crop-zoom" data-crop-zoom type="range" min="1" max="3" step="0.01" value="1">
       </div>
       <div class="crop-dialog__actions">
-        <button class="btn btn--secondary" type="button" data-crop-cancel>Cancel</button>
-        <button class="btn btn--primary" type="button" data-crop-apply>Use photo</button>
+        <button class="btn btn--secondary" type="button" data-crop-cancel>
+          <%- include('../partials/icon', { name: 'x', size: 16, title: null }) %>
+          Cancel<span class="visually-hidden"> photo crop</span>
+        </button>
+        <button class="btn btn--primary" type="button" data-crop-apply>
+          <%- include('../partials/icon', { name: 'check', size: 16, title: null }) %>
+          Use photo
+        </button>
       </div>
     </div>
   </dialog>

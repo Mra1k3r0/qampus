@@ -57,6 +57,13 @@
         { "tag": "path", "attrs": { "d": "m12 5 7 7-7 7" } }
       ]
     },
+    "arrow-left": {
+      "label": "Arrow left",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "m12 19-7-7 7-7" } },
+        { "tag": "path", "attrs": { "d": "M19 12H5" } }
+      ]
+    },
     "check": {
       "label": "Check",
       "elements": [{ "tag": "path", "attrs": { "d": "M20 6 9 17l-5-5" } }]
@@ -133,6 +140,58 @@
         { "tag": "path", "attrs": { "d": "M4 6h16" } },
         { "tag": "path", "attrs": { "d": "M4 12h16" } },
         { "tag": "path", "attrs": { "d": "M4 18h16" } }
+      ]
+    },
+    "pencil": {
+      "label": "Edit",
+      "elements": [
+        {
+          "tag": "path",
+          "attrs": {
+            "d": "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+          }
+        },
+        { "tag": "path", "attrs": { "d": "m15 5 4 4" } }
+      ]
+    },
+    "key-round": {
+      "label": "Key",
+      "elements": [
+        {
+          "tag": "path",
+          "attrs": {
+            "d": "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+          }
+        },
+        { "tag": "circle", "attrs": { "cx": "16.5", "cy": "7.5", "r": ".5", "fill": "currentColor" } }
+      ]
+    },
+    "play": {
+      "label": "Play",
+      "elements": [
+        {
+          "tag": "path",
+          "attrs": {
+            "d": "M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+          }
+        }
+      ]
+    },
+    "power": {
+      "label": "Power",
+      "elements": [
+        { "tag": "path", "attrs": { "d": "M12 2v10" } },
+        { "tag": "path", "attrs": { "d": "M18.4 6.6a9 9 0 1 1-12.77.04" } }
+      ]
+    },
+    "rotate-ccw": {
+      "label": "Restore",
+      "elements": [
+        {
+          "tag": "path",
+          "attrs": { "d": "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }
+        },
+        { "tag": "path", "attrs": { "d": "M3 3v5h5" } }
       ]
     },
     "bell-ring": {

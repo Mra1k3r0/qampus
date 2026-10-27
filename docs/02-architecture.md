@@ -43,7 +43,7 @@ Routes own the HTTP handlers. Split a controller out only when a route file pass
 
 ## 3. Request lifecycle
 
-1. `helmet`, `pino-http`, `express.urlencoded({ extended: false, limit: '16kb' })`, and static files from `public/`.
+1. `helmet`, `pino-http`, `express.urlencoded({ extended: false, limit: '16kb' })`, and static files from `public/`. `scripts/build-assets.js` builds the route-specific `page-*.min.css` bundles and minified JS before the server starts.
 2. Session middleware reads `cspc_queue.sid`; `loadUser` sets `req.user`, and `locals` exposes `user`, `csrfToken`, `flash`, `currentPath`, and `appName`.
 3. Route guard checks authentication and role. Validation parses params, query, and body into typed data.
 4. Service layer runs one transaction for each state change.
@@ -125,8 +125,8 @@ Student ticket reads use `WHERE id = ? AND user_id = ?`. A miss returns 404, not
 
 ## 10. Security posture
 
-- `helmet` with CSP: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'.
-- No inline scripts or styles. All JS is external. EJS uses `<%= %>` for data and `<%- include() %>` only for trusted partials and validated Lucide icons. Parameterised SQL only, with no interpolation of values, column names, or ORDER BY.
+- `helmet` with CSP: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; require-trusted-types-for 'script'; trusted-types qampus-html. HSTS is `max-age=31536000; includeSubDomains; preload`; the only remote origin is the Cloudflare Web Analytics beacon.
+- No inline scripts or styles. All JS is external. Dynamic HTML strings pass through the `qampus-html` Trusted Types policy before `DOMParser`. EJS uses `<%= %>` for data and `<%- include() %>` only for trusted partials and validated Lucide icons. Parameterised SQL only, with no interpolation of values, column names, or ORDER BY.
 - Rate limits: login 10 per 15 minutes per IP, register 5 per hour per IP, join 20 per hour per user.
 - `express.urlencoded` limit 16 KB. JSON limit 16 KB. No file uploads in Round 1.
 - Cookies are HttpOnly, SameSite=Lax, Secure in production. `app.disable('x-powered-by')`. Static files come only from `public/`; the project root is never served.

@@ -12,6 +12,27 @@
     const pagePath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
     const pageUrl = publicBaseUrl + pagePath;
     const socialImage = publicBaseUrl + '/images/cspc/seal-512.png';
+    let pageCssKey = 'base';
+    if (currentPath === '/') {
+      pageCssKey = 'home';
+    } else if (currentPath === '/queue' || currentPath.indexOf('/queue/') === 0) {
+      pageCssKey = 'queue';
+    } else if (currentPath.indexOf('/staff/') === 0) {
+      pageCssKey = 'staff';
+    } else if (currentPath.indexOf('/admin/') === 0) {
+      pageCssKey = 'admin';
+    } else if (currentPath === '/profile') {
+      pageCssKey = 'profile';
+    } else if (currentPath === '/rules' || currentPath === '/privacy') {
+      pageCssKey = 'policy';
+    } else if (
+      currentPath === '/login'
+      || currentPath === '/register'
+      || currentPath === '/forgot-password'
+    ) {
+      pageCssKey = 'auth';
+    }
+    const pageStylesheet = `/css/page-${pageCssKey}.min.css`;
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
@@ -45,7 +66,7 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/cspc/seal-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/cspc/seal-180.png">
-  <link rel="stylesheet" href="/css/main.min.css">
+  <link rel="stylesheet" href="<%= pageStylesheet %>">
   <script src="/js/app.min.js" defer></script>
 </head>
 <body>
@@ -87,7 +108,7 @@
   <% if (isAuthPage) { %>
   <div class="auth-mark shell">
     <a class="brand" href="/">
-      <img class="brand__seal" src="/images/cspc/seal-120.webp" srcset="/images/cspc/seal-120.webp 1x, /images/cspc/seal-240.webp 2x" alt="" width="120" height="125">
+      <img class="brand__seal" src="/images/cspc/seal-120.webp" alt="" width="120" height="125">
       <span class="brand__text">
         <span class="brand__name">Qampus</span>
         <span class="brand__meta">CCIT Service Desk</span>
@@ -98,7 +119,7 @@
   <header class="site-header">
     <div class="shell site-header__inner">
       <a class="brand" href="/">
-        <img class="brand__seal" src="/images/cspc/seal-120.webp" srcset="/images/cspc/seal-120.webp 1x, /images/cspc/seal-240.webp 2x" alt="" width="120" height="125">
+        <img class="brand__seal" src="/images/cspc/seal-120.webp" alt="" width="120" height="125">
         <span class="brand__text">
           <span class="brand__name">Qampus</span>
           <span class="brand__meta">CCIT Service Desk</span>
@@ -106,7 +127,7 @@
       </a>
 
       <nav class="site-nav" aria-label="Main">
-        <a class="nav-link<%= currentPath === '/' ? ' is-current' : '' %>" href="/"<%- currentPath === '/' ? ' aria-current="page"' : '' %>>Home</a>
+        <a class="nav-link nav-link--home<%= currentPath === '/' ? ' is-current' : '' %>" href="/"<%- currentPath === '/' ? ' aria-current="page"' : '' %>>Home</a>
         <a class="nav-link<%= currentPath === '/display' ? ' is-current' : '' %>" href="/display"<%- currentPath === '/display' ? ' aria-current="page"' : '' %>>Display</a>
         <% if (isStudent) { %>
         <a class="nav-link<%= currentPath === '/queue' ? ' is-current' : '' %>" href="/queue"<%- currentPath === '/queue' ? ' aria-current="page"' : '' %>>My queue</a>
@@ -119,7 +140,7 @@
         <a class="nav-link<%= currentPath === '/admin/staff' ? ' is-current' : '' %>" href="/admin/staff"<%- currentPath === '/admin/staff' ? ' aria-current="page"' : '' %>>Staff accounts</a>
         <% } %>
         <% if (user) { %>
-        <a class="account<%= isProfilePage ? ' is-current' : '' %>" href="/profile"<%- isProfilePage ? ' aria-current="page"' : '' %>>
+        <a class="account<%= isProfilePage ? ' is-current' : '' %>" href="/profile" title="Profile settings"<%- isProfilePage ? ' aria-current="page"' : '' %>>
           <% if (user.avatarUrl) { %>
           <img class="avatar avatar--account" src="<%= user.avatarUrl %>" alt="" width="32" height="32">
           <% } else { %>
@@ -129,8 +150,9 @@
             <span class="account__name"><%= user.fullName %></span>
             <span class="account__role"><%= roleLabel %></span>
           </span>
+          <span class="visually-hidden">Profile settings</span>
         </a>
-        <form class="nav-logout" method="post" action="/logout">
+        <form class="nav-logout" method="post" action="/logout" data-logout-form>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="nav-logout__button" type="submit" title="Sign out">
             <%- include('../partials/icon', { name: 'log-out', size: 20, title: null }) %>
@@ -154,7 +176,7 @@
         <nav class="mobile-menu__panel" aria-label="Main menu">
           <div class="mobile-menu__head">
             <div class="mobile-menu__brand">
-              <img class="mobile-menu__seal" src="/images/cspc/seal-120.webp" srcset="/images/cspc/seal-120.webp 1x, /images/cspc/seal-240.webp 2x" alt="" width="120" height="125">
+              <img class="mobile-menu__seal" src="/images/cspc/seal-120.webp" alt="" width="120" height="125">
               <span>Qampus</span>
             </div>
             <button class="mobile-menu__close" type="button" data-close-menu aria-label="Close menu">
@@ -190,7 +212,7 @@
                 <span class="mobile-menu__account-role"><%= roleLabel %></span>
               </span>
             </a>
-            <form class="mobile-menu__logout" method="post" action="/logout">
+            <form class="mobile-menu__logout" method="post" action="/logout" data-logout-form>
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <button class="mobile-menu__signout" type="submit" title="Sign out">
                 <%- include('../partials/icon', { name: 'log-out', size: 20, title: null }) %>
@@ -213,6 +235,19 @@
   </header>
   <% } %>
 
+  <% if (user) { %>
+  <dialog class="logout-dialog" data-logout-dialog aria-labelledby="logout-dialog-title" aria-describedby="logout-dialog-desc">
+    <div class="logout-dialog__inner">
+      <h2 class="logout-dialog__title" id="logout-dialog-title">Log out?</h2>
+      <p class="logout-dialog__desc" id="logout-dialog-desc">Are you sure you want to log out?</p>
+      <div class="logout-dialog__actions">
+        <button class="btn btn--secondary" type="button" data-logout-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-logout-confirm>Log out</button>
+      </div>
+    </div>
+  </dialog>
+  <% } %>
+
   <%- include('../partials/flash', { flash: flash }) %>
 
   <main class="site-main<%= currentPath === '/' ? ' site-main--home' : '' %>" id="main" tabindex="-1">
@@ -228,7 +263,7 @@
     <div class="shell footer__grid">
       <div class="footer__col footer__col--brand">
         <p class="footer__brand">
-          <img class="footer__logo" src="/images/cspc/seal-120.webp" srcset="/images/cspc/seal-120.webp 1x, /images/cspc/seal-240.webp 2x" alt="" width="36" height="37">
+          <img class="footer__logo" src="/images/cspc/seal-120.webp" alt="" width="36" height="37">
           <span class="footer__wordmark">Qampus</span>
         </p>
         <p class="footer__about">A student queueing system for CSPC CCIT offices. Take a ticket, watch your place, and show your code at the counter.</p>

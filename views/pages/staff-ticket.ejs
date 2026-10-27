@@ -157,6 +157,7 @@
       <form method="post" action="/staff/tickets/<%= ticket.id %>/start">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn btn--primary btn--block" type="submit">
+          <%- include('../partials/icon', { name: 'play', size: 16, title: null }) %>
           Start
           <span class="visually-hidden">for ticket <%= ticket.code %></span>
         </button>
@@ -164,6 +165,7 @@
       <form method="post" action="/staff/tickets/<%= ticket.id %>/recall">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn btn--secondary btn--block" type="submit">
+          <%- include('../partials/icon', { name: 'bell-ring', size: 16, title: null }) %>
           Recall
           <span class="visually-hidden">for ticket <%= ticket.code %></span>
         </button>
@@ -172,6 +174,7 @@
         <form method="post" action="/staff/tickets/<%= ticket.id %>/no-show">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="btn btn--quiet btn--block btn--danger" type="submit">
+            <%- include('../partials/icon', { name: 'x', size: 16, title: null }) %>
             No-show
             <span class="visually-hidden">for ticket <%= ticket.code %></span>
           </button>
@@ -181,13 +184,17 @@
       <form method="post" action="/staff/tickets/<%= ticket.id %>/serve">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn btn--primary btn--block" type="submit">
+          <%- include('../partials/icon', { name: 'check', size: 16, title: null }) %>
           Serve
           <span class="visually-hidden">for ticket <%= ticket.code %></span>
         </button>
       </form>
       <% } %>
 
-      <a class="btn btn--quiet btn--block" href="/staff/queue">Back to staff queue</a>
+      <a class="btn btn--quiet btn--block" href="/staff/queue">
+        <%- include('../partials/icon', { name: 'arrow-left', size: 16, title: null }) %>
+        Back to staff queue
+      </a>
     </aside>
   </div>
 </div>

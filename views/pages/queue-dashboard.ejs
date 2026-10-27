@@ -36,6 +36,14 @@
   }
 %>
 <div class="shell page page--console">
+  <div data-call-sound-prompt hidden>
+    <div class="flash flash--notice" role="status">
+      <span class="flash__icon"><%- include('../partials/icon', { name: 'volume-x', size: 20, title: null }) %></span>
+      <p class="flash__message">Call sound is off. Enable it to hear when your ticket is called.</p>
+      <button class="flash__dismiss" type="button" data-call-sound-enable>Enable sound</button>
+    </div>
+  </div>
+
   <header class="page-head">
     <p class="eyebrow">My queue</p>
     <h1 class="page-head__title">Your place in line.</h1>

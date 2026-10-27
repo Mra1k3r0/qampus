@@ -109,6 +109,97 @@
     });
   }
 
+  const logoutDialog = document.querySelector('[data-logout-dialog]');
+  const logoutForms = document.querySelectorAll('[data-logout-form]');
+  let pendingLogoutForm = null;
+  let logoutTrigger = null;
+
+  function restoreLogoutFocus() {
+    const trigger = logoutTrigger;
+    logoutTrigger = null;
+    if (!trigger || !document.contains(trigger)) {
+      return;
+    }
+    window.requestAnimationFrame(function () {
+      trigger.focus();
+    });
+  }
+
+  function closeLogoutDialog() {
+    if (!logoutDialog || !logoutDialog.open) {
+      return;
+    }
+    logoutDialog.close();
+    pendingLogoutForm = null;
+    restoreLogoutFocus();
+  }
+
+  function openLogoutDialog(event) {
+    const form = event.target;
+    if (!logoutDialog || logoutDialog.open || typeof logoutDialog.showModal !== 'function') {
+      return;
+    }
+    event.preventDefault();
+    pendingLogoutForm = form;
+    logoutTrigger = event.submitter || form.querySelector('button[type="submit"]');
+    logoutDialog.showModal();
+    const confirmButton = logoutDialog.querySelector('[data-logout-confirm]');
+    if (confirmButton) {
+      confirmButton.focus();
+    }
+  }
+
+  function handleLogoutClick(event) {
+    if (!logoutDialog) {
+      return;
+    }
+    if (event.target === logoutDialog) {
+      closeLogoutDialog();
+      return;
+    }
+    if (event.target.closest('[data-logout-cancel]')) {
+      closeLogoutDialog();
+      return;
+    }
+    if (event.target.closest('[data-logout-confirm]') && pendingLogoutForm) {
+      logoutDialog.close();
+      pendingLogoutForm.submit();
+    }
+  }
+
+  function keepLogoutFocus(event) {
+    if (event.key !== 'Tab' || !logoutDialog || !logoutDialog.open) {
+      return;
+    }
+    const focusable = logoutDialog.querySelectorAll('button:not([disabled])');
+    if (focusable.length === 0) {
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function handleLogoutCancel(event) {
+    event.preventDefault();
+    closeLogoutDialog();
+  }
+
+  if (logoutDialog) {
+    logoutForms.forEach(function (form) {
+      form.addEventListener('submit', openLogoutDialog);
+    });
+    logoutDialog.addEventListener('click', handleLogoutClick);
+    logoutDialog.addEventListener('keydown', keepLogoutFocus);
+    logoutDialog.addEventListener('cancel', handleLogoutCancel);
+  }
+
   document.addEventListener('click', dismissFlash);
   document.addEventListener('click', fillDemoAccount);
   document.addEventListener('click', handleMenuClose);

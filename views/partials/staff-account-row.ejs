@@ -24,7 +24,10 @@
 
   <div class="staff-tools">
     <details class="staff-tools__item"<%= isEditing && (nameError || emailError) ? ' open' : '' %>>
-      <summary class="staff-tools__summary btn btn--secondary btn--small">Edit</summary>
+      <summary class="staff-tools__summary btn btn--secondary btn--small">
+        <%- include('./icon', { name: 'pencil', size: 16, title: null }) %>
+        Edit<span class="visually-hidden"> staff account</span>
+      </summary>
       <div class="staff-tools__body">
         <form class="staff-tools__form" method="post" action="/admin/staff/<%= member.id %>" novalidate>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -77,15 +80,24 @@
             </div>
           </div>
           <div class="staff-tools__actions">
-            <button class="btn btn--primary btn--small" type="submit">Save changes</button>
-            <a class="btn btn--quiet btn--small" href="/admin/staff">Cancel</a>
+            <button class="btn btn--primary btn--small" type="submit">
+              <%- include('./icon', { name: 'save', size: 16, title: null }) %>
+              Save<span class="visually-hidden"> changes</span>
+            </button>
+            <a class="btn btn--quiet btn--small" href="/admin/staff">
+              <%- include('./icon', { name: 'x', size: 16, title: null }) %>
+              Cancel
+            </a>
           </div>
         </form>
       </div>
     </details>
 
     <details class="staff-tools__item"<%= isEditing && passwordError ? ' open' : '' %>>
-      <summary class="staff-tools__summary btn btn--secondary btn--small">Reset password</summary>
+      <summary class="staff-tools__summary btn btn--secondary btn--small">
+        <%- include('./icon', { name: 'key-round', size: 16, title: null }) %>
+        Reset<span class="visually-hidden"> password</span>
+      </summary>
       <div class="staff-tools__body">
         <form class="staff-tools__form" method="post" action="/admin/staff/<%= member.id %>/password" novalidate>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -110,7 +122,10 @@
             <% } %>
           </div>
           <div class="staff-tools__actions">
-            <button class="btn btn--secondary btn--small" type="submit">Reset password</button>
+            <button class="btn btn--secondary btn--small" type="submit">
+              <%- include('./icon', { name: 'key-round', size: 16, title: null }) %>
+              Reset<span class="visually-hidden"> password</span>
+            </button>
           </div>
         </form>
       </div>
@@ -119,7 +134,10 @@
     <form class="inline-form" method="post" action="/admin/staff/<%= member.id %>/status">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="isActive" value="<%= member.isActive ? '0' : '1' %>">
-      <button class="btn btn--secondary btn--small<%= member.isActive ? ' btn--danger' : '' %>" type="submit"><%= member.isActive ? 'Deactivate' : 'Reactivate' %></button>
+      <button class="btn btn--secondary btn--small<%= member.isActive ? ' btn--danger' : '' %>" type="submit">
+        <%- include('./icon', { name: member.isActive ? 'power' : 'rotate-ccw', size: 16, title: null }) %>
+        <%= member.isActive ? 'Deactivate' : 'Reactivate' %><span class="visually-hidden"> staff account</span>
+      </button>
     </form>
   </div>
 </div>

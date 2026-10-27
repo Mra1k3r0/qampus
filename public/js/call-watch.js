@@ -4,6 +4,7 @@
   const POLL_MS = 10000;
   const CHIME_MS = 4000;
   const STORAGE_PREFIX = 'qampus.called.';
+  const SOUND_STORAGE_KEY = 'qampus.sound.enabled';
   const AUDIO_URL = '/audio/called.mp3';
   const DEFAULT_COUNTER = 'the counter';
 
@@ -20,6 +21,8 @@
   const counterNode = root.querySelector('[data-call-counter]');
   const openLink = root.querySelector('[data-call-open]');
   const dismissButton = root.querySelector('[data-call-dismiss]');
+  const soundPrompt = document.querySelector('[data-call-sound-prompt]');
+  const soundEnableButton = document.querySelector('[data-call-sound-enable]');
 
   if (!statusUrl || !dialog) {
     return;
@@ -33,6 +36,7 @@
   let audioBuffer = null;
   let isLoadingAudio = false;
   let chimeTimer = null;
+  let memorySoundChoice = false;
 
   function ignore() {}
 
@@ -62,6 +66,46 @@
     } catch {
       // Storage can be blocked, so the in-memory value still prevents repeats.
     }
+  }
+
+  function readSoundChoice() {
+    try {
+      return window.localStorage.getItem(SOUND_STORAGE_KEY) === 'true';
+    } catch {
+      return memorySoundChoice;
+    }
+  }
+
+  function storeSoundChoice() {
+    memorySoundChoice = true;
+    try {
+      window.localStorage.setItem(SOUND_STORAGE_KEY, 'true');
+    } catch {
+      // Storage can be blocked, so memory keeps the choice for this page.
+    }
+  }
+
+  function showSoundPrompt() {
+    if (soundPrompt) {
+      soundPrompt.hidden = false;
+    }
+  }
+
+  function hideSoundPrompt() {
+    if (soundPrompt) {
+      soundPrompt.hidden = true;
+    }
+  }
+
+  function syncSoundPrompt() {
+    if (!soundPrompt || !audioContext) {
+      return;
+    }
+    if (audioContext.state === 'running') {
+      hideSoundPrompt();
+      return;
+    }
+    showSoundPrompt();
   }
 
   function normalizeTicket(ticket) {
@@ -105,11 +149,9 @@
     if (!audioContext || !audioBuffer) {
       return;
     }
-    if (audioContext.state === 'suspended') {
-      const resumed = audioContext.resume();
-      if (resumed && typeof resumed.catch === 'function') {
-        resumed.catch(ignore);
-      }
+    if (audioContext.state !== 'running') {
+      resumeAudioContext();
+      return;
     }
     try {
       const source = audioContext.createBufferSource();
@@ -122,11 +164,17 @@
   }
 
   function startChime() {
-    if (!audioBuffer || chimeTimer !== null) {
+    if (!audioBuffer) {
       return;
     }
+    if (!audioContext || audioContext.state !== 'running') {
+      resumeAudioContext();
+      return;
+    }
+    if (chimeTimer === null) {
+      chimeTimer = window.setInterval(playChime, CHIME_MS);
+    }
     playChime();
-    chimeTimer = window.setInterval(playChime, CHIME_MS);
   }
 
   function maybeStartChime() {
@@ -160,33 +208,87 @@
     }
   }
 
-  function unlockAudio() {
-    document.removeEventListener('pointerdown', unlockAudio);
-    document.removeEventListener('keydown', unlockAudio);
-
+  function createAudioContext() {
+    if (audioContext) {
+      return audioContext;
+    }
     const AudioConstructor = window.AudioContext || window.webkitAudioContext;
     if (!AudioConstructor) {
-      return;
+      return null;
     }
+    try {
+      audioContext = new AudioConstructor();
+    } catch {
+      audioContext = null;
+      return null;
+    }
+    audioContext.addEventListener('statechange', syncSoundPrompt);
+    return audioContext;
+  }
 
+  function resumeAudioContext() {
     if (!audioContext) {
-      try {
-        audioContext = new AudioConstructor();
-      } catch {
-        return;
-      }
+      return Promise.resolve();
     }
-
-    const resumed = audioContext.resume();
+    let resumed;
+    try {
+      resumed = audioContext.resume();
+    } catch {
+      return Promise.resolve();
+    }
     if (resumed && typeof resumed.then === 'function') {
-      resumed
-        .then(loadAudio)
-        .then(maybeStartChime)
-        .catch(ignore);
+      return resumed.catch(ignore);
+    }
+    return Promise.resolve();
+  }
+
+  async function unlockAudio(playOnce) {
+    if (!createAudioContext()) {
       return;
     }
+    await resumeAudioContext();
+    await loadAudio();
+    syncSoundPrompt();
+    if (!audioContext || audioContext.state !== 'running') {
+      return;
+    }
+    if (playOnce) {
+      playChime();
+    }
+    maybeStartChime();
+  }
 
-    loadAudio().then(maybeStartChime).catch(ignore);
+  function handleUnlockGesture(event) {
+    const target = event && event.target;
+    if (soundEnableButton && target && typeof target.closest === 'function' && target.closest('[data-call-sound-enable]')) {
+      return;
+    }
+    document.removeEventListener('pointerdown', handleUnlockGesture);
+    document.removeEventListener('keydown', handleUnlockGesture);
+    unlockAudio(false).catch(ignore);
+  }
+
+  function handleSoundEnable() {
+    document.removeEventListener('pointerdown', handleUnlockGesture);
+    document.removeEventListener('keydown', handleUnlockGesture);
+    if (!readSoundChoice()) {
+      storeSoundChoice();
+    }
+    unlockAudio(true).catch(ignore);
+  }
+
+  function primeAudio() {
+    if (!createAudioContext()) {
+      return;
+    }
+    syncSoundPrompt();
+    loadAudio().catch(ignore);
+    resumeAudioContext()
+      .then(function () {
+        syncSoundPrompt();
+        maybeStartChime();
+      })
+      .catch(ignore);
   }
 
   function handleDialogClose() {
@@ -313,12 +415,16 @@
     }
   }
 
-  document.addEventListener('pointerdown', unlockAudio);
-  document.addEventListener('keydown', unlockAudio);
+  document.addEventListener('pointerdown', handleUnlockGesture);
+  document.addEventListener('keydown', handleUnlockGesture);
   dialog.addEventListener('close', handleDialogClose);
 
   if (dismissButton) {
     dismissButton.addEventListener('click', closeDialog);
+  }
+
+  if (soundEnableButton) {
+    soundEnableButton.addEventListener('click', handleSoundEnable);
   }
 
   dialog.addEventListener('click', function (event) {
@@ -335,5 +441,6 @@
     poll().catch(ignore);
   });
 
+  primeAudio();
   poll().catch(ignore);
 })();

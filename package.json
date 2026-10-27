@@ -42,6 +42,7 @@
     "multer": "^2.5.0",
     "pino": "^9.13.1",
     "pino-http": "^10.5.0",
+    "purgecss": "^7.0.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {
