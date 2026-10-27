@@ -211,10 +211,39 @@
       });
   }
 
+  function toggleAtPoint(x, y) {
+    const toggles = document.querySelectorAll('[data-theme-toggle]');
+    for (const button of toggles) {
+      const rect = button.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        continue;
+      }
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        return button;
+      }
+    }
+    return null;
+  }
+
+  // The view transition snapshot swallows pointer clicks, so route toggle clicks by position.
+  function forwardThemeClick(event) {
+    if (!activeTransition) {
+      return;
+    }
+    if (event.target instanceof Element && event.target.closest('[data-theme-toggle]')) {
+      return;
+    }
+    const button = toggleAtPoint(event.clientX, event.clientY);
+    if (button) {
+      button.click();
+    }
+  }
+
   function wireToggles() {
     document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
       button.addEventListener('click', changeTheme);
     });
+    document.addEventListener('click', forwardThemeClick);
     updateToggles(currentTheme);
     updateMetaColor(currentTheme);
   }

@@ -146,5 +146,5 @@ Source: Lucide (ISC licence), copied as inline SVG from the official set at luci
 4. No generic hero with three feature cards, stock illustration, or emoji. The landing uses a headline, a live strip, and three numbered steps.
 5. No invented icons, icon fonts, or hand-drawn SVG. Lucide only, copied from the official set.
 6. No placeholder-only labels, icon-only buttons without names, or colour-only status. Every control is named and every state is written.
-7. The footer theme toggle cycles light, dark, and a hidden midnight theme (five clicks within two seconds). The header switches in the same frame and text colours are suppressed during the switch, so the wordmark never goes blank. No decorative animation beyond the theme reveal; the public board stays the deliberate dark signage surface.
+7. The footer theme toggle cycles light, dark, and a hidden midnight theme (five clicks within two seconds, including while the reveal is running). The radial wipe includes the sticky header, so the wordmark crosses with the page and never goes blank. Text colours are suppressed during the switch. No decorative animation beyond the theme reveal; the public board stays the deliberate dark signage surface.
 8. No fake data, dead links, or "coming soon" in the demo. Every button either works or is absent.

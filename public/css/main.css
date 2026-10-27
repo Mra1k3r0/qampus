@@ -27,13 +27,6 @@ html {
   display: block;
 }
 
-/* The header switches with the theme instead of waiting for the circle */
-::view-transition-old(site-header),
-::view-transition-new(site-header) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
 /* Theme colours land in one frame; hover transitions resume when it ends */
 html.is-theme-switching,
 html.is-theme-switching *,
@@ -63,7 +56,6 @@ html.is-theme-switching *::after {
 }
 
 .site-header {
-  view-transition-name: site-header;
   animation: fade-in var(--duration-page) var(--ease-exit) both;
 }
 
