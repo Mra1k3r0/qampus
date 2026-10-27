@@ -10,7 +10,9 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "prestart": "node scripts/build-assets.js",
+    "dev": "node scripts/build-assets.js && node --watch src/server.js",
+    "build:assets": "node scripts/build-assets.js",
     "lint": "eslint src tests scripts",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -29,6 +31,7 @@
     "dayjs": "^1.11.23",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
+    "esbuild": "^0.25.12",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
     "express-ejs-layouts": "^2.5.1",

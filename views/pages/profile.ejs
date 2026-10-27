@@ -93,11 +93,17 @@
           <div class="profile-photo-actions__row">
             <form method="post" action="/profile/avatar/shuffle">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button class="btn btn--secondary btn--small" type="submit">Shuffle photo</button>
+              <button class="btn btn--secondary btn--small" type="submit">
+                <%- include('../partials/icon', { name: 'shuffle', size: 16, title: null }) %>
+                Shuffle<span class="visually-hidden"> photo</span>
+              </button>
             </form>
             <form method="post" action="/profile/avatar/clear">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button class="btn btn--quiet btn--small btn--danger" type="submit">Remove photo</button>
+              <button class="btn btn--quiet btn--small btn--danger" type="submit">
+                <%- include('../partials/icon', { name: 'trash-2', size: 16, title: null }) %>
+                Remove<span class="visually-hidden"> photo</span>
+              </button>
             </form>
           </div>
 
@@ -126,7 +132,10 @@
                     data-avatar-input
                     aria-describedby="avatar-upload-hint<%= errorBag.avatar ? ' avatar-error' : '' %>"
                   >
-                  <button class="btn btn--secondary" type="submit">Save photo</button>
+                  <button class="btn btn--secondary" type="submit">
+                    <%- include('../partials/icon', { name: 'save', size: 16, title: null }) %>
+                    Save<span class="visually-hidden"> photo</span>
+                  </button>
                 </div>
                 <p class="field__hint" id="avatar-upload-hint">PNG, JPEG, or WebP, up to 2 MB. Drag and zoom to crop to a square before saving.</p>
                 <p class="upload-form__status" data-avatar-status role="status"></p>

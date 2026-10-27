@@ -63,12 +63,16 @@ describe('security', () => {
     expect(lastResponse.headers['retry-after']).toBeDefined();
   });
 
-  it('sends self-only CSP and no X-Powered-By header', async () => {
+  it('sends restrictive CSP, HSTS, and no X-Powered-By header', async () => {
     const response = await request(app).get('/health');
+    const csp = response.headers['content-security-policy'];
 
     expect(response.status).toBe(200);
-    expect(response.headers['content-security-policy']).toContain("default-src 'self'");
-    expect(response.headers['content-security-policy']).toContain("script-src 'self'");
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("script-src 'self' https://static.cloudflareinsights.com");
+    expect(csp).toContain("require-trusted-types-for 'script'");
+    expect(csp).toContain('trusted-types qampus-html');
+    expect(response.headers['strict-transport-security']).toContain('preload');
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['x-frame-options']).toBe('DENY');
     expect(response.headers['x-powered-by']).toBeUndefined();

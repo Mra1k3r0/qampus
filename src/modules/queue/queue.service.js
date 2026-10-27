@@ -50,6 +50,21 @@ function getStudentDashboard(db, userId, date = serviceDate()) {
   };
 }
 
+function getStudentCallStatus(db, userId, date = serviceDate()) {
+  const tickets = queueRepository
+    .listActiveTicketsForUser(db, { userId, date })
+    .map((ticket) => ({
+      id: ticket.id,
+      code: ticket.code,
+      serviceName: ticket.serviceName,
+      counterName: ticket.counterName,
+      status: ticket.status,
+      callCount: ticket.callCount,
+    }));
+
+  return { tickets, updatedAt: nowIso() };
+}
+
 function getServiceDetail(db, { userId, serviceId, date = serviceDate() }) {
   const services = queueRepository.listServicesWithStatus(db, date);
   const row = services.find((service) => service.id === serviceId);
@@ -113,6 +128,7 @@ function getDisplayBoard(db, date = serviceDate()) {
 module.exports = {
   listServices,
   getStudentDashboard,
+  getStudentCallStatus,
   getServiceDetail,
   getStaffConsole,
   getDisplayBoard,

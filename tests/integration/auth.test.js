@@ -114,6 +114,28 @@ describe('auth routes', () => {
     expect(row).toBeUndefined();
   });
 
+  it('returns a field error for every empty register field', async () => {
+    const agent = request.agent(app);
+    const token = await getCsrf(agent, '/register');
+
+    const response = await agent.post('/register').type('form').send({
+      fullName: '',
+      studentNo: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      _csrf: token,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.text).toContain('Enter your full name.');
+    expect(response.text).toContain('Enter your student number.');
+    expect(response.text).toContain('Enter your email address.');
+    expect(response.text).toContain('Password must have at least 8 characters');
+    expect(response.text).toContain('Confirm your password.');
+    expect(response.text).toContain('Agree to the Terms of Use and Privacy Policy');
+  });
+
   it('returns 400 when the policy is not accepted', async () => {
     const agent = request.agent(app);
     const token = await getCsrf(agent, '/register');

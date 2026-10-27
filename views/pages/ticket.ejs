@@ -69,15 +69,7 @@
 
   <p class="visually-hidden" role="status" aria-live="polite" data-live-status></p>
 
-  <div class="ticket-sound" data-sound-panel hidden>
-    <button class="ticket-sound__button" type="button" data-sound-toggle aria-pressed="true" aria-label="Turn off call sound" title="Turn off call sound">
-      <span data-sound-icon-on><%- include('../partials/icon', { name: 'volume-2', size: 20, title: null }) %></span>
-      <span data-sound-icon-off hidden><%- include('../partials/icon', { name: 'volume-x', size: 20, title: null }) %></span>
-    </button>
-    <audio data-called-sound src="/audio/called.mp3" preload="auto"></audio>
-  </div>
-
-  <div data-live-region data-call-count="<%= ticket.callCount %>" data-ticket-status="<%= ticket.status %>">
+  <div data-live-region data-ticket-status="<%= ticket.status %>">
     <article class="ticket-sheet" aria-labelledby="ticket-heading">
       <div class="ticket-sheet__top">
         <div>
@@ -157,21 +149,4 @@
       </div>
     </article>
   </div>
-
-  <dialog class="call-dialog" data-call-dialog role="alertdialog" aria-labelledby="call-dialog-title" aria-describedby="call-dialog-desc">
-    <div class="call-dialog__inner">
-      <div class="call-dialog__head">
-        <span class="call-dialog__icon"><%- include('../partials/icon', { name: 'bell-ring', size: 28, title: null }) %></span>
-        <p class="call-dialog__eyebrow">Ticket called</p>
-      </div>
-      <h2 class="call-dialog__title" id="call-dialog-title">Your turn</h2>
-      <p class="call-dialog__code"><span class="visually-hidden">Ticket </span><span data-call-dialog-code><%= ticket.code %></span></p>
-      <p class="call-dialog__desc" id="call-dialog-desc">
-        Go to <strong data-call-dialog-counter><%= counterLabel %></strong> for <span data-call-dialog-service><%= ticket.serviceName %></span>.
-      </p>
-      <form class="call-dialog__actions" method="dialog">
-        <button class="btn btn--primary btn--block call-dialog__close" type="submit" data-call-dialog-close>Got it</button>
-      </form>
-    </div>
-  </dialog>
 </div>

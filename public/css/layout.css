@@ -459,6 +459,11 @@
   max-width: 54rem;
 }
 
+/* Policy titles sit on the same left edge as the reading column */
+.page-head--policy {
+  margin-inline: 0;
+}
+
 .page-head__title {
   max-width: 18ch;
   margin-top: var(--space-3);
@@ -470,6 +475,12 @@
   max-width: var(--measure);
   margin-top: var(--space-4);
   color: var(--color-ink-muted);
+}
+
+.page-head__updated {
+  margin-top: var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
 }
 
 .page-head__meta {

@@ -40,6 +40,7 @@ function mapTicket(row) {
     counterName: row.counter_name || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    callCount: row.call_count || 0,
     position: row.position || null,
   };
 }
@@ -97,6 +98,7 @@ function listActiveTicketsForUser(db, { userId, date }) {
   return db
     .prepare(
       `SELECT t.id, t.code, t.status, t.sequence, t.service_id, t.created_at, t.updated_at,
+              t.call_count,
               s.code AS service_code, s.name AS service_name, s.avg_minutes,
               c.name AS counter_name,
               ${POSITION_SQL}

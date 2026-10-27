@@ -1,0 +1,18 @@
+<div data-call-watch data-status-url="/api/queue/status">
+  <dialog class="call-dialog" data-call-dialog role="alertdialog" aria-labelledby="call-dialog-title" aria-describedby="call-dialog-desc">
+    <div class="call-dialog__inner">
+      <div class="call-dialog__head">
+        <span class="call-dialog__icon"><%- include('../partials/icon', { name: 'bell-ring', size: 24, title: null }) %></span>
+        <p class="call-dialog__eyebrow">Ticket called</p>
+      </div>
+      <h2 class="call-dialog__title" id="call-dialog-title">Your turn</h2>
+      <p class="call-dialog__desc" id="call-dialog-desc">
+        Ticket <span data-call-code></span> for <span data-call-service></span> is called. Go to <span data-call-counter>the counter</span>.
+      </p>
+      <div class="call-dialog__actions">
+        <a class="btn btn--primary call-dialog__open" data-call-open href="/queue">Open ticket</a>
+        <button class="btn btn--quiet call-dialog__dismiss" type="button" data-call-dismiss>Got it</button>
+      </div>
+    </div>
+  </dialog>
+</div>

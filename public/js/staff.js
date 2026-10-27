@@ -58,7 +58,8 @@
       }
 
       const html = await response.text();
-      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      const trusted = window.qampusTrustedHtml ? window.qampusTrustedHtml(html) : html;
+      const parsed = new DOMParser().parseFromString(trusted, 'text/html');
       const nextRegion = parsed.querySelector('[data-live-region]');
 
       if (nextRegion && nextRegion.innerHTML !== region.innerHTML) {

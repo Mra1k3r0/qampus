@@ -90,7 +90,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | I48 | `tests/integration/policy.test.js` | Anonymous and signed-in `GET /rules`; old `GET /policy` | 200 with the window, cap, cooldown, and no-show rules; no student PII; no session minted for anonymous readers; signed-in layout keeps the sign-out control; old path returns 301 to `/rules` |
 | I49 | `auth.test.js` | Each portal with a matching role, and a portal that does not match | Matching portal lands on the role home; mismatch returns the same 401 as a bad password |
 | I50 | `tests/integration/admin-staff.test.js` | Office head lists, creates, edits, resets a password, deactivates, and reactivates staff; staff and students try every route; a deactivated account signs in | 303 and an audit row per mutation, 403 for non-admins, 400 on duplicate email, 404 on admin ids, generic 401 and dead session after deactivation, password never rendered |
-| I51 | `queue.test.js` | Ticket page sound markup, the called-ticket dialog, and the alert asset | `GET /queue/tickets/1` contains the sound control, `src="/audio/called.mp3"`, the current `data-call-count`, and a dialog labelled by `call-dialog-title` with code, service, counter, and one `Got it` close control outside the live region; `GET /audio/called.mp3` returns 200 with `audio/mpeg` |
+| I51 | `queue.test.js` | Global call watcher markup and the alert asset | `GET /queue/tickets/1` contains one `data-call-watch` with `data-status-url`, `data-call-code`, service, counter, open, and dismiss controls, loads `/js/call-watch.js`, keeps the ticket live region with `data-ticket-status`, and has exactly one dialog outside the live region; the old `data-called-sound`, `data-sound-toggle`, and `Turn off call sound` label are absent; a staff page has no watcher or script; `GET /audio/called.mp3` returns 200 with `audio/mpeg` |
 
 ## 5. Manual Test Matrix
 
@@ -99,7 +99,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | M01 | Keyboard-only register and join | Tab reaches every field and button in order; Enter submits; no mouse needed |
 | M02 | Visible focus | Focus ring visible on all controls against both light surfaces |
 | M03 | Screen reader labels | Join, Leave, Call next, Serve, No-show announce name, service, and state |
-| M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll; a call rings the alert once, opens the called-ticket dialog once, and the sound toggle keeps its choice after a reload; `Got it`, Escape, and a backdrop click close the dialog |
+| M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll; a signed-in student on `/` or `/queue/tickets/:id` sees the global dialog when staff calls the ticket, with the page blurred and the chime repeating every 4 seconds; `Got it` dismisses it and it does not reopen for the same count; a recall reopens it |
 | M05 | Validation focus | Submit invalid register form; focus lands on error summary, errors linked by `aria-describedby`; a password without a letter or number is blocked in the browser and on the server; login and register show only the top-left brand mark, with no header bar or footer |
 | M06 | Contrast | Body text at least 4.5:1, large display text at least 3:1, focus indicator 3:1 |
 | M07 | 200 percent zoom | No clipped controls or horizontal scroll at 1280px with 200 percent zoom |

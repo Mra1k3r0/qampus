@@ -59,18 +59,25 @@ function createHelmet() {
       useDefaults: false,
       directives: {
         'default-src': ["'self'"],
-        'script-src': ["'self'"],
+        'script-src': ["'self'", 'https://static.cloudflareinsights.com'],
         'style-src': ["'self'"],
         'img-src': ["'self'", 'data:'],
         'font-src': ["'self'"],
-        'connect-src': ["'self'"],
+        'connect-src': ["'self'", 'https://cloudflareinsights.com'],
         'form-action': ["'self'"],
         'frame-ancestors': ["'none'"],
         'base-uri': ["'self'"],
         'object-src': ["'none'"],
+        'require-trusted-types-for': ["'script'"],
+        'trusted-types': ['qampus-html'],
       },
     },
     frameguard: { action: 'deny' },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
   });
 }
 

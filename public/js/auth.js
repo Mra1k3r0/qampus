@@ -86,10 +86,14 @@
   }
 
   form.addEventListener('submit', (event) => {
-    if (isPasswordValid(input.value)) {
+    const invalidFields = Array.from(form.querySelectorAll(':invalid'));
+    const isPasswordOnlyInvalid = invalidFields.length === 1 && invalidFields[0] === input;
+
+    if (isPasswordValid(input.value) || !isPasswordOnlyInvalid) {
       clearClientError();
       return;
     }
+
     event.preventDefault();
     showClientError();
     input.focus();

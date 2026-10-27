@@ -39,6 +39,7 @@
           type="text"
           value="<%= fullNameValue %>"
           autocomplete="name"
+          required
           maxlength="80"
           <% if (errorBag.fullName) { %>aria-describedby="fullName-error" aria-invalid="true"<% } %>
         >
@@ -59,6 +60,7 @@
           type="text"
           value="<%= studentNoValue %>"
           autocomplete="off"
+          required
           maxlength="20"
           aria-describedby="studentNo-hint<%= errorBag.studentNo ? ' studentNo-error' : '' %>"
           <% if (errorBag.studentNo) { %>aria-invalid="true"<% } %>
@@ -82,6 +84,7 @@
           value="<%= emailValue %>"
           autocomplete="email"
           inputmode="email"
+          required
           maxlength="160"
           <% if (errorBag.email) { %>aria-describedby="email-error" aria-invalid="true"<% } %>
         >
@@ -102,6 +105,7 @@
             name="password"
             type="password"
             autocomplete="new-password"
+            required
             minlength="8"
             maxlength="200"
             pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,200}"
@@ -146,6 +150,7 @@
             name="confirmPassword"
             type="password"
             autocomplete="new-password"
+            required
             minlength="8"
             maxlength="200"
             <% if (errorBag.confirmPassword) { %>aria-describedby="confirmPassword-error" aria-invalid="true"<% } %>
@@ -173,7 +178,7 @@
 
       <div class="field<%= errorBag.policy ? ' field--error' : '' %>">
         <label class="checkbox" for="policy">
-          <input class="checkbox__input" id="policy" name="policy" type="checkbox" value="agreed"<%= policyChecked ? ' checked' : '' %><% if (errorBag.policy) { %> aria-describedby="policy-error" aria-invalid="true"<% } %>>
+          <input class="checkbox__input" id="policy" name="policy" type="checkbox" value="agreed" required<%= policyChecked ? ' checked' : '' %><% if (errorBag.policy) { %> aria-describedby="policy-error" aria-invalid="true"<% } %>>
           <span class="checkbox__label">
             I agree to the <a href="/rules">Terms of Use</a> and <a href="/privacy">Privacy Policy</a>.
           </span>

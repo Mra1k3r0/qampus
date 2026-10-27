@@ -1,6 +1,23 @@
 (function () {
   'use strict';
 
+  function trustedHtml(value) {
+    if (!window.trustedTypes || typeof window.trustedTypes.createPolicy !== 'function') {
+      return value;
+    }
+    if (!window.qampusHtmlPolicy) {
+      // The HTML comes from this origin's own live-region response.
+      window.qampusHtmlPolicy = window.trustedTypes.createPolicy('qampus-html', {
+        createHTML: function (input) {
+          return input;
+        },
+      });
+    }
+    return window.qampusHtmlPolicy.createHTML(value);
+  }
+
+  window.qampusTrustedHtml = trustedHtml;
+
   function dismissFlash(event) {
     const button = event.target.closest('[data-dismiss-flash]');
     if (!button) {

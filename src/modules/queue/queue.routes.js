@@ -59,6 +59,11 @@ function createQueueRouter({ db, security }) {
     },
   );
 
+  router.get('/api/queue/status', security.requireRole('student'), (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(queueService.getStudentCallStatus(db, req.user.id));
+  });
+
   router.get(
     '/queue/:serviceId',
     security.requireRole('student'),

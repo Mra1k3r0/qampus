@@ -40,7 +40,7 @@ const registerSchema = z
     studentNo: studentNoSchema,
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, 'Confirm your password.'),
     policy: policySchema,
   })
   .refine((data) => data.password === data.confirmPassword, {

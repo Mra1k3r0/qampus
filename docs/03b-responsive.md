@@ -44,6 +44,7 @@ Scope: every screen of Qampus must look deliberate at every width, not merely su
 - Staff ticket detail. Below 768: facts stack, action bar fixed bottom, audit after facts. 768 to 1023: 7-column header, action top bar. 1024+: 8/4, action rail 280 px sticky at 96 px. Above the fold at 320: code, status, wait, primary action.
 - Board. Below 768: tile full width, next 2 tickets stacked below, join URL hidden, clock 0.75rem. 768 to 1023: tile 100 percent width, next-up right column 240 px. 1024+: 72/28 split, next-up 4 rows, clock bottom right, content max 1600 px. Above the fold at 320: label, code, station, elapsed.
 - Errors (404 and 500). Below 480: numeral 30vw, copy 1rem, actions stacked full width. 480 to 767: numeral 24vw. 768+: clamp(6rem, 18vw, 12rem), content max 480 px, left aligned. Above the fold at 320: numeral, one sentence, primary.
+- Terms and privacy. Below 768: one column, 34rem measure, no on-page list. 768 to 1023: one column with the On this page list in two columns above the text. 1024+: 34rem reading column plus a sticky 14rem right rail at 96 px, capped to the viewport and scrollable when long. Anchors land below the sticky header; no horizontal scroll at 320 or 200 percent zoom.
 
 ## 4. Table strategy
 

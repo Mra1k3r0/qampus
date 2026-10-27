@@ -6,10 +6,11 @@
   <meta name="theme-color" content="#002A7A">
   <meta name="color-scheme" content="dark">
   <meta name="description" content="Now serving at the CSPC CCIT service desk. Ticket codes, windows, and waiting counts only.">
-  <title><%= title %> - <%= appName %></title>
-  <link rel="icon" href="/images/cspc/seal.png" type="image/png">
-  <link rel="stylesheet" href="/css/main.css">
-  <script src="/js/display.js" defer></script>
+  <title><%= appName %> | <%= title %></title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/cspc/seal-32.png">
+  <link rel="stylesheet" href="/css/main.min.css">
+  <script src="/js/display.min.js" defer></script>
 </head>
 <%
   const boardServices = board && Array.isArray(board.services) ? board.services : [];
@@ -24,7 +25,7 @@
     <div class="board__inner">
       <header class="board__top">
         <div class="board__brand">
-          <img class="board__seal" src="/images/cspc/seal.png" alt="" width="120" height="125">
+          <img class="board__seal" src="/images/cspc/seal-120.webp" srcset="/images/cspc/seal-120.webp 1x, /images/cspc/seal-240.webp 2x" alt="" width="120" height="125">
           <div>
             <p class="board__name">Qampus</p>
             <p class="board__sub">CCIT Office service windows</p>
