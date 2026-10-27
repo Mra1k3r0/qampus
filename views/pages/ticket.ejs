@@ -6,6 +6,7 @@
     served: 'Completed',
     no_show: 'No-show',
     left: 'Left',
+    expired: 'Expired',
   };
   const statusClasses = {
     waiting: 'waiting',
@@ -14,6 +15,7 @@
     served: 'completed',
     no_show: 'noshow',
     left: 'left',
+    expired: 'expired',
   };
   const isAtDesk = ticket.status === 'called' || ticket.status === 'serving';
   const isWaiting = ticket.status === 'waiting';
@@ -136,13 +138,13 @@
         <% } %>
         <% if (ticket.endedAt) { %>
         <div>
-          <dt class="fact__label"><%= ticket.status === 'served' ? 'Completed' : 'Closed' %></dt>
+          <dt class="fact__label"><%= ticket.endedCaption %></dt>
           <dd class="fact__value"><time datetime="<%= ticket.endedAt %>"><%= timeLabel(ticket.endedAt) %></time></dd>
         </div>
         <% } %>
       </dl>
 
-      <p class="ticket-sheet__instruction">Show this code at the counter when your turn comes.</p>
+      <p class="ticket-sheet__instruction"><%= ticket.status === 'expired' ? 'This ticket expired when the service day ended. Join the queue again if you still need help.' : 'Show this code at the counter when your turn comes.' %></p>
 
       <div class="ticket-sheet__actions">
         <a class="btn btn--secondary btn--small" href="/queue">

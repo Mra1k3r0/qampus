@@ -5,7 +5,7 @@ Purpose: prove that every rubric criterion and every requirement has a build art
 ## 1. Rules
 
 - Source of truth for requirements: `01-requirements.md`, FR-01 to FR-14 and NFR-01 to NFR-08.
-- Source of truth for test IDs: `05-test-plan.md`, U01 to U18, I01 to I51, M01 to M16, D01 to D05. FR to test mapping lives in section 5 of this file.
+- Source of truth for test IDs: `05-test-plan.md`, U01 to U18, I01 to I56, M01 to M16, D01 to D05. FR to test mapping lives in section 5 of this file.
 - Source of truth for phases: `04-sdlc-plan.md`, P0 to P13.
 - A requirement is covered only when the test exists, passes, and the evidence path is recorded in section 10.
 - Do not mark a row Done because the page renders. Mark it Done when the failure case also passes.
@@ -44,7 +44,7 @@ Purpose: prove that every rubric criterion and every requirement has a build art
 
 | FR | Requirement in one line | Implementation | Automated tests | Manual | Status |
 | --- | --- | --- | --- | --- | --- |
-| FR-01 | Join an open service, one active ticket per service per day | `src/modules/tickets/tickets.service.js`, `src/core/schema.sql` | U01, I11 to I16, I32 | M01, M16 | Built |
+| FR-01 | Join an open service, one active ticket per service per day | `src/modules/tickets/tickets.service.js`, `src/core/schema.sql` | U01, I11 to I16, I32, I56 | M01, M16 | Built |
 | FR-02 | Ticket code with prefix and daily sequence | `src/modules/tickets/tickets.service.js`, `tickets.rules.js` | U01, I13 | M11 | Built |
 | FR-03 | Position and ETA, refreshed at most every 10 seconds | `src/modules/tickets/tickets.rules.js`, `src/modules/tickets/tickets.repository.js`, `src/modules/tickets/tickets.service.js`, `src/modules/queue/queue.repository.js`, `src/modules/queue/queue.service.js`, `public/js/queue.js` | U04 to U09, U18, I13, `queue-wait.test.js` | M04, M12 | Built |
 | FR-04 | Leave an owned waiting ticket; called or serving cannot leave | `src/modules/tickets/tickets.service.js`, `src/modules/tickets/tickets.rules.js` | U02, U12, U13, I17 to I19 | M03 | Built |
@@ -124,7 +124,6 @@ Pass condition per page: no horizontal scroll, no clipped control, no text under
 | Critique notes | `docs/evidence/critique.md` | all members | Planned |
 
 ## 11. Gaps, cuts, and decisions
-
 | Item | Decision | Reason | Follow-up |
 | --- | --- | --- | --- |
 | MySQL vs SQLite | SQLite, documented | No MySQL on the demo machine; one process is enough | Keep SQL portable; explain the trade-off in Q&A |
@@ -134,11 +133,12 @@ Pass condition per page: no horizontal scroll, no clipped control, no text under
 | Load test NFR-01 | Must run before claiming | A p95 claim without a run is not evidence | Record the real number even if it misses; tune indexes and pragmas |
 | Retention script | Must exist, may run manually | Privacy requirement is real, a cron job is out of scope | Add a documented daily command |
 | Polling interval | 5 seconds display, 10 seconds ticket | Requirements and UI now agree | Update `03-ui-design.md` if it drifts |
-| Queue and action flows | Built, tested | Join, leave, call, start, serve, no-show, recall, display, and admin windows are implemented; 162 tests pass including staff, display, tunnel, policy, and admin suites; the call-sound choice persists across reloads; My Queue actions use short labels with icons; the estimated wait includes the ticket at the desk; filters (FR-12) remain open | Extend I35 filter coverage if Round 1 time remains |
+| Queue and action flows | Built, tested | Join, leave, call, start, serve, no-show, recall, display, and admin windows are implemented; 197 tests pass including staff, display, tunnel, policy, admin, and expiry suites; the call-sound choice persists across reloads; My Queue actions use short labels with icons; the estimated wait includes the ticket at the desk; filters (FR-12) remain open | Extend I35 filter coverage if Round 1 time remains |
 | Join policy, rules, and privacy pages | Built, tested | Window cutoff, two-ticket cap, 60-second cooldown, no-show block, role-aware sign-in, and the rules and privacy pages are implemented and covered by I45 to I49; both policy pages share a 34rem reading column, a sticky On this page rail at 1024 px, and heading ids for deep links; anonymous reads of `/`, `/rules`, `/policy`, `/display`, and `/api/display` mint no session | Rehearse the demo with `QUEUE_ENFORCE_HOURS` if the slot is outside office hours |
 | Staff account management | Built, tested | Office head creates, edits, resets, deactivates, and reactivates staff accounts at `/admin/staff`; deactivation blocks sign-in and kills the live session; I50 covers the failure cases | No hard delete by design; add invite email only if Round 2 needs it |
 | Remember me and password help | Built, tested | Checked remember sets a 30-day cookie and a matching `sessions.expires_at`; unchecked stays a browser-session cookie while the store keeps the 8h fallback; passwords require 8 or more characters with a letter and a digit, enforced on register and staff reset and in the register browser check; when enabled, new passwords are checked against the Pwned Passwords range API and fail open on network errors; `GET /forgot-password` is an office-assisted information page with no token or email; covered in `tests/integration/auth.test.js`, `tests/integration/admin-staff.test.js`, and `tests/unit/password-safety.test.js` | Keep `SESSION_REMEMBER_MAX_AGE_MS` and `PASSWORD_LEAK_CHECK` documented in `.env.example`; no password reset flow in Round 1 |
-| Window status, public origin, asset cache, and headers | Built, tested | The visible window state is derived from the weekday and Asia/Manila schedule without the 30-minute join cutoff, so a manual `is_open` flag cannot keep a window green after `closes_at`; the sitemap, robots file, canonical, and social tags use the request origin or `PUBLIC_BASE_URL` instead of the localhost fallback; static assets are content-versioned with immutable caching and the desk seal has 64 and 128 px sources; Permissions-Policy and a two-year HSTS header are live; I52 to I55 cover the behavior and the full suite is 187 tests | Re-run the live after-hours smoke test after deploy, then record the header capture and sitemap output in `docs/evidence/` |
+| Window status, public origin, asset cache, and headers | Built, tested | The visible window state is derived from the weekday and Asia/Manila schedule without the 30-minute join cutoff, so a manual `is_open` flag cannot keep a window green after `closes_at`; the sitemap, robots file, canonical, and social tags use the request origin or `PUBLIC_BASE_URL` instead of the localhost fallback; static assets are content-versioned with immutable caching and the desk seal has 64 and 128 px sources; Permissions-Policy and a two-year HSTS header are live; I52 to I55 cover the behavior and the full suite is 197 tests | Re-run the live after-hours smoke test after deploy, then record the header capture and sitemap output in `docs/evidence/` |
+| Stale ticket expiry | Built, tested | Waiting, called, and serving tickets from an earlier Manila date expire at startup, on the first request of a new day, or by `node scripts/db.js expire`; each expiry writes a system audit row, direct reads show Expired, and transitions reject; migration 004 preserves ids, sequence, and indexes; I56 covers the sweep, dry-run, idempotency, request sweep, and migration | Keep history; no automatic deletion |
 ## 12. Sign-off
 | Role | Name | Confirms | Date |
 | --- | --- | --- | --- |

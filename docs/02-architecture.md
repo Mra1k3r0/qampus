@@ -1,6 +1,6 @@
 # 02 Architecture: Student Queueing System
 
-Status: implemented for Round 1. Scope: one Node process, one SQLite file, server-rendered EJS, public display board.
+Status: implemented for Round 1, including stale-ticket expiry. Scope: one Node process, one SQLite file, server-rendered EJS, public display board.
 
 ## 1. Decision summary
 
@@ -64,7 +64,7 @@ sessions(sid PRIMARY KEY, sess, expires_at)
 schema_migrations(version PRIMARY KEY, applied_at)
 ```
 
-`users.role` is CHECKed to `student`, `staff`, or `admin`. `tickets.status` is CHECKed to `waiting`, `called`, `serving`, `served`, `left`, or `no_show`.
+`users.role` is CHECKed to `student`, `staff`, or `admin`. `tickets.status` is CHECKed to `waiting`, `called`, `serving`, `served`, `left`, `no_show`, or `expired`.
 
 The partial unique index below enforces one active ticket per student per service per day. It is the last line of defence when two requests race.
 
@@ -84,14 +84,14 @@ waiting --staff call--> called --staff start--> serving --staff serve--> served
    +--student leave--> left
 ```
 
-Rules: only the owner can leave a waiting ticket. Called and serving tickets cannot be left. Only staff or admin can call, start, serve, no-show, or recall. A no-show frees the active slot, so the same student can rejoin that day. Every transition writes an audit row. Join policy is pure in `tickets.rules.js`, evaluated as service open, window, no-show block, active cap, cooldown, then insert. The window closes `JOIN_CUTOFF_MINUTES` (30) before `closes_at` in Asia/Manila. One ticket per service and at most `MAX_ACTIVE_TICKETS` (2) across services per day. Two joins inside `JOIN_COOLDOWN_SECONDS` (60) return 429. `NO_SHOW_LIMIT` (2) blocks the rest of the day. `QUEUE_ENFORCE_HOURS=false` skips only the window check for demos; the cap, cooldown, and no-show rule stay on. The visible open or closed state uses the same schedule check without the 30-minute join cutoff, so a manual `is_open` flag alone cannot show a window as open after `closes_at`. The rules are published at `GET /policy`.
+Rules: only the owner can leave a waiting ticket. Called and serving tickets cannot be left. Only staff or admin can call, start, serve, no-show, or recall. A no-show frees the active slot, so the same student can rejoin that day. Every transition writes an audit row. Join policy is pure in `tickets.rules.js`, evaluated as service open, window, no-show block, active cap, cooldown, then insert. The window closes `JOIN_CUTOFF_MINUTES` (30) before `closes_at` in Asia/Manila. One ticket per service and at most `MAX_ACTIVE_TICKETS` (2) across services per day. Two joins inside `JOIN_COOLDOWN_SECONDS` (60) return 429. `NO_SHOW_LIMIT` (2) blocks the rest of the day. `QUEUE_ENFORCE_HOURS=false` skips only the window check for demos; the cap, cooldown, and no-show rule stay on. The visible open or closed state uses the same schedule check without the 30-minute join cutoff, so a manual `is_open` flag alone cannot show a window as open after `closes_at`. A waiting, called, or serving ticket from an earlier Manila service date is shown as `expired`, cannot transition, and is expired by the sweep. The rules are published at `GET /rules`.
 
 ## 6. Concurrency and numbering
 
 - `better-sqlite3` is synchronous. Wrap each transition in `db.transaction(...)` and use `BEGIN IMMEDIATE` for call-next and join.
 - Join computes `MAX(sequence) + 1` inside the transaction, inserts, and handles two conflicts separately: an active-ticket conflict returns the existing ticket, and a sequence collision recomputes once.
 - Call-next selects the oldest waiting ticket with `ORDER BY sequence ASC LIMIT 1`, updates it, and returns it. If no row is waiting, return null and show the empty state.
-- The partial unique index prevents a double join even if the service check is bypassed.
+- The partial unique index prevents a double join even if the service check is bypassed. A startup sweep and the first request of a new Manila day expire earlier active tickets, each with an audit row in the same transaction; `node scripts/db.js expire` is the manual fallback.
 - WAL mode, `busy_timeout=5000`, and one process keep lock contention low.
 
 ## 7. Authentication and sessions
@@ -121,7 +121,7 @@ Student ticket reads use `WHERE id = ? AND user_id = ?`. A miss returns 404, not
 - Validation failure re-renders the form with 400, preserves old values, and focuses the error summary.
 - `createError(status, safeMessage, extra)` from `http-errors` carries a safe public message. Unexpected errors render 500 with a request id and no stack trace. Async route errors are caught by `express-async-errors`.
 - `pino-http` logs method, path, status, duration, and request id. It redacts cookies, authorization, password, and CSRF values.
-- Audit actions: login, logout, join, leave, call, recall, start, serve, no-show, service update, staff create, staff update, staff password reset, staff activate, staff deactivate.
+- Audit actions: login, logout, join, leave, call, recall, start, serve, no-show, ticket expire, service update, staff create, staff update, staff password reset, staff activate, staff deactivate.
 
 ## 10. Security posture
 
@@ -141,7 +141,7 @@ Student ticket reads use `WHERE id = ? AND user_id = ?`. A miss returns 404, not
 
 ## 12. Testing seams
 
-- `createApp({ db, config })` accepts an injected database so tests use a temporary file and never touch the demo file. Pure rules for code, position, ETA, and transitions are tested without HTTP.
+- `createApp({ db, config, enableSweep })` accepts an injected database so tests use a temporary file and never touch the demo file; `enableSweep` can turn off the lazy sweep. Pure rules for code, position, ETA, stale display, and transitions are tested without HTTP.
 - Integration tests use a Supertest agent to keep cookies, parse the CSRF token from a rendered form, and assert status codes and database rows.
 - Playwright runs the responsive matrix in `03b-responsive.md` and axe checks on the main pages.
 

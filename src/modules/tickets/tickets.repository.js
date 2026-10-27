@@ -180,6 +180,29 @@ function findOldestWaitingForService(db, { serviceId, date }) {
   return mapTicket(row);
 }
 
+function findStaleActiveTickets(db, { beforeDate }) {
+  return db
+    .prepare(
+      `SELECT id, status, service_date
+       FROM tickets
+       WHERE service_date < ?
+         AND status IN (${ACTIVE_STATUSES.map(() => '?').join(', ')})
+       ORDER BY id ASC`,
+    )
+    .all(beforeDate, ...ACTIVE_STATUSES);
+}
+
+function expireTicket(db, { ticketId, status, endedAt, updatedAt }) {
+  const result = db
+    .prepare(
+      `UPDATE tickets
+       SET status = 'expired', ended_at = ?, updated_at = ?
+       WHERE id = ? AND status = ?`,
+    )
+    .run(endedAt, updatedAt, ticketId, status);
+  return result.changes === 1;
+}
+
 function findCounterForService(db, serviceId) {
   return db
     .prepare(
@@ -249,6 +272,8 @@ module.exports = {
   insertTicket,
   findTicketById,
   findOldestWaitingForService,
+  findStaleActiveTickets,
+  expireTicket,
   findCounterForService,
   markLeft,
   markCalled,

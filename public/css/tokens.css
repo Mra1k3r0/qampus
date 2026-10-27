@@ -53,6 +53,7 @@
   --status-completed: var(--color-success);
   --status-noshow: var(--color-danger);
   --status-left: var(--color-ink-muted);
+  --status-expired: var(--color-ink-muted);
 
   /* Type: serif page titles, sans UI, mono for ticket codes only */
   --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;

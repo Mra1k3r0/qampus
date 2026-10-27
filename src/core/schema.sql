@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   counter_id INTEGER REFERENCES counters(id),
   called_by INTEGER REFERENCES users(id),
   status TEXT NOT NULL DEFAULT 'waiting'
-    CHECK (status IN ('waiting', 'called', 'serving', 'served', 'left', 'no_show')),
+    CHECK (status IN ('waiting', 'called', 'serving', 'served', 'left', 'no_show', 'expired')),
   note TEXT NOT NULL DEFAULT '',
   service_date TEXT NOT NULL,
   sequence INTEGER NOT NULL CHECK (sequence > 0),

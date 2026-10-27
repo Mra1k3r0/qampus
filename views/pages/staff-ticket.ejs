@@ -6,6 +6,7 @@
     served: 'Completed',
     no_show: 'No-show',
     left: 'Left',
+    expired: 'Expired',
   };
   const statusClasses = {
     waiting: 'waiting',
@@ -14,6 +15,7 @@
     served: 'completed',
     no_show: 'noshow',
     left: 'left',
+    expired: 'expired',
   };
   const isAtDesk = ticket.status === 'called' || ticket.status === 'serving';
   const counterLabel = ticket.counterName || (isAtDesk ? 'Assigned at the desk' : 'Not called');
@@ -70,6 +72,8 @@
     actionNote = 'The student left this queue before being called.';
   } else if (ticket.status === 'no_show') {
     actionNote = 'This ticket was marked no-show.';
+  } else if (ticket.status === 'expired') {
+    actionNote = 'This ticket expired when the service day ended. No further action is needed.';
   }
 %>
 <div class="shell page page--tight">
@@ -140,13 +144,13 @@
         <% } %>
         <% if (ticket.endedAt) { %>
         <div>
-          <dt class="fact__label"><%= ticket.status === 'served' ? 'Completed' : 'Closed' %></dt>
+          <dt class="fact__label"><%= ticket.endedCaption %></dt>
           <dd class="fact__value"><time datetime="<%= ticket.endedAt %>"><%= timeLabel(ticket.endedAt) %></time></dd>
         </div>
         <% } %>
       </dl>
 
-      <p class="ticket-sheet__instruction">Ask the student to show this code before you start service.</p>
+      <p class="ticket-sheet__instruction"><%= ticket.status === 'expired' ? 'This ticket expired when the service day ended. It cannot be served.' : 'Ask the student to show this code before you start service.' %></p>
     </article>
 
     <aside class="action-panel" aria-labelledby="actions-title">
