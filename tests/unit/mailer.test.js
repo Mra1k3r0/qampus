@@ -30,6 +30,12 @@ function outboxRow(db, id) {
   return db.prepare('SELECT * FROM mail_outbox WHERE id = ?').get(id);
 }
 
+function markStaleSending(db, id) {
+  const staleAt = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  db.prepare("UPDATE mail_outbox SET status = 'sending', created_at = ? WHERE id = ?")
+    .run(staleAt, id);
+}
+
 async function flush() {
   await Promise.resolve();
 }
@@ -271,6 +277,111 @@ describe('mail outbox', () => {
       encryptionKey: ENCRYPTION_KEY,
     });
     expect(send).toHaveBeenCalledTimes(1);
+    db.close();
+  });
+
+  it('leaves a stale sending row alone on an ordinary drain', async () => {
+    const db = freshDatabase();
+    const send = vi.fn();
+    const id = enqueueMail(
+      db,
+      {
+        to: 'student@example.com',
+        template: 'verify-code',
+        subject: 'Your Qampus verification code',
+        data: { code: CODE, expiresAt: EXPIRES_AT },
+      },
+      { encryptionKey: ENCRYPTION_KEY },
+    );
+    markStaleSending(db, id);
+
+    const result = await runMailOutbox({
+      db,
+      mailer: { send },
+      render: () => ({ html: `<p>${CODE}</p>`, text: CODE }),
+      logger: silentLogger,
+      encryptionKey: ENCRYPTION_KEY,
+    });
+
+    expect(result.processed).toBe(0);
+    expect(send).not.toHaveBeenCalled();
+    expect(outboxRow(db, id).status).toBe('sending');
+    db.close();
+  });
+
+  it('resets a stale sending row on a boot drain', async () => {
+    const db = freshDatabase();
+    const mailer = createMailer({ mail: { driver: 'memory' } }, { logger: silentLogger });
+    const id = enqueueMail(
+      db,
+      {
+        to: 'student@example.com',
+        template: 'verify-code',
+        subject: 'Your Qampus verification code',
+        data: { code: CODE, expiresAt: EXPIRES_AT },
+      },
+      { encryptionKey: ENCRYPTION_KEY },
+    );
+    markStaleSending(db, id);
+
+    const result = await runMailOutbox({
+      db,
+      mailer,
+      render: () => ({ html: `<p>${CODE}</p>`, text: CODE }),
+      logger: silentLogger,
+      encryptionKey: ENCRYPTION_KEY,
+      resetStale: true,
+    });
+
+    expect(result.processed).toBe(1);
+    expect(mailer.messages).toHaveLength(1);
+    expect(outboxRow(db, id).status).toBe('sent');
+    db.close();
+  });
+
+  it('skips an overlapping drain instead of sending the same row twice', async () => {
+    const db = freshDatabase();
+    const id = enqueueMail(
+      db,
+      {
+        to: 'student@example.com',
+        template: 'verify-code',
+        subject: 'Your Qampus verification code',
+        data: { code: CODE, expiresAt: EXPIRES_AT },
+      },
+      { encryptionKey: ENCRYPTION_KEY },
+    );
+
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const send = vi.fn(async () => {
+      await gate;
+      return { id: 'provider-1' };
+    });
+    const options = {
+      db,
+      mailer: { send },
+      render: () => ({ html: `<p>${CODE}</p>`, text: CODE }),
+      logger: silentLogger,
+      encryptionKey: ENCRYPTION_KEY,
+    };
+
+    const first = runMailOutbox(options);
+    for (let index = 0; index < 5; index += 1) {
+      await Promise.resolve();
+    }
+
+    const second = await runMailOutbox(options);
+    expect(second).toMatchObject({ skipped: true, processed: 0 });
+    expect(send).toHaveBeenCalledTimes(1);
+
+    release();
+    const firstResult = await first;
+    expect(firstResult.processed).toBe(1);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(outboxRow(db, id).status).toBe('sent');
     db.close();
   });
 });

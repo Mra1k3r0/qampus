@@ -162,6 +162,19 @@ async function sendRow({ db, mailer, render, logger, encryptionKey, row }) {
   }
 }
 
+let isDraining = false;
+
+function skippedResult() {
+  return {
+    skipped: true,
+    processed: 0,
+    sent: 0,
+    retried: 0,
+    failed: 0,
+    results: [],
+  };
+}
+
 async function runMailOutbox({
   db,
   mailer,
@@ -169,35 +182,47 @@ async function runMailOutbox({
   logger,
   limit = DEFAULT_LIMIT,
   encryptionKey,
+  resetStale = false,
 } = {}) {
+  if (isDraining) {
+    return skippedResult();
+  }
   if (typeof render !== 'function') {
     throw new Error('runMailOutbox requires a render function.');
   }
 
-  const key = encryptionKey || config.mail.encryptionKey;
-  resetStaleSending(db);
-
-  const results = [];
-  let processed = 0;
-
-  while (processed < limit) {
-    const row = claimNext(db, nowIso());
-    if (!row) {
-      break;
+  isDraining = true;
+  try {
+    const key = encryptionKey || config.mail.encryptionKey;
+    if (resetStale) {
+      resetStaleSending(db);
     }
 
-    const result = await sendRow({ db, mailer, render, logger, encryptionKey: key, row });
-    results.push(result);
-    processed += 1;
-  }
+    const results = [];
+    let processed = 0;
 
-  return {
-    processed,
-    sent: results.filter((item) => item.status === 'sent').length,
-    retried: results.filter((item) => item.status === 'retry').length,
-    failed: results.filter((item) => item.status === 'failed').length,
-    results,
-  };
+    while (processed < limit) {
+      const row = claimNext(db, nowIso());
+      if (!row) {
+        break;
+      }
+
+      const result = await sendRow({ db, mailer, render, logger, encryptionKey: key, row });
+      results.push(result);
+      processed += 1;
+    }
+
+    return {
+      skipped: false,
+      processed,
+      sent: results.filter((item) => item.status === 'sent').length,
+      retried: results.filter((item) => item.status === 'retry').length,
+      failed: results.filter((item) => item.status === 'failed').length,
+      results,
+    };
+  } finally {
+    isDraining = false;
+  }
 }
 
 module.exports = {
