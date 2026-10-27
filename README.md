@@ -1,10 +1,10 @@
 # Qampus
 
-Server-rendered queueing system for the CSPC CCIT 106 midterm. Node.js 22, Express 4, EJS, and SQLite through better-sqlite3.
+Server-rendered queueing system for the CSPC CCIT 106 midterm. Node.js 22.12 or newer, Express 4, EJS, and SQLite through better-sqlite3.
 
 ## Requirements
 
-- Node.js 22 (see `.nvmrc`)
+- Node.js 22.12 or newer. Node 24 is supported and is the version pinned in `.nvmrc`.
 - npm 10 or newer
 
 ## Setup
@@ -81,7 +81,7 @@ Unit tests pin the pure rules (codes, position, ETA, transitions, schemas, time)
 
 ## Continuous integration
 
-Every pull request and push to `master` runs `.github/workflows/ci.yml` on Node 22. The job checks lint, tests, generated asset drift, and the demo reset and verify path. It does not deploy.
+Every pull request and push to `master` runs `.github/workflows/ci.yml` on Node 22 and Node 24. Each job checks lint, tests, generated asset drift, and the demo reset and verify path. It does not deploy.
 
 ## Troubleshooting
 

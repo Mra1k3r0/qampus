@@ -3,10 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "description": "Student Queueing System for CSPC CCIT 106",
+  "author": {
+    "name": "mra1k3r0",
+    "url": "https://github.com/mra1k3r0"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mra1k3r0/qampus.git"
+  },
+  "homepage": "https://github.com/mra1k3r0/qampus#readme",
+  "bugs": {
+    "url": "https://github.com/mra1k3r0/qampus/issues"
+  },
   "main": "src/server.js",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0",
+    "npm": ">=10"
   },
   "scripts": {
     "start": "node src/server.js",
