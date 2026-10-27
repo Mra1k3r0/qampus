@@ -34,6 +34,11 @@ const policySchema = z.literal('agreed', {
   error: 'Accept the terms to continue.',
 });
 
+const codeSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{8}$/, 'Enter the 8-digit code.');
+
 const registerSchema = z
   .object({
     fullName: nameSchema,
@@ -56,7 +61,19 @@ const loginSchema = z.object({
   next: z.string().optional(),
 });
 
+const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Confirm your password.'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'Passwords do not match.',
+  });
+
 module.exports = {
   registerSchema,
   loginSchema,
+  codeSchema,
+  resetPasswordSchema,
 };
