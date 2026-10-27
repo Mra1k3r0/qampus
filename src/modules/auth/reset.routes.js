@@ -159,7 +159,7 @@ function createResetRouter({ db, config, security }) {
 
       const expiresAt = new Date(Date.parse(now) + RESET_SESSION_MINUTES * MS_PER_MINUTE).toISOString();
       await regenerateSession(req);
-      setReset(req, { userId: result.user.id, verifiedAt: now, expiresAt });
+      setReset(req, { userId: result.userId, verifiedAt: now, expiresAt });
       clearPending(req);
       req.csrfToken(true);
       await saveSession(req);

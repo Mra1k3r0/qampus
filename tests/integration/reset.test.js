@@ -24,6 +24,8 @@ const THIRD_EMAIL = 'student3@my.cspc.edu.ph';
 const FOURTH_EMAIL = 'student4@my.cspc.edu.ph';
 const FIFTH_EMAIL = 'student5@my.cspc.edu.ph';
 const SIXTH_EMAIL = 'student6@my.cspc.edu.ph';
+const STAFF_EMAIL = 'staff@my.cspc.edu.ph';
+const ADMIN_EMAIL = 'admin@my.cspc.edu.ph';
 const UNKNOWN_EMAIL = 'nobody@my.cspc.edu.ph';
 
 describe('password reset routes', () => {
@@ -173,14 +175,14 @@ describe('password reset routes', () => {
   it('opens the new password page from a valid code, stores a ten minute reset session, and consumes the challenge', async () => {
     const testApp = freshApp();
     const agent = request.agent(testApp.app);
-    const code = await requestResetCode(testApp, agent, KNOWN_EMAIL);
-    const userId = userIdFor(KNOWN_EMAIL);
+    const code = await requestResetCode(testApp, agent, STAFF_EMAIL);
+    const userId = userIdFor(STAFF_EMAIL);
 
     const token = await getCsrf(agent, '/reset-password');
     const response = await agent
       .post('/reset-password')
       .type('form')
-      .send({ email: KNOWN_EMAIL, code, _csrf: token });
+      .send({ email: STAFF_EMAIL, code, _csrf: token });
 
     expect(response.status).toBe(303);
     expect(response.headers.location).toBe('/reset-password/new');
@@ -292,6 +294,24 @@ describe('password reset routes', () => {
 
     const page = await agent.get('/reset-password/new');
     expect(page.status).toBe(200);
+  });
+
+  it('returns the generic 400 for a seeded email with no active challenge', async () => {
+    const testApp = freshApp();
+    const agent = request.agent(testApp.app);
+    const userId = userIdFor(ADMIN_EMAIL);
+    expect(resetChallenges(userId).filter((row) => row.consumed_at === null && row.superseded_at === null))
+      .toHaveLength(0);
+
+    const token = await getCsrf(agent, '/reset-password');
+    const response = await agent
+      .post('/reset-password')
+      .type('form')
+      .send({ email: ADMIN_EMAIL, code: '00000000', _csrf: token });
+
+    expect(response.status).toBe(400);
+    expect(response.text).toContain('That code is incorrect or expired.');
+    expect(resetSession(userId)).toBeNull();
   });
 
   it('returns 400 for a wrong code without creating a reset session', async () => {

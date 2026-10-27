@@ -51,10 +51,13 @@ async function verifyResetCode(db, { email, code, now = nowIso() }) {
   });
 
   if (!result.ok) {
+    if (result.reason === 'missing') {
+      await bcrypt.compare(code, DUMMY_HASH);
+    }
     return { ok: false, reason: GENERIC_CODE_FAILURE };
   }
 
-  return { ok: true, user };
+  return { ok: true, userId: user.id };
 }
 
 function updatePassword(db, { userId, passwordHash, requestId }) {
