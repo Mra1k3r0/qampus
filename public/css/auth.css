@@ -1,0 +1,81 @@
+.auth--single {
+  display: block;
+  width: 100%;
+  max-width: calc(var(--auth-width) + (2 * var(--page-margin)));
+  margin-inline: auto;
+}
+
+.auth--single .auth-form {
+  display: grid;
+  gap: var(--stack-gap);
+  max-width: var(--auth-width);
+  margin-inline: auto;
+}
+
+.auth-form__email {
+  color: var(--color-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.auth-resend {
+  margin: 0;
+}
+
+.auth-resend__button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-navy);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.auth-note {
+  max-width: 46ch;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  color: var(--color-ink-muted);
+}
+
+.auth--single .form__foot {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.auth--single .form__foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}
+
+.auth-code__input {
+  min-height: calc(var(--control-height) + var(--space-8));
+  padding-inline: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .auth-resend__button:hover {
+    color: var(--color-ink);
+  }
+}
+
+@media (max-width: 359px) {
+  .auth-code__input {
+    font-size: 2.25rem;
+  }
+}

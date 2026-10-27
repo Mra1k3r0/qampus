@@ -376,13 +376,16 @@ describe('remember me and password help', () => {
     }
   });
 
-  it('renders the office-assisted forgot password page for a guest', async () => {
+  it('renders the non-functional forgot password preview for a guest', async () => {
     const agent = request.agent(app);
     const response = await agent.get('/forgot-password');
 
     expect(response.status).toBe(200);
-    expect(response.text).toMatch(/office/i);
-    expect(response.text).toMatch(/password/i);
+    expect(response.text).toMatch(/not connected in this preview/i);
+    expect(response.text).toMatch(/CCIT office/i);
+    expect(response.text).toMatch(/Send code/);
+    expect(response.text).toMatch(/disabled/);
+    expect(response.text).not.toMatch(/action="\/forgot-password"/);
   });
 
   it('redirects a signed-in user from forgot password to their home path', async () => {
