@@ -1,7 +1,6 @@
 ﻿const express = require('express');
 const { validateBody } = require('../../core/validation');
-const { setFlash } = require('../../core/context');
-const { registerSchema, loginSchema } = require('./auth.schemas');
+const { loginSchema } = require('./auth.schemas');
 const authService = require('./auth.service');
 const {
   regenerateSession,
@@ -10,7 +9,6 @@ const {
 } = require('./auth.session');
 
 const PORTALS = new Set(['student', 'staff', 'admin']);
-const REGISTER_REQUIRED_FIELDS = ['fullName', 'studentNo', 'email', 'password', 'confirmPassword'];
 const LOGIN_REQUIRED_FIELDS = ['email', 'password'];
 
 function normalizePortal(value) {
@@ -20,15 +18,6 @@ function normalizePortal(value) {
 function getMissingFields(body, fieldNames) {
   const input = body && typeof body === 'object' ? body : {};
   return fieldNames.filter((name) => typeof input[name] !== 'string' || input[name].trim() === '');
-}
-
-function formValues(body) {
-  return {
-    fullName: typeof body.fullName === 'string' ? body.fullName : '',
-    studentNo: typeof body.studentNo === 'string' ? body.studentNo : '',
-    email: typeof body.email === 'string' ? body.email : '',
-    policy: body.policy === 'agreed' ? 'agreed' : '',
-  };
 }
 
 function loginFormValues(body) {
@@ -42,15 +31,6 @@ function loginFormValues(body) {
 function createAuthRouter({ db, config, security }) {
   const router = express.Router();
 
-  function renderRegister(res, { status = 200, errors = {}, values = {}, missingFields = [] } = {}) {
-    res.status(status).render('pages/register', {
-      title: 'Create account',
-      errors,
-      values,
-      missingFields,
-    });
-  }
-
   function renderLogin(res, { status = 200, errors = {}, values = {}, missingFields = [], nextPath = null } = {}) {
     res.status(status).render('pages/login', {
       title: 'Sign in',
@@ -59,19 +39,6 @@ function createAuthRouter({ db, config, security }) {
       missingFields,
       nextPath,
     });
-  }
-
-  function registerValidationError(err, req, res, next) {
-    if (err.status === 400) {
-      renderRegister(res, {
-        status: 400,
-        errors: err.fieldErrors || { form: err.message },
-        values: formValues(req.body),
-        missingFields: getMissingFields(req.body, REGISTER_REQUIRED_FIELDS),
-      });
-      return;
-    }
-    next(err);
   }
 
   function loginValidationError(err, req, res, next) {
@@ -87,38 +54,6 @@ function createAuthRouter({ db, config, security }) {
     }
     next(err);
   }
-
-  router.get('/register', security.requireGuest, (_req, res) => {
-    renderRegister(res);
-  });
-
-  router.post(
-    '/register',
-    security.registerLimiter,
-    validateBody(registerSchema, { onError: registerValidationError }),
-    async (req, res, next) => {
-      try {
-        await authService.register(db, {
-          ...req.validatedBody,
-          requestId: req.id,
-          passwordLeakCheck: config.passwordLeakCheck,
-        });
-        setFlash(req, 'success', 'Account created. Sign in to continue.');
-        res.redirect(303, '/login');
-      } catch (err) {
-        if (err.status === 400 || err.status === 409) {
-          renderRegister(res, {
-            status: err.status,
-            errors: err.fieldErrors || { form: err.message },
-            values: formValues(req.body),
-            missingFields: getMissingFields(req.body, REGISTER_REQUIRED_FIELDS),
-          });
-          return;
-        }
-        next(err);
-      }
-    },
-  );
 
   router.get('/login', security.requireGuest, (req, res) => {
     renderLogin(res, {

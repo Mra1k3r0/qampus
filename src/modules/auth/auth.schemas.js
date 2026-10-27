@@ -39,6 +39,8 @@ const codeSchema = z
   .trim()
   .regex(/^\d{8}$/, 'Enter the 8-digit code.');
 
+const codeFormSchema = z.object({ code: codeSchema });
+
 const registerSchema = z
   .object({
     fullName: nameSchema,
@@ -75,5 +77,6 @@ module.exports = {
   registerSchema,
   loginSchema,
   codeSchema,
+  codeFormSchema,
   resetPasswordSchema,
 };

@@ -59,17 +59,18 @@ describe('auth routes', () => {
     const response = await agent.post('/register').type('form').send(payload);
 
     expect(response.status).toBe(303);
-    expect(response.headers.location).toBe('/login');
+    expect(response.headers.location).toBe('/register/check-email');
 
     const row = db
-      .prepare('SELECT role, password_hash FROM users WHERE email = ?')
+      .prepare('SELECT role, password_hash, email_verified_at FROM users WHERE email = ?')
       .get(payload.email);
     expect(row.role).toBe('student');
     expect(row.password_hash).not.toBe(payload.password);
     expect(row.password_hash.startsWith('$2')).toBe(true);
+    expect(row.email_verified_at).toBeNull();
   });
 
-  it('returns 409 when the email already exists', async () => {
+  it('redirects to check-email instead of returning 409 when the email already exists', async () => {
     const agent = request.agent(app);
     const token = await getCsrf(agent, '/register');
     const payload = {
@@ -84,12 +85,17 @@ describe('auth routes', () => {
 
     const response = await agent.post('/register').type('form').send(payload);
 
-    expect(response.status).toBe(409);
-    expect(response.text).toContain('already registered');
+    expect(response.status).toBe(303);
+    expect(response.headers.location).toBe('/register/check-email');
+    expect(response.text).not.toContain('already registered');
     const count = db
       .prepare('SELECT COUNT(*) AS count FROM users WHERE email = ?')
       .get(payload.email).count;
     expect(count).toBe(1);
+    const mail = db
+      .prepare("SELECT id FROM mail_outbox WHERE to_email = ? AND template = 'account-exists'")
+      .all(payload.email);
+    expect(mail.length).toBeGreaterThan(0);
   });
 
   it('returns 400 with field errors for an invalid register payload', async () => {
