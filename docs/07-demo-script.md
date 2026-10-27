@@ -70,7 +70,7 @@ If the board does not update, refresh once. If it still does not, say: "The API 
 
 - GitHub: show the issue board, one issue closed by a PR, the PR review comment, and the commit history with conventional prefixes.
 - Tests: show the passing summary. Name three tests: duplicate join, role guard, call-next ordering.
-- Security: "CSRF token on every POST, HttpOnly session cookie, bcrypt cost 12, parameterised SQL, rate limit on login, CSP with no inline script."
+- Security: "CSRF token on every POST, HttpOnly session cookie, bcrypt cost 12, parameterised SQL, rate limit on login, a CSP that allows only one hashed theme bootstrap, and a Permissions-Policy that keeps camera and microphone off while allowing the same-origin call chime."
 - If asked about accounts: open `/admin/staff`. "The office head adds, edits, resets, and deactivates staff. Deactivation blocks sign-in and ends the live session; history stays."
 - Deployment: show `/health` returning 200 and the public URL. "The database is on a mounted volume, so a redeploy does not wipe the queue."
 - AI use: "We used AI for scaffolding, test ideas, and copy review. Every generated change was read, tested, and explained by the owner. The AI log lists the prompts and the review."

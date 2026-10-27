@@ -11,7 +11,7 @@
     const pageDescription = 'Take a ticket for a CSPC office, watch your place in line, and show your code at the counter.';
     const pagePath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
     const pageUrl = publicBaseUrl + pagePath;
-    const socialImage = publicBaseUrl + '/images/cspc/seal-512.png';
+    const socialImage = publicBaseUrl + assetUrl('/images/cspc/seal-512.png');
     let pageCssKey = 'base';
     if (currentPath === '/') {
       pageCssKey = 'home';
@@ -32,7 +32,7 @@
     ) {
       pageCssKey = 'auth';
     }
-    const pageStylesheet = `/css/page-${pageCssKey}.min.css`;
+    const pageStylesheet = assetUrl(`/css/page-${pageCssKey}.min.css`);
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
@@ -63,12 +63,13 @@
   <meta name="twitter:card" content="summary">
   <link rel="manifest" href="/site.webmanifest">
   <script type="application/ld+json"><%- JSON.stringify(structuredData) %></script>
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/cspc/seal-32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/cspc/seal-180.png">
-  <script src="/js/theme.min.js"></script>
+  <link rel="icon" href="<%= assetUrl('/favicon.ico') %>" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="<%= assetUrl('/images/cspc/seal-32.png') %>">
+  <link rel="apple-touch-icon" sizes="180x180" href="<%= assetUrl('/images/cspc/seal-180.png') %>">
+  <script><%- themeBootstrap %></script>
+  <script defer src="<%= assetUrl('/js/theme.min.js') %>"></script>
   <link rel="stylesheet" href="<%= pageStylesheet %>">
-  <script src="/js/app.min.js" defer></script>
+  <script defer src="<%= assetUrl('/js/app.min.js') %>"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -109,7 +110,7 @@
   <% if (isAuthPage) { %>
   <div class="auth-mark shell">
     <a class="brand" href="/">
-      <img class="brand__seal" src="/images/cspc/seal-120.webp" alt="" width="120" height="125">
+      <img class="brand__seal" src="<%= assetUrl('/images/cspc/seal-64.webp') %>" srcset="<%= assetUrl('/images/cspc/seal-64.webp') %> 64w, <%= assetUrl('/images/cspc/seal-128.webp') %> 128w" sizes="(min-width: 768px) 42px, 38px" alt="" width="120" height="125">
       <span class="brand__text">
         <span class="brand__name">Qampus</span>
         <span class="brand__meta">CCIT Service Desk</span>
@@ -120,7 +121,7 @@
   <header class="site-header">
     <div class="shell site-header__inner">
       <a class="brand" href="/">
-        <img class="brand__seal" src="/images/cspc/seal-120.webp" alt="" width="120" height="125">
+        <img class="brand__seal" src="<%= assetUrl('/images/cspc/seal-64.webp') %>" srcset="<%= assetUrl('/images/cspc/seal-64.webp') %> 64w, <%= assetUrl('/images/cspc/seal-128.webp') %> 128w" sizes="(min-width: 768px) 42px, 38px" alt="" width="120" height="125">
         <span class="brand__text">
           <span class="brand__name">Qampus</span>
           <span class="brand__meta">CCIT Service Desk</span>
@@ -177,7 +178,7 @@
         <nav class="mobile-menu__panel" aria-label="Main menu">
           <div class="mobile-menu__head">
             <div class="mobile-menu__brand">
-              <img class="mobile-menu__seal" src="/images/cspc/seal-120.webp" alt="" width="120" height="125">
+              <img class="mobile-menu__seal" src="<%= assetUrl('/images/cspc/seal-64.webp') %>" srcset="<%= assetUrl('/images/cspc/seal-64.webp') %> 64w, <%= assetUrl('/images/cspc/seal-128.webp') %> 128w" sizes="40px" alt="" width="120" height="125">
               <span>Qampus</span>
             </div>
             <button class="mobile-menu__close" type="button" data-close-menu aria-label="Close menu">
@@ -264,7 +265,7 @@
     <div class="shell footer__grid">
       <div class="footer__col footer__col--brand">
         <p class="footer__brand">
-          <img class="footer__logo" src="/images/cspc/seal-120.webp" alt="" width="36" height="37">
+          <img class="footer__logo" src="<%= assetUrl('/images/cspc/seal-64.webp') %>" srcset="<%= assetUrl('/images/cspc/seal-64.webp') %> 64w, <%= assetUrl('/images/cspc/seal-128.webp') %> 128w" sizes="36px" alt="" width="36" height="37">
           <span class="footer__wordmark">Qampus</span>
         </p>
         <p class="footer__about">A student queueing system for CSPC CCIT offices. Take a ticket, watch your place, and show your code at the counter.</p>
@@ -307,10 +308,10 @@
   <% } %>
 
   <% if (activePageScript) { %>
-  <script src="<%= activePageScript %>" defer></script>
+  <script src="<%= assetUrl(activePageScript) %>" defer></script>
   <% } %>
   <% if (isStudent && currentPath !== '/display') { %>
-  <script src="/js/call-watch.min.js" defer></script>
+  <script src="<%= assetUrl('/js/call-watch.min.js') %>" defer></script>
   <% } %>
 </body>
 </html>

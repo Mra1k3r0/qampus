@@ -203,7 +203,15 @@
               View<span class="visually-hidden"> your ticket</span>
             </a>
             <% } else { %>
-            <span class="window-row__closed">Closed for now. Opens at <%= service.opensAt %>.</span>
+            <span class="window-row__closed">
+              <% if (service.scheduleState && service.scheduleState.reason === 'closed-day') { %>
+              Closed today.
+              <% } else if (service.scheduleState && !service.scheduleState.isOpen) { %>
+              Closed for now. Opens at <%= service.opensAt %>.
+              <% } else { %>
+              <%= service.joinMessage || 'The window is not accepting tickets right now.' %>
+              <% } %>
+            </span>
             <% } %>
           </div>
         </li>

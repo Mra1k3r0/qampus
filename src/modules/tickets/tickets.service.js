@@ -78,7 +78,7 @@ function getJoinContext(db, { userId, date = serviceDate() }) {
   };
 }
 
-function canJoinService({
+function getJoinDecision({
   service,
   context,
   nowParts = manilaNowParts(),
@@ -94,7 +94,11 @@ function canJoinService({
     lastTicketAt: context.lastTicketAt,
     nowIso: now,
     enforceHours,
-  }).allowed;
+  });
+}
+
+function canJoinService(args) {
+  return getJoinDecision(args).allowed;
 }
 
 function joinQueue(db, { userId, serviceId, requestId, enforceHours = config.queueEnforceHours }) {
@@ -338,6 +342,7 @@ function recallTicket(db, { ticketId, staffUserId, requestId }) {
 module.exports = {
   joinQueue,
   getJoinContext,
+  getJoinDecision,
   canJoinService,
   leaveTicket,
   getStudentTicket,

@@ -1,6 +1,7 @@
 const express = require('express');
 const queueService = require('./modules/queue/queue.service');
 const { serviceDateLabel } = require('./core/time');
+const { resolvePublicBaseUrl } = require('./core/base-url');
 const { createAuthRouter } = require('./modules/auth/auth.routes');
 const { createQueueRouter } = require('./modules/queue/queue.routes');
 const { createStaffRouter } = require('./modules/staff/staff.routes');
@@ -13,6 +14,11 @@ const SITEMAP_LASTMOD = '2026-10-26';
 
 function createRouter({ db, config, security }) {
   const router = express.Router();
+
+  router.use((req, res, next) => {
+    res.locals.publicBaseUrl = resolvePublicBaseUrl(req, config);
+    next();
+  });
 
   router.use(createDisplayRouter({ db }));
 
@@ -49,7 +55,8 @@ function createRouter({ db, config, security }) {
     res.render('pages/privacy', { title: 'Privacy Policy' });
   });
 
-  router.get('/robots.txt', (_req, res) => {
+  router.get('/robots.txt', (req, res) => {
+    const publicBaseUrl = resolvePublicBaseUrl(req, config);
     const lines = [
       'User-agent: *',
       'Allow: /',
@@ -63,16 +70,17 @@ function createRouter({ db, config, security }) {
       'Disallow: /api/',
       'Disallow: /avatar/',
       'Disallow: /health',
-      `Sitemap: ${config.publicBaseUrl}/sitemap.xml`,
+      `Sitemap: ${publicBaseUrl}/sitemap.xml`,
       '',
     ];
     res.type('text/plain').send(lines.join('\n'));
   });
 
-  router.get('/sitemap.xml', (_req, res) => {
+  router.get('/sitemap.xml', (req, res) => {
+    const publicBaseUrl = resolvePublicBaseUrl(req, config);
     const urls = PUBLIC_SITEMAP_PATHS.map((path) => [
       '  <url>',
-      `    <loc>${config.publicBaseUrl}${path}</loc>`,
+      `    <loc>${publicBaseUrl}${path}</loc>`,
       `    <lastmod>${SITEMAP_LASTMOD}</lastmod>`,
       '  </url>',
     ].join('\n')).join('\n');

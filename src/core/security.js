@@ -1,6 +1,7 @@
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const createError = require('http-errors');
+const { THEME_BOOTSTRAP_CSP_HASH } = require('./assets');
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_LIMIT = 10;
@@ -9,6 +10,18 @@ const REGISTER_LIMIT = 5;
 const JOIN_WINDOW_MS = 60 * 1000;
 const JOIN_LIMIT = 20;
 const MAX_NEXT_PATH_LENGTH = 2048;
+const HSTS_MAX_AGE_SECONDS = 63072000;
+const PERMISSIONS_POLICY = [
+  'accelerometer=()',
+  'autoplay=(self)',
+  'camera=()',
+  'geolocation=()',
+  'gyroscope=()',
+  'magnetometer=()',
+  'microphone=()',
+  'payment=()',
+  'usb=()',
+].join(', ');
 const HOME_PATHS = {
   student: '/queue',
   staff: '/staff/queue',
@@ -54,12 +67,12 @@ function safeNextPath(candidate) {
 }
 
 function createHelmet() {
-  return helmet({
+  const middleware = helmet({
     contentSecurityPolicy: {
       useDefaults: false,
       directives: {
         'default-src': ["'self'"],
-        'script-src': ["'self'", 'https://static.cloudflareinsights.com'],
+        'script-src': ["'self'", 'https://static.cloudflareinsights.com', THEME_BOOTSTRAP_CSP_HASH],
         'style-src': ["'self'"],
         'img-src': ["'self'", 'data:'],
         'font-src': ["'self'"],
@@ -74,11 +87,22 @@ function createHelmet() {
     },
     frameguard: { action: 'deny' },
     hsts: {
-      maxAge: 31536000,
+      maxAge: HSTS_MAX_AGE_SECONDS,
       includeSubDomains: true,
       preload: true,
     },
   });
+
+  return function securityHeaders(req, res, next) {
+    middleware(req, res, (err) => {
+      if (err) {
+        next(err);
+        return;
+      }
+      res.set('Permissions-Policy', PERMISSIONS_POLICY);
+      next();
+    });
+  };
 }
 
 function createLimiters() {

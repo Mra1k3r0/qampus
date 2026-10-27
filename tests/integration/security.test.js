@@ -4,11 +4,13 @@ import dbHelper from '../helpers/db.js';
 import appHelper from '../helpers/app.js';
 import csrfHelper from '../helpers/csrf.js';
 import time from '../../src/core/time.js';
+import assets from '../../src/core/assets.js';
 
 const { createTestDatabase } = dbHelper;
 const { createTestApp } = appHelper;
 const { getCsrf } = csrfHelper;
 const { serviceDate } = time;
+const { THEME_BOOTSTRAP_CSP_HASH } = assets;
 
 describe('security', () => {
   let db;
@@ -76,6 +78,35 @@ describe('security', () => {
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['x-frame-options']).toBe('DENY');
     expect(response.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('sets a restrictive permissions policy and a long HSTS lifetime', async () => {
+    const response = await request(app).get('/');
+    const policy = response.headers['permissions-policy'];
+
+    expect(response.status).toBe(200);
+    expect(policy).toContain('autoplay=(self)');
+    expect(policy).toContain('camera=()');
+    expect(policy).toContain('microphone=()');
+    expect(policy).toContain('geolocation=()');
+    expect(policy).toContain('payment=()');
+    expect(policy).not.toContain('autoplay=()');
+    expect(policy).not.toContain('*');
+    expect(response.headers['strict-transport-security'])
+      .toBe('max-age=63072000; includeSubDomains; preload');
+  });
+
+  it('allows only the hashed inline theme bootstrap in script-src', async () => {
+    const response = await request(app).get('/');
+    const csp = response.headers['content-security-policy'];
+    const scriptSrc = csp
+      .split(';')
+      .map((directive) => directive.trim())
+      .find((directive) => directive.startsWith('script-src'));
+
+    expect(scriptSrc).toContain(THEME_BOOTSTRAP_CSP_HASH);
+    expect(scriptSrc).not.toContain("'unsafe-inline'");
+    expect(response.text).toContain('<script>(function(){');
   });
 
   it('rejects a POST without a CSRF token and writes an audit row', async () => {

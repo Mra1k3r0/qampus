@@ -91,7 +91,10 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | I49 | `auth.test.js` | Each portal with a matching role, and a portal that does not match | Matching portal lands on the role home; mismatch returns the same 401 as a bad password |
 | I50 | `tests/integration/admin-staff.test.js` | Office head lists, creates, edits, resets a password, deactivates, and reactivates staff; staff and students try every route; a deactivated account signs in | 303 and an audit row per mutation, 403 for non-admins, 400 on duplicate email, 404 on admin ids, generic 401 and dead session after deactivation, password never rendered |
 | I51 | `queue.test.js` | Global call watcher markup and the alert asset | `GET /queue/tickets/1` contains one `data-call-watch` with `data-status-url`, `data-call-code`, service, counter, open, and dismiss controls, loads `/js/call-watch.js`, keeps the ticket live region with `data-ticket-status`, and has exactly one dialog outside the live region; the old `data-called-sound`, `data-sound-toggle`, and `Turn off call sound` label are absent; a staff page has no watcher or script; `GET /audio/called.mp3` returns 200 with `audio/mpeg` |
-
+| I52 | `queue.test.js`, `tickets.test.js` | Schedule-derived window state at 17:38, 16:45, 10:00, before 08:00, and a non-open day | At 17:38 PHT the home page, dashboard, and service page show zero open windows and a red Closed pill; at 16:45 the window is still open for display but joins are denied by the 30-minute cutoff; at 10:00 it is open; before 08:00 and on a non-open day it is closed; a manual close stays closed inside the schedule; demo mode keeps the schedule from closing the display |
+| I53 | `seo.test.js` | Public origin for sitemap, robots, canonical, and social tags | A forwarded host and protocol produce the matching absolute origin; an explicit `PUBLIC_BASE_URL` wins; a local test host stays on http; a hostile forwarded host is rejected and falls back without a redirect; rendered pages are `no-store` |
+| I54 | `seo.test.js` | Versioned asset cache policy | A versioned stylesheet and script return a long-lived immutable cache; the same paths without a version require revalidation; the home and display pages reference the versioned URLs and the right-sized seal |
+| I55 | `security.test.js` | Permissions-Policy and HSTS | `autoplay=(self)` is present for the same-origin call chime; camera, microphone, geolocation, payment, and USB stay denied; the policy has no wildcard; HSTS is `max-age=63072000; includeSubDomains; preload`; the only inline script is the hashed theme bootstrap |
 ## 5. Manual Test Matrix
 
 | ID | Case | Pass condition |
@@ -113,14 +116,11 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | M15 | Error recovery | 500 page offers safe back link; no raw SQL or stack visible |
 | M16 | Double click join | Rapid double click creates one ticket and one confirmation |
 ## 6. Defect Log Template
-
 | ID | Severity | Steps | Expected | Actual | Evidence | Owner | Status |
 |----|----------|-------|----------|--------|----------|-------|--------|
 | BUG-001 | S1 to S4 | 1. Route 2. Action 3. Observe | Contract from this plan | Observed behavior | Screenshot, trace, test ID | Name | Open |
-
 Severity: S1 demo blocker or data loss, S2 major flow broken, S3 minor with workaround, S4 cosmetic. A defect is closed only with a passing automated test or a signed manual retest referencing its ID.
 ## 7. Coverage Targets and Exclusions
-
 - `src/modules/tickets/tickets.rules.js`, `src/modules/*/*.schemas.js`, `src/core/security.js`, `src/core/time.js`: 95 percent lines and branches.
 - `src/modules/**/*.routes.js`: 90 percent lines; every route has at least one success and one failure test.
 - `src/modules/**/*.service.js` and `src/core/audit.js`: 90 percent lines.

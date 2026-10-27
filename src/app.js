@@ -12,12 +12,37 @@ const { SQLiteStore } = require('./core/session-store');
 const { createSecurity } = require('./core/security');
 const { createContext } = require('./core/context');
 const { notFoundHandler, createErrorHandler } = require('./core/errors');
+const {
+  THEME_BOOTSTRAP_SCRIPT,
+  assetUrl,
+  initAssets,
+  isVersionedDir,
+  isVersionedRequest,
+} = require('./core/assets');
 const authRepository = require('./modules/auth/auth.repository');
 const { AVATAR_UPLOAD_PATH, avatarUploadPreCsrf } = require('./modules/profile/profile.upload');
 const { createRouter } = require('./routes');
 
 const PUBLIC_BOARD_PATHS = new Set(['/display', '/api/display']);
 const ANONYMOUS_READ_PATHS = new Set(['/', '/rules', '/policy', '/display', '/api/display']);
+const STATIC_CACHE_METHODS = new Set(['GET', 'HEAD']);
+const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
+const REVALIDATE_CACHE = 'no-cache';
+const NO_STORE_CACHE = 'no-store';
+
+function createAssetCacheHeaders() {
+  return function assetCacheHeaders(req, res, next) {
+    if (isVersionedDir(req.path)) {
+      const isImmutable = STATIC_CACHE_METHODS.has(req.method)
+        && isVersionedRequest(req.path, req.query.v);
+      res.set('Cache-Control', isImmutable ? IMMUTABLE_CACHE : REVALIDATE_CACHE);
+      next();
+      return;
+    }
+    res.set('Cache-Control', NO_STORE_CACHE);
+    next();
+  };
+}
 
 function loadUser(db) {
   return function loadUserMiddleware(req, _res, next) {
@@ -65,7 +90,9 @@ function createApp({ db, config: appConfig = config }) {
 
   app.use(security.helmet);
   app.use(createHttpLogger(logger));
-  app.use(express.static(path.join(appConfig.projectRoot, 'public')));
+  initAssets(path.join(appConfig.projectRoot, 'public'));
+  app.use(createAssetCacheHeaders());
+  app.use(express.static(path.join(appConfig.projectRoot, 'public'), { cacheControl: false }));
   app.use(express.urlencoded({ extended: false, limit: '16kb' }));
   app.use(express.json({ limit: '16kb' }));
   app.use((req, res, next) => {
@@ -140,6 +167,8 @@ function createApp({ db, config: appConfig = config }) {
   app.locals.db = db;
   app.locals.logger = logger;
   app.locals.sessionStore = sessionStore;
+  app.locals.assetUrl = assetUrl;
+  app.locals.themeBootstrap = THEME_BOOTSTRAP_SCRIPT;
 
   return app;
 }

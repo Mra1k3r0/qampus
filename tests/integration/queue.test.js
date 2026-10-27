@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import dbHelper from '../helpers/db.js';
 import appHelper from '../helpers/app.js';
@@ -204,5 +204,72 @@ describe('queue read model', () => {
     expect(response.body.tickets).toHaveLength(1);
     expect(response.body.tickets[0].status).toBe('called');
     expect(response.body.tickets[0].callCount).toBe(1);
+  });
+});
+
+describe('queue schedule status', () => {
+  let db;
+  let app;
+  let cleanup;
+
+  beforeAll(() => {
+    const testDb = createTestDatabase({ includeTickets: true });
+    db = testDb.db;
+    cleanup = testDb.cleanup;
+    db.prepare('UPDATE services SET open_days = ?, opens_at = ?, closes_at = ?')
+      .run(JSON.stringify(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']), '08:00', '17:00');
+    app = createTestApp(db).app;
+  });
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-27T09:38:00.000Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function login(agent, email) {
+    const token = await getCsrf(agent, '/login');
+    return agent.post('/login').type('form').send({ email, password: DEMO_PASSWORD, _csrf: token });
+  }
+
+  it('shows no open windows on the home page at 17:38 PHT', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student1@my.cspc.edu.ph');
+
+    const response = await agent.get('/');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('0 of 4');
+    expect(response.text.match(/pill--closed/g)).toHaveLength(4);
+  });
+
+  it('shows no open windows on the student dashboard at 17:38 PHT', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student1@my.cspc.edu.ph');
+
+    const response = await agent.get('/queue');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('<strong>0</strong> of 4 windows open');
+    expect(response.text.match(/pill--closed/g)).toHaveLength(4);
+    expect(response.text).toContain('Closed for now. Opens at 08:00.');
+  });
+
+  it('shows the closed schedule state on the service page at 17:38 PHT', async () => {
+    const agent = request.agent(app);
+    await login(agent, 'student6@my.cspc.edu.ph');
+
+    const response = await agent.get('/queue/1');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('This window is closed.');
+    expect(response.text).toContain('Closed for now. Opens at 08:00.');
   });
 });

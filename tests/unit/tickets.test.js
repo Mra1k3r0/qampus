@@ -11,6 +11,8 @@ const {
   isActiveStatus,
   evaluateJoinPolicy,
   estimateWaitMinutes,
+  serviceScheduleState,
+  toServiceView,
 } = ticketsRules;
 
 describe('ticket codes', () => {
@@ -164,5 +166,75 @@ describe('join window policy', () => {
 
     expect(decision.allowed).toBe(false);
     expect(decision.status).toBe(409);
+  });
+});
+
+describe('service schedule state', () => {
+  const service = {
+    isOpen: true,
+    openDays: JSON.stringify(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']),
+    opensAt: '08:00',
+    closesAt: '17:00',
+  };
+
+  function at(minutes, overrides = {}) {
+    return serviceScheduleState({ service, weekday: 'Tue', minutes, ...overrides });
+  }
+
+  it('closes a weekday window at 17:38 PHT', () => {
+    expect(at(17 * 60 + 38)).toEqual({ isOpen: false, reason: 'after-hours' });
+  });
+
+  it('keeps a weekday window open at 16:45 PHT', () => {
+    expect(at(16 * 60 + 45)).toEqual({ isOpen: true, reason: 'open' });
+  });
+
+  it('closes a weekday window before 08:00 PHT', () => {
+    expect(at(7 * 60)).toEqual({ isOpen: false, reason: 'before-hours' });
+  });
+
+  it('closes the window on a non-open day', () => {
+    expect(at(10 * 60, { weekday: 'Sat' })).toEqual({ isOpen: false, reason: 'closed-day' });
+  });
+
+  it('derives the effective view state from the schedule', () => {
+    const beforeHours = toServiceView(service, { weekday: 'Tue', minutes: 7 * 60 });
+    const afterHours = toServiceView(service, { weekday: 'Tue', minutes: 17 * 60 + 38 });
+    const cutoff = toServiceView(service, { weekday: 'Tue', minutes: 16 * 60 + 45 });
+
+    expect(afterHours.isOpen).toBe(false);
+    expect(afterHours.openLabel).toBe('Closed');
+    expect(afterHours.openClass).toBe('pill--closed');
+    expect(afterHours.scheduleState.reason).toBe('after-hours');
+    expect(beforeHours.isOpen).toBe(false);
+    expect(beforeHours.scheduleState.reason).toBe('before-hours');
+    expect(cutoff.isOpen).toBe(true);
+    expect(cutoff.openLabel).toBe('Open');
+    expect(evaluateJoinPolicy({
+      service,
+      weekday: 'Tue',
+      minutes: 16 * 60 + 45,
+    }).message).toBe('That window closes soon. Try again when it reopens.');
+  });
+
+  it('keeps a manual close closed even inside the schedule', () => {
+    const view = toServiceView(
+      { ...service, isOpen: false },
+      { weekday: 'Tue', minutes: 10 * 60 },
+    );
+
+    expect(view.isOpen).toBe(false);
+    expect(view.openLabel).toBe('Closed');
+    expect(view.scheduleState.isOpen).toBe(true);
+  });
+
+  it('does not let the schedule close the window in demo mode', () => {
+    const view = toServiceView(service, {
+      weekday: 'Tue',
+      minutes: 17 * 60 + 38,
+      enforceHours: false,
+    });
+
+    expect(view.isOpen).toBe(true);
   });
 });
