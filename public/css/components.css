@@ -26,14 +26,14 @@
 }
 
 .btn--primary {
-  background-color: var(--color-navy);
-  border-color: var(--color-navy);
-  color: var(--color-paper);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .btn--primary:active {
-  background-color: var(--color-signal-active);
-  border-color: var(--color-signal-active);
+  background-color: var(--color-primary-active);
+  border-color: var(--color-primary-active);
 }
 
 .btn--secondary {
@@ -53,8 +53,6 @@
   background-color: transparent;
   border-color: transparent;
   color: var(--color-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .btn--danger {
@@ -86,9 +84,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .btn--primary:hover {
-    background-color: var(--color-signal-hover);
-    border-color: var(--color-signal-hover);
-    color: var(--color-paper);
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: var(--color-on-primary);
   }
 
   .btn--secondary:hover {
@@ -1095,6 +1093,7 @@
 }
 
 .queue-ticket.is-live {
+  padding-inline: var(--space-4);
   background-color: var(--color-paper-raised);
   box-shadow: inset var(--space-1) 0 0 var(--color-gold);
 }
@@ -1149,17 +1148,17 @@
 
 .turn-banner {
   padding: var(--space-3) var(--space-4);
-  background-color: var(--color-navy);
+  background-color: var(--color-banner);
   border-left: 4px solid var(--color-gold);
   border-radius: var(--radius-none);
-  color: var(--color-paper);
+  color: var(--color-on-banner);
   font-weight: 600;
   line-height: 1.45;
   animation: rise-in var(--duration-panel) var(--ease-enter) both;
 }
 
 .turn-banner a {
-  color: var(--color-paper);
+  color: var(--color-on-banner);
 }
 
 .turn-banner--called {
@@ -1168,7 +1167,7 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   border-left-width: 6px;
-  background-color: var(--color-navy);
+  background-color: var(--color-banner);
   font-size: var(--text-body);
   box-shadow: var(--shadow-ticket);
 }
@@ -1525,11 +1524,11 @@
 @keyframes call-alert-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(183 121 31 / 30%);
+    box-shadow: 0 0 0 0 var(--color-call-pulse-start);
   }
 
   50% {
-    box-shadow: 0 0 0 0.5rem rgb(183 121 31 / 0%);
+    box-shadow: 0 0 0 0.5rem var(--color-call-pulse-end);
   }
 }
 

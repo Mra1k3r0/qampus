@@ -11,6 +11,7 @@ const JOIN_COOLDOWN_SECONDS = 60;
 const MAX_ACTIVE_TICKETS = 2;
 const NO_SHOW_LIMIT = 2;
 const MILLISECONDS_PER_SECOND = 1000;
+const MILLISECONDS_PER_MINUTE = 60000;
 
 const JOIN_MESSAGES = Object.freeze({
   closed: 'That service window is closed right now.',
@@ -165,6 +166,45 @@ function evaluateJoinPolicy({
   return { allowed: true, status: null, message: null };
 }
 
+function remainingServiceMinutes({ avgMinutes, startedAt, now }) {
+  const start = Date.parse(startedAt);
+  const current = Date.parse(now);
+  if (!Number.isFinite(start) || !Number.isFinite(current)) {
+    return avgMinutes;
+  }
+  const elapsedMinutes = Math.max(0, (current - start) / MILLISECONDS_PER_MINUTE);
+  return Math.max(0, avgMinutes - elapsedMinutes);
+}
+
+function estimateWaitMinutes({
+  position,
+  avgMinutes,
+  currentStatus = null,
+  currentStartedAt = null,
+  now = null,
+} = {}) {
+  const place = Number(position);
+  if (!Number.isFinite(place) || place < 1) {
+    return 0;
+  }
+
+  const average = Number(avgMinutes);
+  const serviceMinutes = Number.isFinite(average) ? Math.max(0, average) : 0;
+  let minutes = (place - 1) * serviceMinutes;
+
+  if (currentStatus === 'called') {
+    minutes += serviceMinutes;
+  } else if (currentStatus === 'serving') {
+    minutes += remainingServiceMinutes({
+      avgMinutes: serviceMinutes,
+      startedAt: currentStartedAt,
+      now,
+    });
+  }
+
+  return Math.max(0, Math.round(minutes));
+}
+
 function positionText(ticket) {
   if (!ticket) {
     return '-';
@@ -291,6 +331,7 @@ module.exports = {
   isActiveStatus,
   isWaiting,
   isAtDesk,
+  estimateWaitMinutes,
   positionText,
   etaText,
   queueCountText,

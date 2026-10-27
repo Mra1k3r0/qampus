@@ -2,9 +2,9 @@ const createError = require('http-errors');
 const queueRepository = require('./queue.repository');
 const ticketsService = require('../tickets/tickets.service');
 const { manilaNowParts, nowIso, serviceDate, serviceDateLabel } = require('../../core/time');
-const { toServiceView, toTicketView } = require('../tickets/tickets.rules');
+const { estimateWaitMinutes, toServiceView, toTicketView } = require('../tickets/tickets.rules');
 
-function withWait(tickets) {
+function withWait(tickets, now = nowIso()) {
   return tickets.map((ticket) => {
     if (ticket.status !== 'waiting' || !ticket.position) {
       return { ...ticket, position: null, waitMinutes: 0 };
@@ -12,7 +12,13 @@ function withWait(tickets) {
 
     return {
       ...ticket,
-      waitMinutes: (ticket.position - 1) * ticket.avgMinutes,
+      waitMinutes: estimateWaitMinutes({
+        position: ticket.position,
+        avgMinutes: ticket.avgMinutes,
+        currentStatus: ticket.currentStatus,
+        currentStartedAt: ticket.currentStartedAt,
+        now,
+      }),
     };
   });
 }

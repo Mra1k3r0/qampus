@@ -212,10 +212,10 @@
   place-items: center;
   width: var(--space-6);
   height: var(--space-6);
-  background-color: var(--color-navy);
+  background-color: var(--color-primary);
   border: 2px solid var(--color-paper-raised);
   border-radius: 50%;
-  color: var(--color-paper);
+  color: var(--color-on-primary);
 }
 
 .avatar-choice__label {

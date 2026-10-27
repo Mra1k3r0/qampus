@@ -135,7 +135,7 @@ Student ticket reads use `WHERE id = ? AND user_id = ?`. A miss returns 404, not
 
 - Store timestamps as ISO 8601 UTC strings. Compute the Manila service date with `dayjs` plus the `utc` and `timezone` plugins.
 - Ticket codes use the service prefix plus a three digit daily sequence, for example `REG-014`. Prefixes are 2 to 4 uppercase letters and are validated at seed and admin time.
-- ETA uses the count of active tickets ahead multiplied by the service average minutes. The page shows a clock time and a relative minute range, not a fake precise promise.
+- ETA uses the waiting tickets ahead multiplied by the service average minutes, plus the remaining average for the ticket at the desk (called or serving). A serving ticket's remainder is its average minus elapsed time since `started_at`, floored at zero. The page shows a clock time and a relative minute range, not a fake precise promise.
 - Display polling: 5 seconds for `/api/display`, 10 seconds for a student ticket. Pause when `document.hidden` is true. Announce a changed ticket once with `aria-live="polite"`.
 - `/api/display` returns every service. `GET /api/display?service=<id>` returns one service and a 404 JSON error when the id is unknown. The public board uses the all-services payload.
 

@@ -145,14 +145,23 @@
       <p class="ticket-sheet__instruction">Show this code at the counter when your turn comes.</p>
 
       <div class="ticket-sheet__actions">
-        <a class="btn btn--secondary btn--small" href="/queue">Back to my queue</a>
+        <a class="btn btn--secondary btn--small" href="/queue">
+          <%- include('../partials/icon', { name: 'arrow-left', size: 16, title: null }) %>
+          Back<span class="visually-hidden"> to my queue</span>
+        </a>
         <% if (isWaiting) { %>
         <form class="inline-form" method="post" action="/queue/tickets/<%= ticket.id %>/leave">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button class="btn btn--quiet btn--small btn--danger" type="submit">Leave queue</button>
+          <button class="btn btn--quiet btn--small btn--danger" type="submit">
+            <%- include('../partials/icon', { name: 'x', size: 16, title: null }) %>
+            Leave<span class="visually-hidden"> queue</span>
+          </button>
         </form>
         <% } else if (!isAtDesk) { %>
-        <a class="btn btn--quiet btn--small" href="/queue/<%= ticket.serviceId %>">View this window</a>
+        <a class="btn btn--quiet btn--small" href="/queue/<%= ticket.serviceId %>">
+          <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
+          View window
+        </a>
         <% } %>
       </div>
     </article>

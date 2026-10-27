@@ -4,7 +4,7 @@ const { writeAudit } = require('../../core/audit');
 const { immediateTransaction } = require('../../core/db');
 const { manilaNowParts, nowIso, serviceDate } = require('../../core/time');
 const ticketsRepository = require('./tickets.repository');
-const { evaluateJoinPolicy, toTicketView } = require('./tickets.rules');
+const { estimateWaitMinutes, evaluateJoinPolicy, toTicketView } = require('./tickets.rules');
 
 const MAX_INSERT_ATTEMPTS = 2;
 const TICKET_CODE_PAD = 3;
@@ -36,7 +36,7 @@ function findTicketOrThrow(db, ticketId) {
   return withWait(ticket);
 }
 
-function withWait(ticket) {
+function withWait(ticket, now = nowIso()) {
   if (!ticket) {
     return null;
   }
@@ -44,7 +44,15 @@ function withWait(ticket) {
   return {
     ...ticket,
     position,
-    waitMinutes: position ? (position - 1) * ticket.avgMinutes : 0,
+    waitMinutes: position
+      ? estimateWaitMinutes({
+          position,
+          avgMinutes: ticket.avgMinutes,
+          currentStatus: ticket.currentStatus,
+          currentStartedAt: ticket.currentStartedAt,
+          now,
+        })
+      : 0,
   };
 }
 

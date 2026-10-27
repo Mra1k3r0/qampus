@@ -123,11 +123,17 @@
         </dl>
 
         <div class="queue-ticket__actions">
-          <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= active.id %>">Open ticket detail</a>
+          <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= active.id %>">
+            <%- include('../partials/icon', { name: 'ticket', size: 16, title: null }) %>
+            Open<span class="visually-hidden"> ticket detail</span>
+          </a>
           <% if (active.status === 'waiting') { %>
           <form class="inline-form" method="post" action="/queue/tickets/<%= active.id %>/leave">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn--quiet btn--small btn--danger" type="submit">Leave queue</button>
+            <button class="btn btn--quiet btn--small btn--danger" type="submit">
+              <%- include('../partials/icon', { name: 'x', size: 16, title: null }) %>
+              Leave<span class="visually-hidden"> queue</span>
+            </button>
           </form>
           <% } %>
         </div>
@@ -157,7 +163,10 @@
         <p class="empty-state__numeral" aria-hidden="true">0</p>
         <h2 id="closed-title">This window is closed.</h2>
         <p>The window is not accepting tickets right now. It opens at <%= service.opensAt %> and closes at <%= service.closesAt %> PHT.</p>
-        <a class="btn btn--secondary" href="/queue">Back to my queue</a>
+        <a class="btn btn--secondary" href="/queue">
+          <%- include('../partials/icon', { name: 'arrow-left', size: 16, title: null }) %>
+          Back<span class="visually-hidden"> to my queue</span>
+        </a>
       </div>
     </section>
     <% } %>

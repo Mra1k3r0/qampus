@@ -1,4 +1,6 @@
 :root {
+  color-scheme: light;
+
   /* Campus service desk palette: navy, paper, ink, seal gold */
   --color-paper: #F7F4EC;
   --color-paper-raised: #FDFBF4;
@@ -19,8 +21,20 @@
   --color-warning: #7A4E00;
   --color-danger: #A4261C;
 
+  /* Filled actions and inverse surfaces keep their own foreground pair */
+  --color-primary: #002A7A;
+  --color-primary-hover: #00215F;
+  --color-primary-active: #001949;
+  --color-on-primary: #F7F4EC;
+  --color-banner: #002A7A;
+  --color-on-banner: #F7F4EC;
+  --color-selection-bg: #002A7A;
+  --color-selection-ink: #F7F4EC;
+
   /* Translucent layers, kept here so no sheet invents a raw colour */
   --color-overlay: rgb(23 32 51 / 46%);
+  --color-call-pulse-start: rgb(183 121 31 / 30%);
+  --color-call-pulse-end: rgb(183 121 31 / 0%);
 
   /* Public board: deep navy, cream numerals, gold hairline */
   --color-board: #002A7A;
@@ -135,7 +149,8 @@
   --shadow-ticket: 0 18px 40px rgba(23, 32, 51, 0.1);
 
   /* Focus: one ring, 3px navy at 2px offset; cream on the ink board */
-  --focus-color: var(--color-navy);
+  --color-focus: #002A7A;
+  --focus-color: var(--color-focus);
   --focus-width: 3px;
   --focus-offset: 2px;
   --focus-on-ink: var(--color-board-ink);
@@ -167,4 +182,86 @@
   --z-header: 20;
   --z-menu: 30;
   --z-skip: 100;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Deep ink-navy replaces paper. The brand navy stays as readable blue for
+   links and accents, while filled actions use their own cream-safe pair. */
+[data-theme="dark"],
+[data-theme="midnight"] {
+  color-scheme: dark;
+
+  --color-paper: #0E1626;
+  --color-paper-raised: #162238;
+  --color-ink: #F3EEE2;
+  --color-ink-muted: #B3BCCB;
+  --color-rule: #34435C;
+  --color-rule-strong: #6F7D93;
+  --color-navy: #A8C7FF;
+  --color-navy-deep: #001F5C;
+  --color-gold: #D9A94F;
+  --color-gold-ink: #F0CD8B;
+  --color-signal: #A8C7FF;
+  --color-signal-hover: #3563C9;
+  --color-signal-active: #294FA6;
+  --color-signal-bright: #F1D9A6;
+  --color-calm: #8CC6FF;
+  --color-success: #84D39C;
+  --color-warning: #F0C878;
+  --color-danger: #FF9D93;
+
+  --color-primary: #315FC4;
+  --color-primary-hover: #3563C9;
+  --color-primary-active: #294FA6;
+  --color-on-primary: #F7F4EC;
+  --color-banner: #1D3160;
+  --color-on-banner: #F7F4EC;
+  --color-selection-bg: #315FC4;
+  --color-selection-ink: #F7F4EC;
+
+  --color-overlay: rgb(3 8 17 / 72%);
+  --color-call-pulse-start: rgb(217 169 79 / 36%);
+  --color-call-pulse-end: rgb(217 169 79 / 0%);
+
+  --color-focus: #B9D2FF;
+  --shadow-ticket: 0 18px 40px rgb(0 0 0 / 45%);
+}
+
+/* Midnight is true black for AMOLED screens. Status keeps its readable
+   semantic accents; every other surface, rule, and action turns monochrome. */
+[data-theme="midnight"] {
+  --color-paper: #000000;
+  --color-paper-raised: #080808;
+  --color-ink: #F2F2F2;
+  --color-ink-muted: #A3A3A3;
+  --color-rule: #242424;
+  --color-rule-strong: #565656;
+  --color-navy: #E6E6E6;
+  --color-navy-deep: #000000;
+  --color-gold: #A3A3A3;
+  --color-gold-ink: #D6D6D6;
+  --color-calm: #D0D0D0;
+  --color-signal: #E6E6E6;
+  --color-signal-hover: #FFFFFF;
+  --color-signal-active: #D4D4D4;
+  --color-signal-bright: #FFFFFF;
+
+  --color-primary: #F2F2F2;
+  --color-primary-hover: #FFFFFF;
+  --color-primary-active: #D4D4D4;
+  --color-on-primary: #050505;
+  --color-banner: #111111;
+  --color-on-banner: #F2F2F2;
+  --color-selection-bg: #F2F2F2;
+  --color-selection-ink: #000000;
+
+  --color-overlay: rgb(0 0 0 / 82%);
+  --color-call-pulse-start: rgb(255 255 255 / 24%);
+  --color-call-pulse-end: rgb(255 255 255 / 0%);
+
+  --color-focus: #FFFFFF;
+  --shadow-ticket: 0 18px 40px rgb(0 0 0 / 80%);
 }

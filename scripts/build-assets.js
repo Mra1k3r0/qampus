@@ -6,7 +6,7 @@ const { PurgeCSS } = require('purgecss');
 const ROOT = path.resolve(__dirname, '..');
 const CSS_ENTRY = path.join(ROOT, 'public', 'css', 'main.css');
 const CSS_OUT = path.join(ROOT, 'public', 'css', 'main.min.css');
-const JS_ENTRIES = ['app', 'auth', 'call-watch', 'display', 'profile', 'queue', 'staff'];
+const JS_ENTRIES = ['theme', 'app', 'auth', 'call-watch', 'display', 'profile', 'queue', 'staff'];
 const IMPORT_PATTERN = /@import\s+url\(["']?([^"')]+)["']?\);/g;
 const TARGETS = ['chrome100', 'firefox100', 'safari15'];
 const SHARED_TEMPLATES = [
@@ -66,8 +66,14 @@ const PAGE_BUNDLES = {
   display: ['views/pages/display.ejs', 'public/js/display.js'],
 };
 const SAFELIST = {
-  standard: ['is-current', 'no-js', 'visually-hidden', ':focus-visible'],
-  deep: [/^is-/, /^has-/, /^pill--/, /^flash--/],
+  standard: ['is-current', 'no-js', 'visually-hidden', ':focus-visible', 'data-theme'],
+  deep: [
+    /^is-/,
+    /^has-/,
+    /^pill--/,
+    /^flash--/,
+    /^::view-transition/,
+  ],
 };
 
 function inlineCss(filePath, seen) {

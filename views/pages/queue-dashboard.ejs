@@ -119,11 +119,17 @@
           </dl>
 
           <div class="queue-ticket__actions">
-            <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= ticket.id %>">View ticket</a>
+            <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= ticket.id %>">
+              <%- include('../partials/icon', { name: 'ticket', size: 16, title: null }) %>
+              View<span class="visually-hidden"> ticket</span>
+            </a>
             <% if (ticket.status === 'waiting') { %>
             <form class="inline-form" method="post" action="/queue/tickets/<%= ticket.id %>/leave">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button class="btn btn--quiet btn--small btn--danger" type="submit">Leave queue</button>
+              <button class="btn btn--quiet btn--small btn--danger" type="submit">
+                <%- include('../partials/icon', { name: 'x', size: 16, title: null }) %>
+                Leave<span class="visually-hidden"> queue</span>
+              </button>
             </form>
             <% } %>
           </div>
@@ -192,7 +198,10 @@
               </button>
             </form>
             <% } else if (service.activeTicketId) { %>
-            <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= service.activeTicketId %>">View your ticket</a>
+            <a class="btn btn--secondary btn--small" href="/queue/tickets/<%= service.activeTicketId %>">
+              <%- include('../partials/icon', { name: 'ticket', size: 16, title: null }) %>
+              View<span class="visually-hidden"> your ticket</span>
+            </a>
             <% } else { %>
             <span class="window-row__closed">Closed for now. Opens at <%= service.opensAt %>.</span>
             <% } %>

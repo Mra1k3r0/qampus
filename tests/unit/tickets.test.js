@@ -10,6 +10,7 @@ const {
   canJoin,
   isActiveStatus,
   evaluateJoinPolicy,
+  estimateWaitMinutes,
 } = ticketsRules;
 
 describe('ticket codes', () => {
@@ -59,6 +60,50 @@ describe('ticket ownership rules', () => {
     expect(isActiveStatus('served')).toBe(false);
     expect(isActiveStatus('left')).toBe(false);
     expect(isActiveStatus('no_show')).toBe(false);
+  });
+});
+
+describe('wait estimates', () => {
+  const base = {
+    position: 1,
+    avgMinutes: 8,
+    now: '2026-10-27T01:02:00.000Z',
+  };
+
+  it('returns zero when the student is next and no ticket holds the window', () => {
+    expect(estimateWaitMinutes(base)).toBe(0);
+  });
+
+  it('multiplies the waiting tickets ahead by the service average', () => {
+    expect(estimateWaitMinutes({ ...base, position: 4 })).toBe(24);
+  });
+
+  it('adds the full average while a called ticket holds the window', () => {
+    expect(estimateWaitMinutes({ ...base, currentStatus: 'called' })).toBe(8);
+  });
+
+  it('adds the remaining average while a ticket is being served', () => {
+    expect(estimateWaitMinutes({
+      ...base,
+      currentStatus: 'serving',
+      currentStartedAt: '2026-10-27T01:00:00.000Z',
+    })).toBe(6);
+  });
+
+  it('never drops below zero when the serving ticket runs long', () => {
+    expect(estimateWaitMinutes({
+      ...base,
+      currentStatus: 'serving',
+      currentStartedAt: '2026-10-26T23:00:00.000Z',
+    })).toBe(0);
+  });
+
+  it('uses the full average when a serving ticket has no start time', () => {
+    expect(estimateWaitMinutes({
+      ...base,
+      currentStatus: 'serving',
+      currentStartedAt: null,
+    })).toBe(8);
   });
 });
 

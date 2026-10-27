@@ -10,8 +10,35 @@ html {
 }
 
 ::selection {
-  background-color: var(--color-navy);
-  color: var(--color-paper);
+  background-color: var(--color-selection-bg);
+  color: var(--color-selection-ink);
+}
+
+/* Theme switch: the new snapshot wipes in over the old one in a circle */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+}
+
+/* The header switches with the theme instead of waiting for the circle */
+::view-transition-old(site-header),
+::view-transition-new(site-header) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Theme colours land in one frame; hover transitions resume when it ends */
+html.is-theme-switching,
+html.is-theme-switching *,
+html.is-theme-switching *::before,
+html.is-theme-switching *::after {
+  transition: none !important;
 }
 
 @keyframes fade-in {
@@ -35,6 +62,7 @@ html {
 }
 
 .site-header {
+  view-transition-name: site-header;
   animation: fade-in var(--duration-page) var(--ease-exit) both;
 }
 

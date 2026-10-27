@@ -806,12 +806,99 @@
 .footer__base {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-4);
   margin-top: var(--space-6);
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-rule);
   font-size: var(--text-meta);
+}
+
+.footer__base-start {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.footer__legal a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer__legal a::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: var(--tap-min);
+  content: '';
+  transform: translateY(-50%);
+}
+
+.theme-toggle {
+  position: relative;
+  display: none;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color var(--duration-hover) var(--ease-exit);
+}
+
+.theme-toggle::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: var(--tap-min);
+  content: '';
+  transform: translateY(-50%);
+}
+
+[data-theme] .theme-toggle {
+  display: inline-flex;
+}
+
+.theme-toggle__icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.theme-toggle__label {
+  font-size: var(--text-meta);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+[data-theme='light'] .theme-toggle__icon--sun,
+[data-theme='dark'] .theme-toggle__icon--moon,
+[data-theme='midnight'] .theme-toggle__icon--star {
+  display: inline-flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover {
+    color: var(--color-ink);
+  }
 }
 
 /* Errors */
@@ -1017,6 +1104,18 @@
 @media (max-width: 767px) {
   .site-main {
     padding-top: var(--space-8);
+  }
+
+  .footer__base-start {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .footer__legal {
+    width: 100%;
   }
 
   .auth-panel {

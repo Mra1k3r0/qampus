@@ -57,7 +57,7 @@ Join, leave, call next, start, serve, no-show, recall, public display, and admin
 - The closing band has exactly one role-aware CTA (Create an account / Go to my queue / Open staff queue). All "see the live display" links were removed from home and footer.
 - The login page has three demo quick-fill buttons (Student, Staff, Office head) that fill the email and password fields and focus the password. They never auto-submit.
 - The error summary no longer paints a focus outline on programmatic focus; the danger rule and role="alert" carry the emphasis.
-- The active ticket panel uses an inset box-shadow marker instead of a border-left so grid alignment is unaffected.
+- The active ticket panel uses an inset box-shadow marker instead of a border-left so grid alignment is unaffected; the live card adds 16 px inline padding so the gold marker clears the text.
 - Hero content staggers in at 70/140/210 ms; called and serving pill dots soft-pulse at 2.4 s. Reduced motion covers all of it.
 - Dashboard, staff, and ticket pages had redundant "live" notes trimmed; the dashboard lede is one line.
 - Login keeps the "Keep me signed in" checkbox and the "Forgot password?" link on one wrapping row; the row splits below 390px.
@@ -78,17 +78,17 @@ Join, leave, call next, start, serve, no-show, recall, public display, and admin
 
 ## Footer and release surface
 
-- The footer opens with the seal, the Qampus wordmark, and a short description, then office hours, location, and help. The base line reads `© 2026 qampus.dpdns.org`.
+- The footer opens with the seal, the Qampus wordmark, and a short description, then office hours, location, and help. The base line reads `© 2026 qampus.dpdns.org`; the theme toggle sits in the same block, and Terms and Policy sit at the right edge. Five clicks on the toggle within two seconds reveals the midnight theme; the reveal holds for a moment so continued clicking does not undo it.
 - Terms of Use live at `/rules`. The old `/policy` path returns a 301 to `/rules`, and the sitemap plus `llms.txt` point to `/rules`.
 - The Privacy Policy is a standalone page at `/privacy`, linked from the register consent line and the footer.
 - Discovery files are self-hosted: `robots.txt`, `sitemap.xml`, `llms.txt`, and `site.webmanifest`, with canonical, Open Graph, and JSON-LD tags in the layout head.
 
 ## Called-ticket alert
 
-- Sound is on by default. The ticket page shows a 44 px icon-only speaker button; the stored `off` choice turns it off, and the button label flips between "Turn off call sound" and "Turn on call sound".
+- Call sound starts off. The queue pages show an inline "Enable sound" prompt until the student enables it; the stored choice survives a reload, so the prompt does not return. After a reload, the first pointer or key press resumes the audio context without asking again.
 - The in-page call banner uses the navy fill, a gold signal rule, and a bell icon, so a called ticket reads as an alert rather than a quiet note.
 - The call dialog is a native `alertdialog` with a gold top rule, an 8 px panel radius, and a bell badge. It opens when the page loads with a called ticket, and again only when the call count rises. It does not reopen for the same count.
-- Without JavaScript the banner still carries the call; the sound button and dialog stay hidden.
+- Without JavaScript the banner still carries the call; the sound prompt and dialog stay hidden.
 
 ## Profile photo crop
 

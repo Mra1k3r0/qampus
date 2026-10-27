@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#F7F4EC">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
   <meta name="description" content="Take a ticket for a CSPC office, watch your place in line, and show your code at the counter.">
   <title><%= appName %> | <%= title %></title>
   <%
@@ -66,6 +66,7 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/cspc/seal-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/cspc/seal-180.png">
+  <script src="/js/theme.min.js"></script>
   <link rel="stylesheet" href="<%= pageStylesheet %>">
   <script src="/js/app.min.js" defer></script>
 </head>
@@ -279,13 +280,28 @@
       <div class="footer__col">
         <p class="footer__label">Help</p>
         <p><a href="/#how-it-works">How the queue works</a></p>
-        <p><a href="/rules">Terms of Use</a></p>
-        <p><a href="/privacy">Privacy Policy</a></p>
       </div>
     </div>
     <div class="shell footer__base">
-      <p>&copy; 2026 qampus.dpdns.org</p>
-      <p>Office hours are in Philippine Standard Time.</p>
+      <div class="footer__base-start">
+        <p>&copy; 2026 qampus.dpdns.org</p>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Current theme: Light. Activate to switch to Dark.">
+          <span class="theme-toggle__icon theme-toggle__icon--sun">
+            <%- include('../partials/icon', { name: 'sun', size: 16, title: null }) %>
+          </span>
+          <span class="theme-toggle__icon theme-toggle__icon--moon">
+            <%- include('../partials/icon', { name: 'moon', size: 16, title: null }) %>
+          </span>
+          <span class="theme-toggle__icon theme-toggle__icon--star">
+            <%- include('../partials/icon', { name: 'star', size: 16, title: null }) %>
+          </span>
+          <span class="theme-toggle__label" data-theme-label>Light</span>
+        </button>
+      </div>
+      <p class="footer__legal">
+        <a href="/rules">Terms</a>
+        <a href="/privacy">Policy</a>
+      </p>
     </div>
   </footer>
   <% } %>

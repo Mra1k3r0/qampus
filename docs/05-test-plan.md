@@ -24,9 +24,9 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | U04 | `src/modules/tickets/tickets.rules.js` | Three waiting tickets ahead | Position is 4 |
 | U05 | `tickets.rules.js` | Served, no_show, left tickets ahead | Excluded; position counts only waiting and called |
 | U06 | `tickets.rules.js` | Equal `created_at` | Tie broken by ascending `id`, stable result |
-| U07 | `src/modules/tickets/tickets.rules.js` | Avg 300s, position 4, one counter | ETA is 900 seconds and `eta_at` matches plus 15 minutes |
+| U07 | `src/modules/tickets/tickets.rules.js` | Avg 5 min, position 4, empty window | ETA is 15 minutes |
 | U08 | `tickets.rules.js` | Tickets from another service and prior day | Excluded from average and position |
-| U09 | `tickets.rules.js` | Position 1 | ETA is 0, formatted `"Now"` |
+| U09 | `tickets.rules.js` | Position 1, then a called or serving ticket at the desk | ETA is 0 with an empty window, the full average for a called ticket, and the remaining average for a serving ticket |
 | U10 | `src/modules/tickets/tickets.rules.js` | Allowed matrix | waiting to called, called to serving, serving to served, called to no_show, waiting to left, and called to called on recall are allowed |
 | U11 | `tickets.rules.js` | Forbidden matrix | served to serving, left to called, no_show to served all return false |
 | U12 | `src/modules/tickets/tickets.rules.js`, `src/core/security.js` | Predicates | `isStaff({role:"staff"})` true, student false; `canLeave` true only for owner with status waiting |
@@ -99,7 +99,7 @@ Pyramid: 60 percent unit, 30 percent integration, 10 percent manual. Unit tests 
 | M01 | Keyboard-only register and join | Tab reaches every field and button in order; Enter submits; no mouse needed |
 | M02 | Visible focus | Focus ring visible on all controls against both light surfaces |
 | M03 | Screen reader labels | Join, Leave, Call next, Serve, No-show announce name, service, and state |
-| M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll; a signed-in student on `/` or `/queue/tickets/:id` sees the global dialog when staff calls the ticket, with the page blurred and the chime repeating every 4 seconds; `Got it` dismisses it and it does not reopen for the same count; a recall reopens it |
+| M04 | Live updates | Position and ETA changes announced politely via `aria-live`, not on every poll; a signed-in student on `/` or `/queue/tickets/:id` sees the global dialog when staff calls the ticket, with the page blurred and the chime repeating every 4 seconds; `Got it` dismisses it and it does not reopen for the same count; a recall reopens it; the sound prompt appears only when sound was never enabled and stays hidden after a reload; the footer theme toggle switches the header in the same frame without the wordmark going blank |
 | M05 | Validation focus | Submit invalid register form; focus lands on error summary, errors linked by `aria-describedby`; a password without a letter or number is blocked in the browser and on the server; login and register show only the top-left brand mark, with no header bar or footer |
 | M06 | Contrast | Body text at least 4.5:1, large display text at least 3:1, focus indicator 3:1 |
 | M07 | 200 percent zoom | No clipped controls or horizontal scroll at 1280px with 200 percent zoom |

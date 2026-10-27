@@ -101,7 +101,8 @@
     if (!soundPrompt || !audioContext) {
       return;
     }
-    if (audioContext.state === 'running') {
+    // A stored choice survives reload even while the new context is suspended.
+    if (readSoundChoice() || audioContext.state === 'running') {
       hideSoundPrompt();
       return;
     }

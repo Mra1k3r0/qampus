@@ -1,5 +1,16 @@
 const ACTIVE_STATUSES = ['waiting', 'called', 'serving'];
 
+const CURRENT_DESK_JOIN = `
+  LEFT JOIN tickets d ON d.id = (
+    SELECT t2.id
+    FROM tickets t2
+    WHERE t2.service_id = t.service_id
+      AND t2.service_date = t.service_date
+      AND t2.status IN ('called', 'serving')
+    ORDER BY CASE t2.status WHEN 'serving' THEN 0 ELSE 1 END, t2.sequence ASC
+    LIMIT 1
+  )`;
+
 function mapService(row) {
   if (!row) {
     return null;
@@ -39,6 +50,8 @@ function mapTicket(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     position: row.position || null,
+    currentStatus: row.current_status || null,
+    currentStartedAt: row.current_started_at || null,
     serviceCode: row.service_code,
     serviceName: row.service_name,
     avgMinutes: row.avg_minutes,
@@ -135,6 +148,7 @@ function findTicketById(db, ticketId) {
     .prepare(
       `SELECT t.*, s.code AS service_code, s.name AS service_name, s.avg_minutes,
               s.opens_at, s.closes_at, c.name AS counter_name, u.full_name AS student_name,
+              d.status AS current_status, d.started_at AS current_started_at,
               (SELECT COUNT(*) FROM tickets w
                WHERE w.service_id = t.service_id AND w.service_date = t.service_date
                  AND w.status = 'waiting' AND w.sequence <= t.sequence) AS position
@@ -142,6 +156,7 @@ function findTicketById(db, ticketId) {
        JOIN services s ON s.id = t.service_id
        JOIN users u ON u.id = t.user_id
        LEFT JOIN counters c ON c.id = t.counter_id
+       ${CURRENT_DESK_JOIN}
        WHERE t.id = ?`,
     )
     .get(ticketId);

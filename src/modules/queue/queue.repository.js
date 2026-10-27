@@ -9,6 +9,17 @@ const POSITION_SQL = `(
     AND w.sequence <= t.sequence
 ) AS position`;
 
+const CURRENT_DESK_JOIN = `
+  LEFT JOIN tickets d ON d.id = (
+    SELECT t2.id
+    FROM tickets t2
+    WHERE t2.service_id = t.service_id
+      AND t2.service_date = t.service_date
+      AND t2.status IN ('called', 'serving')
+    ORDER BY CASE t2.status WHEN 'serving' THEN 0 ELSE 1 END, t2.sequence ASC
+    LIMIT 1
+  )`;
+
 function mapService(row) {
   return {
     id: row.id,
@@ -42,6 +53,8 @@ function mapTicket(row) {
     updatedAt: row.updated_at,
     callCount: row.call_count || 0,
     position: row.position || null,
+    currentStatus: row.current_status || null,
+    currentStartedAt: row.current_started_at || null,
   };
 }
 
@@ -101,10 +114,12 @@ function listActiveTicketsForUser(db, { userId, date }) {
               t.call_count,
               s.code AS service_code, s.name AS service_name, s.avg_minutes,
               c.name AS counter_name,
+              d.status AS current_status, d.started_at AS current_started_at,
               ${POSITION_SQL}
        FROM tickets t
        JOIN services s ON s.id = t.service_id
        LEFT JOIN counters c ON c.id = t.counter_id
+       ${CURRENT_DESK_JOIN}
        WHERE t.user_id = ? AND t.service_date = ?
          AND t.status IN (${ACTIVE_STATUSES.map(() => '?').join(', ')})
        ORDER BY t.created_at ASC, t.id ASC`,
@@ -120,11 +135,13 @@ function listActiveTicketsForDate(db, date) {
               t.created_at, t.updated_at, t.call_count, t.called_at, t.started_at,
               s.code AS service_code, s.name AS service_name, s.avg_minutes,
               c.name AS counter_name, u.full_name AS student_name,
+              d.status AS current_status, d.started_at AS current_started_at,
               ${POSITION_SQL}
        FROM tickets t
        JOIN services s ON s.id = t.service_id
        JOIN users u ON u.id = t.user_id
        LEFT JOIN counters c ON c.id = t.counter_id
+       ${CURRENT_DESK_JOIN}
        WHERE t.service_date = ?
          AND t.status IN (${ACTIVE_STATUSES.map(() => '?').join(', ')})
        ORDER BY s.id ASC,
