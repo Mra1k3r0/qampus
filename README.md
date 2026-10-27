@@ -79,6 +79,10 @@ npm run demo:verify
 
 Unit tests pin the pure rules (codes, position, ETA, transitions, schemas, time). Integration tests run Supertest against a real SQLite file per worker and cover routing, sessions, CSRF, authorization, rate limits, and database constraints. There is no browser end-to-end suite; the call alert sound needs a real browser and a listener, which is manual test M04 in the project test plan.
 
+## Continuous integration
+
+Every pull request and push to `master` runs `.github/workflows/ci.yml` on Node 22. The job checks lint, tests, generated asset drift, and the demo reset and verify path. It does not deploy.
+
 ## Troubleshooting
 
 - The board is empty: run `npm run demo:reset` on the day of the demo and reload.

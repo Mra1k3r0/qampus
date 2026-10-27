@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, test, assets, demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Rebuild assets
+        run: npm run build:assets
+
+      - name: Check generated assets are current
+        run: git diff --exit-code -- public/css public/js
+
+      - name: Reset demo database
+        run: npm run demo:reset
+        env:
+          DATABASE_PATH: data/ci-demo.sqlite
+          SESSION_SECRET: ci-session-secret-with-enough-length-123456
+          TZ: Asia/Manila
+
+      - name: Verify demo database
+        run: npm run demo:verify
+        env:
+          DATABASE_PATH: data/ci-demo.sqlite
+          SESSION_SECRET: ci-session-secret-with-enough-length-123456
+          TZ: Asia/Manila
