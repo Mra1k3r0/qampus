@@ -61,7 +61,7 @@ Join, leave, call next, start, serve, no-show, recall, public display, and admin
 - Hero content staggers in at 70/140/210 ms; called and serving pill dots soft-pulse at 2.4 s. Reduced motion covers all of it.
 - Dashboard, staff, and ticket pages had redundant "live" notes trimmed; the dashboard lede is one line.
 - Login keeps the "Keep me signed in" checkbox and the "Forgot password?" link on one wrapping row; the row splits below 390px.
-- `/forgot-password` is office-assisted: an information page with a four-step procedure, no form, and no email flow.
+- `/forgot-password` is self-serve: one email field, a generic sent page, an 8-digit code, and a new-password form; all four screens use the narrow `auth--single` column with no card or steps.
 
 ## Verify before closing
 

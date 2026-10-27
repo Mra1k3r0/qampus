@@ -38,15 +38,16 @@ Definitions: **Ticket** one student's place in one service queue for one service
 | FR-10 | An office head sets weekly service windows, opens or closes a service, and labels counters; a closed service rejects new joins but existing tickets continue. | Must |
 | FR-11 | A public display shows each service's now-serving code, counter, waiting count, and last update, with no student name, email, or student number, and refreshes every 5 seconds. | Must |
 | FR-12 | Staff filters the queue by service, status, and date; filters combine and persist for the session. | Should |
-| FR-13 | A visitor registers a student account with full name, email, student number, and password; passwords are hashed with bcrypt; login and logout manage a server-side session. | Must |
+| FR-13 | A visitor registers a student account with full name, email, student number, and password; an 8-digit code sent to that email must be entered before sign-in; passwords are hashed with bcrypt; login and logout manage a server-side session. | Must |
 | FR-14 | Server-side role checks limit student actions to owned tickets and staff actions to staff or admin; unauthorized requests are rejected and audited. | Must |
+| FR-15 | Any account can request a password reset by email and set a new password with an 8-digit code; responses do not reveal whether an email is registered; all existing sessions end after the change. | Must |
 
-FR-13 and FR-14 are foundational account controls. They are numbered after the queue requirements so the queue IDs stay stable across the requirements, UI, test, and traceability documents.
+FR-13 to FR-15 are foundational account controls. They are numbered after the queue requirements so the queue IDs stay stable across the requirements, UI, test, and traceability documents.
 ## 5. Non-Functional Requirements
 | ID | Requirement | Proof technique |
 |---|---|---|
 | NFR-01 | The 95th percentile response for join, status, and staff actions stays under 2 seconds with 100 concurrent users, and the board payload stays under 50 KB. | Load test before showcase |
-| NFR-02 | Passwords use bcrypt cost at least 10; session cookies are HttpOnly, SameSite=Lax, and Secure in production; state-changing forms use CSRF tokens; helmet headers are set; login allows at most 10 attempts per 15 minutes per IP. | Security tests and header checks |
+| NFR-02 | Passwords use bcrypt cost 12; verification and reset codes are 8 digits, expire in 10 minutes, allow 5 attempts, and are stored only as bcrypt hashes; session cookies are HttpOnly, SameSite=Lax, and Secure in production; state-changing forms use CSRF tokens; helmet headers are set; login, register, verify, resend, forgot, and reset have IP rate limits. | Security tests and header checks |
 | NFR-03 | A first-time student completes join and reads position in under 60 seconds without help, and the system scores at least 70 on the System Usability Scale. | Moderated usability test with 5 participants |
 | NFR-04 | The system meets WCAG 2.2 Level AA, verified with axe-core plus manual keyboard and screen-reader passes. | Named standard plus tool audit |
 | NFR-05 | Collect only name, email, student number, role, and ticket events; no gender field in Round 1; personal queue records are deleted after 30 days and audit records after 90 days. | RA 10173, NPC guidance, data inventory |
@@ -117,15 +118,17 @@ FR-13 and FR-14 are foundational account controls. They are numbered after the q
 | bcryptjs | Password hashing, cost at least 10 | MIT |
 | zod | Input schema validation | MIT |
 | helmet | Security headers | MIT |
-| express-rate-limit | Login and join rate limits | MIT |
+| express-rate-limit | Login, register, verification, and reset rate limits | MIT |
 | Vitest | Unit and integration test runner | MIT |
 | Supertest | HTTP route tests | MIT |
 | Lucide | Interface icons | ISC |
+| Nodemailer | Ethereal mail in development only | MIT |
+| Brevo HTTPS API | Verification and reset mail in production | Commercial free tier |
 | System font stacks only (no webfonts) | Typography via local system fonts | SIL OFL 1.1 |
-APIs: no third-party API is used in Round 1. Internal endpoints are read-only JSON at GET /api/display and GET /health; all other interaction is HTML form posts.
+APIs: Brevo sends account mail in production; Nodemailer uses an Ethereal test inbox outside production; tests use an in-memory mailer. Internal endpoints are read-only JSON at GET /api/display and GET /health; all other interaction is HTML form posts.
 
 ## 9. Out of Scope / Won't List for Round 1
-- Won't send SMS, email, or push notifications.
+- Won't send queue notifications by SMS, email, or push; account verification and password reset are the only mail.
 - Won't provide a native mobile app, kiosk, QR check-in, or printing.
 - Won't process payments, document requests, appointments, or grades.
 - Won't offer priority lanes, remote queues, or cross-office transfers.

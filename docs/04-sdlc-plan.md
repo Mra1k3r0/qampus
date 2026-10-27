@@ -119,4 +119,4 @@ Freeze code at T-30 minutes. Use the remaining time for rehearsal, screenshots, 
 
 ## 10. What we will not build in Round 1
 
-Appointments, SMS or email notifications, password reset, multi-campus tenancy, native mobile apps, analytics dashboards, chat, file uploads, payment integration, and a drag-and-drop queue reorder. These are listed as future work in the README so the scope stays honest.
+Appointments, SMS or email queue notifications, multi-campus tenancy, native mobile apps, analytics dashboards, chat, file uploads, payment integration, and a drag-and-drop queue reorder. These are listed as future work in the README so the scope stays honest.

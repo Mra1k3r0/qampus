@@ -116,7 +116,7 @@ The PR must name the tool/model, summarize the prompt and generated files, list 
 | Date | Task | Tool | What changed | Verified by |
 |---|---|---|---|---|
 | 2026-10-25 | 01: call alert sound on the student ticket page | Codebuff (DeepSeek V4.1 Flash) | `public/js/queue.js`, `views/pages/ticket.ejs`, `public/css/components.css`, `public/audio/called.mp3`, `tests/integration/queue.test.js`, docs 03, 05, 09, 10; the chime is CC0 from BigSoundBank, edited with ffmpeg | mra1k3r0, `npm test` and live HTTP check; audio playback and peer review pending |
-| <date> | 02: <task> | <tool> | <files and human edits> | <member, check> |
+| 2026-10-28 | 02: email verification and self-serve password reset | OpenCode (DeepSeek V4.1 Flash) | Auth schema and migration, mail outbox and Brevo/Ethereal adapters, challenge and throttle logic, register/verify/reset routes and services, simplified pages, worker and seed changes, tests, docs 01 to 09; human review rejected the first verification UI, required a timing-safe reset path, and checked every diff | mra1k3r0, `npm run lint`, `npm test`, `npm run demo:verify`, and live flows; peer review pending |
 | <date> | 03: <task> | <tool> | <files and human edits> | <member, check> |
 | <date> | 04: <task> | <tool> | <files and human edits> | <member, check> |
 | <date> | 05: <task> | <tool> | <files and human edits> | <member, check> |

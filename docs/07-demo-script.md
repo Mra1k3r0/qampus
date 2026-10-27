@@ -14,8 +14,8 @@ Passwords are demo-only, are not reused anywhere, and are rotated after the show
 
 ## 2. Pre-demo checklist, T-30 minutes
 
-1. Run `npm run demo:reset`. Confirm the output lists 4 services, 6 demo students, and 6 waiting tickets. Outside 08:00-17:00 Manila time, start the server with `QUEUE_ENFORCE_HOURS=false` or the join buttons will refuse.
-2. Run `npm test`. Keep the passing output in a terminal tab.
+1. Run `npm run demo:reset` and `npm run demo:verify`. Confirm 4 services, 6 demo students, 6 waiting tickets, and every demo account verified. Outside 08:00-17:00 Manila time, start the server with `QUEUE_ENFORCE_HOURS=false` or the join buttons will refuse.
+2. Run `npm test`. Keep the passing output in a terminal tab. In development, account mail opens an Ethereal preview URL in the server log; keep that tab ready for the verification beat.
 3. Open these tabs in order: `/display`, `/login` in a normal window, `/login` in a private window, `/policy`, the GitHub issue board, the latest merged PR, and the test output.
 4. Set browser zoom to 100 percent. Hide the bookmarks bar. Close notifications.
 5. Put the display window in full screen. Confirm the clock, the queue columns, and the footer are visible without scrolling.
@@ -51,6 +51,12 @@ Passwords are demo-only, are not reused anywhere, and are rotated after the show
 6. Leave the ticket page open. Say: "We will come back when staff calls this ticket."
 7. Optional: show the duplicate guard. Press join again in a second tab. "It returns the same active ticket instead of creating a second one."
 
+Optional 40-second account beat, only if time allows:
+
+- Open `/register`, create a test student, then open the Ethereal mail from the server log. "The account is unverified until this 8-digit code is entered; the code is hashed, expires in 10 minutes, and is stored as ciphertext in the outbox."
+- Enter the code, land on sign-in, and say: "The account is verified now. An unverified account gets the same generic login error as a wrong password."
+- Open `/forgot-password`. "Any address gets the same response, so the page cannot be used to ask who has an account. A reset ends every old session."
+
 Do not read the page aloud. Point, say the one number that matters, move on.
 
 ### 5:00 to 7:00, presenter 3: staff flow and public display
@@ -70,11 +76,11 @@ If the board does not update, refresh once. If it still does not, say: "The API 
 
 - GitHub: show the issue board, one issue closed by a PR, the PR review comment, and the commit history with conventional prefixes.
 - Tests: show the passing summary. Name three tests: duplicate join, role guard, call-next ordering.
-- Security: "CSRF token on every POST, HttpOnly session cookie, bcrypt cost 12, parameterised SQL, rate limit on login, a CSP that allows only one hashed theme bootstrap, and a Permissions-Policy that keeps camera and microphone off while allowing the same-origin call chime."
+- Security: "CSRF token on every POST, HttpOnly session cookie, bcrypt cost 12, 8-digit codes hashed at rest, encrypted mail payloads, parameterised SQL, rate limits on login and every auth POST, a CSP that allows only one hashed theme bootstrap, and a Permissions-Policy that keeps camera and microphone off while allowing the same-origin call chime."
 - If asked about accounts: open `/admin/staff`. "The office head adds, edits, resets, and deactivates staff. Deactivation blocks sign-in and ends the live session; history stays."
 - Deployment: show `/health` returning 200 and the public URL. "The database is on a mounted volume, so a redeploy does not wipe the queue."
 - AI use: "We used AI for scaffolding, test ideas, and copy review. Every generated change was read, tested, and explained by the owner. The AI log lists the prompts and the review."
-- Limitations: one campus, no SMS, no password reset, SQLite instead of MySQL. "These are deliberate Round 1 cuts, listed in the README."
+- Limitations: one campus, no queue notifications by SMS or email, SQLite instead of MySQL. "These are deliberate Round 1 cuts, listed in the README."
 
 ### 9:00 to 10:00, all: questions
 
@@ -93,7 +99,7 @@ Answer in this order: restate the question, give the decision, give the evidence
 | How do you prevent spam? | Login and join are rate limited. One active ticket per service, at most two active tickets across services, a 60-second cooldown between joins, a 30-minute join cutoff before closing, and two no-shows blocks the rest of the day. Staff can also mark a no-show. |
 | Where is the audit log? | A table with actor, action, entity, before and after JSON, and request id. It is not exposed in Round 1. |
 | What did AI do? | Scaffolding, test ideas, copy review, and documentation drafts. Each change was reviewed and tested by the owner. The log is in the repository. |
-| What is next? | Appointments, SMS or email notification, password reset, multi-office scheduling, and a proper analytics view for the office head. |
+| What is next? | Appointments, queue notifications by SMS or email, multi-office scheduling, and a proper analytics view for the office head. |
 
 ## 5. Failure recovery
 
