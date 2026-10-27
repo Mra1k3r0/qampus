@@ -3,6 +3,11 @@ const { validateBody } = require('../../core/validation');
 const { setFlash } = require('../../core/context');
 const { registerSchema, loginSchema } = require('./auth.schemas');
 const authService = require('./auth.service');
+const {
+  regenerateSession,
+  saveSession,
+  destroySession,
+} = require('./auth.session');
 
 const PORTALS = new Set(['student', 'staff', 'admin']);
 const REGISTER_REQUIRED_FIELDS = ['fullName', 'studentNo', 'email', 'password', 'confirmPassword'];
@@ -32,42 +37,6 @@ function loginFormValues(body) {
     portal: normalizePortal(body.portal),
     remember: body.remember === 'on' ? 'on' : '',
   };
-}
-
-function regenerateSession(req) {
-  return new Promise((resolve, reject) => {
-    req.session.regenerate((err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
-    });
-  });
-}
-
-function saveSession(req) {
-  return new Promise((resolve, reject) => {
-    req.session.save((err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
-    });
-  });
-}
-
-function destroySession(req) {
-  return new Promise((resolve, reject) => {
-    req.session.destroy((err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
-    });
-  });
 }
 
 function createAuthRouter({ db, config, security }) {
@@ -191,6 +160,7 @@ function createAuthRouter({ db, config, security }) {
         req.session.cookie.maxAge = remember === 'on' ? config.sessionRememberMaxAgeMs : null;
         req.session.userId = user.id;
         req.session.role = user.role;
+        req.session.sessionVersion = user.sessionVersion;
         req.csrfToken(true);
         await saveSession(req);
       } catch (err) {

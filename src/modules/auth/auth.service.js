@@ -80,7 +80,7 @@ async function login(db, { email, password, portal, requestId }) {
   const hash = user ? user.passwordHash : DUMMY_HASH;
   const passwordMatches = await verifyPassword(password, hash);
 
-  if (!user || !passwordMatches || !user.isActive) {
+  if (!user || !passwordMatches || !user.isActive || !user.emailVerifiedAt) {
     throw createError(401, 'Email or password is incorrect.');
   }
 
@@ -103,6 +103,7 @@ async function login(db, { email, password, portal, requestId }) {
     studentNo: user.studentNo,
     email: user.email,
     role: user.role,
+    sessionVersion: user.sessionVersion,
   };
 }
 

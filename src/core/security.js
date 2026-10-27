@@ -9,6 +9,15 @@ const REGISTER_WINDOW_MS = 60 * 60 * 1000;
 const REGISTER_LIMIT = 5;
 const JOIN_WINDOW_MS = 60 * 1000;
 const JOIN_LIMIT = 20;
+const AUTH_EMAIL_WINDOW_MS = 15 * 60 * 1000;
+const FORGOT_WINDOW_MS = AUTH_EMAIL_WINDOW_MS;
+const FORGOT_LIMIT = 5;
+const RESET_WINDOW_MS = AUTH_EMAIL_WINDOW_MS;
+const RESET_LIMIT = 10;
+const VERIFY_WINDOW_MS = AUTH_EMAIL_WINDOW_MS;
+const VERIFY_LIMIT = 10;
+const RESEND_WINDOW_MS = AUTH_EMAIL_WINDOW_MS;
+const RESEND_LIMIT = 5;
 const MAX_NEXT_PATH_LENGTH = 2048;
 const HSTS_MAX_AGE_SECONDS = 63072000;
 const PERMISSIONS_POLICY = [
@@ -136,7 +145,55 @@ function createLimiters() {
     },
   });
 
-  return { loginLimiter, registerLimiter, joinLimiter };
+  const forgotLimiter = rateLimit({
+    windowMs: FORGOT_WINDOW_MS,
+    limit: FORGOT_LIMIT,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler(_req, res) {
+      res.status(429).type('text').send('Too many password reset requests. Try again later.');
+    },
+  });
+
+  const resetLimiter = rateLimit({
+    windowMs: RESET_WINDOW_MS,
+    limit: RESET_LIMIT,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler(_req, res) {
+      res.status(429).type('text').send('Too many reset attempts. Try again later.');
+    },
+  });
+
+  const verifyLimiter = rateLimit({
+    windowMs: VERIFY_WINDOW_MS,
+    limit: VERIFY_LIMIT,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler(_req, res) {
+      res.status(429).type('text').send('Too many verification attempts. Try again later.');
+    },
+  });
+
+  const resendLimiter = rateLimit({
+    windowMs: RESEND_WINDOW_MS,
+    limit: RESEND_LIMIT,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler(_req, res) {
+      res.status(429).type('text').send('Too many code requests. Try again later.');
+    },
+  });
+
+  return {
+    loginLimiter,
+    registerLimiter,
+    joinLimiter,
+    forgotLimiter,
+    resetLimiter,
+    verifyLimiter,
+    resendLimiter,
+  };
 }
 
 function createSecurity() {
@@ -178,7 +235,15 @@ function createSecurity() {
     next();
   }
 
-  const { loginLimiter, registerLimiter, joinLimiter } = createLimiters();
+  const {
+    loginLimiter,
+    registerLimiter,
+    joinLimiter,
+    forgotLimiter,
+    resetLimiter,
+    verifyLimiter,
+    resendLimiter,
+  } = createLimiters();
 
   return {
     helmet: createHelmet(),
@@ -188,6 +253,10 @@ function createSecurity() {
     loginLimiter,
     registerLimiter,
     joinLimiter,
+    forgotLimiter,
+    resetLimiter,
+    verifyLimiter,
+    resendLimiter,
     isStaff,
     safeNextPath,
     homePathFor,
@@ -205,4 +274,12 @@ module.exports = {
   REGISTER_LIMIT,
   JOIN_WINDOW_MS,
   JOIN_LIMIT,
+  FORGOT_WINDOW_MS,
+  FORGOT_LIMIT,
+  RESET_WINDOW_MS,
+  RESET_LIMIT,
+  VERIFY_WINDOW_MS,
+  VERIFY_LIMIT,
+  RESEND_WINDOW_MS,
+  RESEND_LIMIT,
 };

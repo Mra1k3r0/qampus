@@ -21,6 +21,7 @@ const {
   isVersionedRequest,
 } = require('./core/assets');
 const authRepository = require('./modules/auth/auth.repository');
+const { regenerateSession } = require('./modules/auth/auth.session');
 const { AVATAR_UPLOAD_PATH, avatarUploadPreCsrf } = require('./modules/profile/profile.upload');
 const { createDailySweep } = require('./modules/tickets/tickets.sweep');
 const { createRouter } = require('./routes');
@@ -46,6 +47,13 @@ function createAssetCacheHeaders() {
   };
 }
 
+function isSessionUserValid(user, session) {
+  return Boolean(user)
+    && user.isActive
+    && Boolean(user.emailVerifiedAt)
+    && session.sessionVersion === user.sessionVersion;
+}
+
 function loadUser(db) {
   return function loadUserMiddleware(req, _res, next) {
     if (!req.session.userId) {
@@ -55,11 +63,9 @@ function loadUser(db) {
     }
 
     const user = authRepository.findById(db, req.session.userId);
-    if (!user || !user.isActive) {
-      delete req.session.userId;
-      delete req.session.role;
+    if (!isSessionUserValid(user, req.session)) {
       req.user = null;
-      next();
+      regenerateSession(req).then(() => next(), next);
       return;
     }
 

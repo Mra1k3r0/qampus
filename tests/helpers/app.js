@@ -1,5 +1,6 @@
 const config = require('../../src/config');
 const { createApp } = require('../../src/app');
+const { createMemoryMailer } = require('../../src/core/mailer/memory');
 
 function buildTestConfig(overrides = {}) {
   return {
@@ -15,8 +16,16 @@ function buildTestConfig(overrides = {}) {
 }
 
 function createTestApp(db, overrides = {}) {
-  const testConfig = buildTestConfig(overrides);
-  return { app: createApp({ db, config: testConfig }), config: testConfig };
+  const mailer = createMemoryMailer();
+  const testConfig = buildTestConfig({
+    ...overrides,
+    mail: {
+      ...config.mail,
+      driver: 'memory',
+      ...(overrides.mail || {}),
+    },
+  });
+  return { app: createApp({ db, config: testConfig, mailer }), config: testConfig, mailer };
 }
 
 module.exports = {
