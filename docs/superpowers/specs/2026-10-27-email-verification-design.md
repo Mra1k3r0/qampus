@@ -29,12 +29,12 @@ Resend's official pricing includes 3,000 sent emails per month, 100 per day. Bre
 
 New files:
 
-- `src/modules/auth/{verification.routes.js,reset.routes.js,challenges.service.js,challenges.repository.js}`
+- `src/modules/auth/{register.routes.js,verification.routes.js,reset.routes.js,auth.session.js,challenges.service.js,challenges.repository.js}`
 - `src/core/mailer/{index.js,brevo.js,ethereal.js,memory.js,outbox.js,crypto.js}`
 - `views/emails/{shell.ejs,verify-code.ejs,reset-code.ejs,password-changed.ejs,account-exists.ejs}`
 - `views/pages/{check-email.ejs,verify-email.ejs,forgot-sent.ejs,reset-password.ejs,reset-password-new.ejs}`
 
-Keep `auth.routes.js` under its soft limit by moving the new routes out. `auth.service.js` stays under 250 lines; if not, split challenge logic into `challenges.service.js`. No feature imports another feature's repository.
+Split the existing 227-line `auth.routes.js` into auth, register, verification, and reset routers. `auth.service.js` stays under 250 lines; if not, split challenge logic into `challenges.service.js`. No feature imports another feature's repository.
 
 ## Data model
 
