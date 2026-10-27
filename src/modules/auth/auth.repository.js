@@ -11,6 +11,8 @@ function mapUser(row) {
     email: row.email,
     role: row.role,
     isActive: row.is_active === 1,
+    emailVerifiedAt: row.email_verified_at || null,
+    sessionVersion: row.session_version,
     createdAt: row.created_at,
     avatarType: row.avatar_type || null,
     avatarValue: row.avatar_value || null,
@@ -21,8 +23,8 @@ function mapUser(row) {
   return user;
 }
 
-const USER_COLUMNS = 'id, full_name, student_no, email, role, is_active, created_at, '
-  + 'avatar_type, avatar_value, avatar_updated_at';
+const USER_COLUMNS = 'id, full_name, student_no, email, role, is_active, email_verified_at, '
+  + 'session_version, created_at, avatar_type, avatar_value, avatar_updated_at';
 
 function findById(db, id) {
   const row = db
@@ -33,11 +35,7 @@ function findById(db, id) {
 
 function findByEmail(db, email) {
   const row = db
-    .prepare(
-      `SELECT id, full_name, student_no, email, password_hash, role, is_active, created_at,
-        avatar_type, avatar_value, avatar_updated_at
-       FROM users WHERE email = ?`,
-    )
+    .prepare(`SELECT ${USER_COLUMNS}, password_hash FROM users WHERE email = ?`)
     .get(email);
 
   if (!row) {
@@ -61,8 +59,26 @@ function createUser(db, { fullName, studentNo, email, passwordHash, role, create
   return findById(db, result.lastInsertRowid);
 }
 
+function markEmailVerified(db, userId, verifiedAt) {
+  db.prepare('UPDATE users SET email_verified_at = ? WHERE id = ?').run(verifiedAt, userId);
+  return findById(db, userId);
+}
+
+function updatePasswordHash(db, userId, passwordHash) {
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, userId);
+  return findById(db, userId);
+}
+
+function incrementSessionVersion(db, userId) {
+  db.prepare('UPDATE users SET session_version = session_version + 1 WHERE id = ?').run(userId);
+  return findById(db, userId);
+}
+
 module.exports = {
   findById,
   findByEmail,
   createUser,
+  markEmailVerified,
+  updatePasswordHash,
+  incrementSessionVersion,
 };

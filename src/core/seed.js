@@ -72,10 +72,18 @@ function seedBaseDate() {
 
 function insertUser(db, user, passwordHash, createdAt) {
   db.prepare(
-    `INSERT INTO users (full_name, student_no, email, password_hash, role, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)
-     ON CONFLICT(email) DO NOTHING`,
-  ).run(user.fullName, user.studentNo, user.email, passwordHash, user.role, createdAt);
+    `INSERT INTO users (full_name, student_no, email, password_hash, role, email_verified_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(email) DO UPDATE SET email_verified_at = excluded.email_verified_at`,
+  ).run(
+    user.fullName,
+    user.studentNo,
+    user.email,
+    passwordHash,
+    user.role,
+    createdAt,
+    createdAt,
+  );
 
   return db.prepare('SELECT * FROM users WHERE email = ?').get(user.email);
 }

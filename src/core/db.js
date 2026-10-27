@@ -7,6 +7,7 @@ const INITIAL_MIGRATION = '001_init';
 const USER_ACTIVE_MIGRATION = '002_user_is_active';
 const USER_AVATAR_MIGRATION = '003_user_avatar';
 const TICKET_EXPIRED_MIGRATION = '004_ticket_expired_status';
+const AUTH_VERIFICATION_MIGRATION = '005_auth_email_verification';
 const USER_ACTIVE_COLUMN = 'is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))';
 const USER_AVATAR_COLUMNS = [
   ['avatar_type', "avatar_type TEXT CHECK (avatar_type IN ('preset', 'upload'))"],
@@ -105,6 +106,68 @@ function addExpiredTicketStatus(db) {
   `);
 }
 
+function addAuthVerificationColumns(db) {
+  if (!hasColumn(db, 'users', 'email_verified_at')) {
+    db.exec('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+  }
+  if (!hasColumn(db, 'users', 'session_version')) {
+    db.exec('ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 1');
+  }
+}
+
+function createAuthVerificationTables(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS auth_challenges (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      purpose TEXT NOT NULL CHECK (purpose IN ('verify_email', 'reset_password')),
+      code_hash TEXT NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+      max_attempts INTEGER NOT NULL CHECK (max_attempts > 0),
+      expires_at TEXT NOT NULL,
+      verified_at TEXT,
+      consumed_at TEXT,
+      superseded_at TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS one_active_auth_challenge
+      ON auth_challenges (user_id, purpose)
+      WHERE consumed_at IS NULL AND superseded_at IS NULL;
+
+    CREATE TABLE IF NOT EXISTS mail_outbox (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      to_email TEXT NOT NULL,
+      template TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      payload_ciphertext TEXT,
+      payload_iv TEXT,
+      payload_tag TEXT,
+      status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'sending', 'sent', 'failed')),
+      attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+      next_attempt_at TEXT,
+      last_error TEXT,
+      provider_message_id TEXT,
+      created_at TEXT NOT NULL,
+      sent_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS auth_throttle (
+      key TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 0 CHECK (count >= 0),
+      window_started_at TEXT NOT NULL,
+      blocked_until TEXT
+    );
+  `);
+}
+
+function migrateAuthVerification(db) {
+  addAuthVerificationColumns(db);
+  createAuthVerificationTables(db);
+  db.prepare('UPDATE users SET email_verified_at = ?, session_version = 1 WHERE email_verified_at IS NULL')
+    .run(nowIso());
+}
+
 const MIGRATIONS = [
   {
     version: INITIAL_MIGRATION,
@@ -123,6 +186,10 @@ const MIGRATIONS = [
   {
     version: TICKET_EXPIRED_MIGRATION,
     up: addExpiredTicketStatus,
+  },
+  {
+    version: AUTH_VERIFICATION_MIGRATION,
+    up: migrateAuthVerification,
   },
 ];
 
@@ -172,4 +239,5 @@ module.exports = {
   USER_ACTIVE_MIGRATION,
   USER_AVATAR_MIGRATION,
   TICKET_EXPIRED_MIGRATION,
+  AUTH_VERIFICATION_MIGRATION,
 };
