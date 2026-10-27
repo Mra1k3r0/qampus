@@ -1,13 +1,15 @@
-.auth--verify {
-  max-width: calc(600px + (2 * var(--page-margin)));
-  padding-top: var(--space-8);
-  border-top: 2px solid var(--color-gold);
+.auth--single {
+  display: block;
+  width: 100%;
+  max-width: calc(var(--auth-width) + (2 * var(--page-margin)));
+  margin-inline: auto;
 }
 
-.auth--verify .auth-form {
+.auth--single .auth-form {
   display: grid;
   gap: var(--stack-gap);
-  align-content: start;
+  max-width: var(--auth-width);
+  margin-inline: auto;
 }
 
 .auth-form__email {
@@ -16,39 +18,24 @@
   overflow-wrap: anywhere;
 }
 
-.auth-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid var(--color-rule);
-  border-bottom: 1px solid var(--color-rule);
+.auth-resend {
+  margin: 0;
 }
 
-.auth-fact {
-  min-width: 0;
-  padding: var(--space-3) 0;
-}
-
-.auth-fact + .auth-fact {
-  padding-left: var(--space-4);
-  border-left: 1px solid var(--color-rule);
-}
-
-.auth-fact__label {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--text-meta);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  color: var(--color-ink-muted);
-  text-transform: uppercase;
-}
-
-.auth-fact__value {
-  display: block;
-  margin-top: var(--space-1);
+.auth-resend__button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-navy);
+  font-family: var(--font-body);
   font-size: var(--text-small);
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .auth-note {
@@ -58,23 +45,9 @@
   color: var(--color-ink-muted);
 }
 
-.auth-resend {
-  margin: 0;
-}
-
-.auth-code {
-  display: grid;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: var(--space-4);
-  background-color: var(--color-paper-raised);
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-none);
-}
-
-.auth-code__label,
-.auth-code__hint {
-  text-align: center;
+.auth--single .form__foot {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .auth-code__input {
@@ -89,9 +62,10 @@
   text-align: center;
 }
 
-.auth-code__error {
-  justify-content: center;
-  text-align: center;
+@media (hover: hover) and (pointer: fine) {
+  .auth-resend__button:hover {
+    color: var(--color-ink);
+  }
 }
 
 @media (max-width: 359px) {

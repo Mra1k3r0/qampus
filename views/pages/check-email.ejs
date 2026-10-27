@@ -6,53 +6,28 @@
     ? csrfToken
     : '';
 %>
-<div class="auth auth--verify shell">
-  <aside class="auth-panel">
-    <p class="eyebrow">Email check</p>
-    <p class="auth-panel__display">One code, ten minutes.</p>
-    <p class="auth-panel__note">The code proves the address belongs to you. It works once, then it expires.</p>
-  </aside>
-
+<div class="auth auth--single shell">
   <div class="auth-form">
     <div class="auth-form__intro">
-      <p class="eyebrow">Almost there</p>
       <h1 class="auth-form__title">Check your email</h1>
       <p class="auth-form__sub">
         We sent an 8-digit code to
         <% if (submittedEmail) { %>
-        <strong class="auth-form__email"><%= submittedEmail %></strong>.
+        <strong class="auth-form__email"><%= submittedEmail %></strong>, and it expires in 10 minutes.
         <% } else { %>
-        the address you entered.
+        the address you entered, and it expires in 10 minutes.
         <% } %>
-        It expires in 10 minutes.
       </p>
     </div>
 
-    <dl class="auth-facts">
-      <div class="auth-fact">
-        <dt class="auth-fact__label">Code</dt>
-        <dd class="auth-fact__value">8 digits</dd>
-      </div>
-      <div class="auth-fact">
-        <dt class="auth-fact__label">Expires</dt>
-        <dd class="auth-fact__value">10 minutes</dd>
-      </div>
-    </dl>
-
-    <a class="btn btn--primary btn--block" href="/verify-email">
-      Enter the code
-      <%- include('../partials/icon', { name: 'arrow-right', size: 16, title: null }) %>
-    </a>
+    <a class="btn btn--primary btn--block" href="/verify-email">Enter code</a>
 
     <form class="auth-resend" method="post" action="/verify-email/resend">
       <input type="hidden" name="_csrf" value="<%= token %>">
-      <button class="btn btn--secondary btn--block" type="submit">
-        <%- include('../partials/icon', { name: 'rotate-ccw', size: 16, title: null }) %>
-        Send a new code
-      </button>
+      <button class="auth-resend__button" type="submit">Send a new code</button>
     </form>
 
-    <p class="auth-note">Check the spam or junk folder if the email does not arrive. You can send a new code after 60 seconds.</p>
+    <p class="auth-note">Check spam if it does not arrive. You can resend after 60 seconds.</p>
 
     <p class="form__foot">Back to <a href="/login">sign in</a>.</p>
   </div>
