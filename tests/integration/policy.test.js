@@ -53,6 +53,16 @@ describe('terms of use page', () => {
     expect(response.text).toContain('Two no-shows');
   });
 
+  it('states the real retention window on the privacy page', async () => {
+    const response = await request(app).get('/privacy');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('90 days');
+    expect(response.text).toContain('service day');
+    expect(response.text).not.toContain('Demo reset');
+    expect(response.text).not.toContain('\u2014');
+  });
+
   it('shows no student data and no em dash', async () => {
     const response = await request(app).get('/rules');
 
